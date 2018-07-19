@@ -1,0 +1,20 @@
+sdk *default:
+  build:
+    target: Vostok.Logging.FileLog.sln
+    configuration: NoTests
+    tool:
+      name: dotnet
+
+  install:
+    - Vostok.Logging.FileLog/bin/Release/netstandard2.0/Vostok.Logging.FileLog.dll
+
+  deps:
+    - vostok.logging.abstractions@dev
+    - vostok.logging.core@dev
+    - vostok.configuration@dev
+    - vostok.configuration.abstractions@dev
+
+full-build > sdk:
+  build:
+    target: Vostok.Logging.FileLog.sln
+    configuration: Release
