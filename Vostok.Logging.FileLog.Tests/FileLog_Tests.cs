@@ -7,7 +7,6 @@ using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.Context;
 using Vostok.Logging.Core;
 
 namespace Vostok.Logging.FileLog.Tests
@@ -121,75 +120,6 @@ namespace Vostok.Logging.FileLog.Tests
             createdFiles.Add(settings.FilePath);
 
             ReadAllLines(settings.FilePath).Should().BeEquivalentTo(string.Format(messages[0], "€®"), string.Format(messages[1], "??"));
-        }
-
-        [Test]
-        public void FileLog_with_context()
-        {
-            var messages = new[] { "Hello, World 1", "Hello, World 2" };
-
-            UpdateSettings(s => s.ConversionPattern = ConversionPattern.FromString("%x %m%n"));
-
-            var conLog = new ContextualPrefixedILogWrapper(log);
-            using (new ContextualLogPrefix("prefix1"))
-                conLog.Info(messages[0], new { trace = 134 });
-            WaitForOperationCanceled();
-
-            UpdateSettings(s => s.ConversionPattern = ConversionPattern.FromString("%l %x %p(trace) %m%n"));
-
-            using (new ContextualLogPrefix("prefix2"))
-                conLog.Info(messages[1], new { trace = 134 });
-            WaitForOperationCanceled();
-
-            createdFiles.Add(settings.FilePath);
-
-            ReadAllLines(settings.FilePath).Should().BeEquivalentTo($"[prefix1] {messages[0]}", $"Info [prefix2] 134 {messages[1]}");
-        }
-
-        [Test]
-        public void FileLog_with_subcontext()
-        {
-            var messages = new[] { "Hello, World 1", "Hello, World 2" };
-            
-            UpdateSettings(s => s.ConversionPattern = ConversionPattern.FromString("%x %m%n"));
-
-            var conLog = new ContextualPrefixedILogWrapper(log);
-            using (new ContextualLogPrefix("prefix1"))
-            using (new ContextualLogPrefix("prefix1.1"))
-                conLog.Info(messages[0], new { trace = 134 });
-            WaitForOperationCanceled();
-
-            UpdateSettings(s => s.ConversionPattern = ConversionPattern.FromString("%l %x %p(trace) %m%n"));
-
-            using (new ContextualLogPrefix("prefix2"))
-            using (new ContextualLogPrefix("prefix2.2"))
-                conLog.Info(messages[1], new { trace = 134 });
-            WaitForOperationCanceled();
-
-            createdFiles.Add(settings.FilePath);
-
-            ReadAllLines(settings.FilePath).Should().BeEquivalentTo($"[prefix1] [prefix1.1] {messages[0]}", $"Info [prefix2] [prefix2.2] 134 {messages[1]}");
-        }
-
-        [Test]
-        public void FileLog_with_and_without_context()
-        {
-            var messages = new[] { "Hello, World 1", "Hello, World 2" };
-
-            UpdateSettings(s => s.ConversionPattern = ConversionPattern.FromString("%x %m%n"));
-
-            var conLog = new ContextualPrefixedILogWrapper(log);
-            using (new ContextualLogPrefix("prefix"))
-                conLog.Info(messages[0], new { trace = 134 });
-            WaitForOperationCanceled();
-
-            UpdateSettings(s => s.ConversionPattern = ConversionPattern.FromString("%l %x %p(trace) %m%n"));
-
-            conLog.Info(messages[1], new { trace = 134 });
-            WaitForOperationCanceled();
-
-            createdFiles.Add(settings.FilePath);
-            ReadAllLines(settings.FilePath).Should().BeEquivalentTo($"[prefix] {messages[0]}", $"Info 134 {messages[1]}");
         }
 
         [SetUp]
