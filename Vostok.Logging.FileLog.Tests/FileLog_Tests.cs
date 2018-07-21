@@ -7,7 +7,7 @@ using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.Core;
+using Vostok.Logging.FileLog.Configuration;
 
 namespace Vostok.Logging.FileLog.Tests
 {
@@ -94,7 +94,9 @@ namespace Vostok.Logging.FileLog.Tests
             log.Info(messages[0], new { trace = 134 });
             WaitForOperationCanceled();
 
-            UpdateSettings(s => s.ConversionPattern = ConversionPattern.FromString("%l %p(trace) %m%n"));
+            UpdateSettings(s => s.ConversionPattern = 
+                null // TODO(krait): ConversionPattern.FromString("%l %p(trace) %m%n")
+                );
 
             log.Info(messages[1], new { trace = 134 });
             WaitForOperationCanceled();
@@ -128,7 +130,7 @@ namespace Vostok.Logging.FileLog.Tests
             settings = new FileLogSettings
             {
                 FilePath = $"{Guid.NewGuid().ToString().Substring(0, 8)}.log",
-                ConversionPattern = ConversionPattern.FromString("%m%n"),
+                ConversionPattern = null, // TODO(krait): ConversionPattern.FromString("%m%n"),
                 EnableRolling = false,
                 AppendToFile = true,
                 Encoding = Encoding.UTF8
@@ -150,7 +152,7 @@ namespace Vostok.Logging.FileLog.Tests
         {
             FilePath = "temp",
             EnableRolling = false,
-            ConversionPattern = ConversionPattern.FromString(string.Empty)
+            ConversionPattern = null // TODO(krait): ConversionPattern.FromString(string.Empty)
         };
 
         private static void DeleteFile(string fileName)

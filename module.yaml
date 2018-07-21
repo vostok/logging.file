@@ -14,7 +14,7 @@ notests *default:
     - vostok.configuration@dev
     - vostok.configuration.abstractions@dev
 
-full-build > sdk:
+full-build > notests:
   build:
     target: Vostok.Logging.FileLog.sln
     configuration: Release

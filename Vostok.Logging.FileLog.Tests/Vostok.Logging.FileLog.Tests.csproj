@@ -24,6 +24,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\vostok.logging.core\Vostok.Logging.Core\bin\Release\netstandard2.0\Vostok.Logging.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Vostok.Configuration.Abstractions">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.configuration.abstractions\Vostok.Configuration.Abstractions\bin\Release\netstandard2.0\Vostok.Configuration.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

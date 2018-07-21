@@ -1,56 +1,43 @@
 ﻿using System;
 using System.IO;
 using Vostok.Configuration.Abstractions.Validation;
-using Vostok.Logging.Core;
 
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
 namespace Vostok.Logging.FileLog.Configuration
 {
-    internal class FileLogSettingsValidator : ILogSettingsValidator<FileLogSettings>, ISettingsValidator<FileLogSettings>
+    internal class FileLogSettingsValidator : ISettingsValidator<FileLogSettings>
     {
-        public SettingsValidationResult TryValidate(FileLogSettings settings)
+        public void Validate(FileLogSettings settings, ISettingsValidationErrors errors)
         {
-            if (settings?.Encoding == null)
-                return SettingsValidationResult.EncodingIsNull();
+            if (settings.Encoding == null)
+                errors.ReportError($"{nameof(settings.Encoding)} is not set.");
 
             if (settings.ConversionPattern == null)
-                return SettingsValidationResult.ConversionPatternIsNull();
+                errors.ReportError($"{nameof(settings.ConversionPattern)} is not set.");
 
             if (settings.EventsQueueCapacity <= 0)
-                return SettingsValidationResult.CapacityIsLessThanZero();
+                errors.ReportError($"{nameof(settings.Encoding)} is less than or equal to zero.");
 
-            return FilePathIsValid(settings.FilePath);
+            ValidateFilePath(settings, errors);
         }
 
-        public void Validate(FileLogSettings value, ISettingsValidationErrors errors)
+        private static void ValidateFilePath(FileLogSettings settings, ISettingsValidationErrors errors)
         {
-            var validationResult = TryValidate(value);
-            if (!validationResult.IsSuccessful)
+            if (string.IsNullOrWhiteSpace(settings.FilePath))
             {
-                errors.ReportError(validationResult.ToString());
+                errors.ReportError($"{nameof(settings.FilePath)} is null or empty.");
+                return;
             }
-        }
-
-        private static SettingsValidationResult FilePathIsValid(string filePath)
-        {
-            if (string.IsNullOrWhiteSpace(filePath))
-                return SettingsValidationResult.FilePathIsNullOrEmpty();
 
             try
             {
-                Path.GetFullPath(filePath);
+                Path.GetFullPath(settings.FilePath);
             }
-            catch (ArgumentException exception)
+            catch (Exception exception) when(exception is ArgumentException || exception is NotSupportedException)
             {
-                return SettingsValidationResult.FilePathIsNotCorrect(filePath, exception);
+                errors.ReportError($"{nameof(settings.FilePath)} has incorrect format.");
             }
-            catch (NotSupportedException exception)
-            {
-                return SettingsValidationResult.FilePathIsNotCorrect(filePath, exception);
-            }
-
-            return SettingsValidationResult.Success();
         }
     }
 }

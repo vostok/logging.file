@@ -17,7 +17,7 @@ namespace Vostok.Logging.FileLog
 
         private static readonly AtomicBoolean isInitialized;
 
-        private static IFileLogConfigProvider<FileLogSettings> configProvider;
+        private static FileLogConfigProvider<FileLogSettings> configProvider;
 
         private static LogEvent[] currentEventsBuffer;
         private static BoundedBuffer<LogEvent> eventsBuffer;
@@ -76,7 +76,7 @@ namespace Vostok.Logging.FileLog
                         }
                         catch (Exception exception)
                         {
-                            Core.Console.TryWriteLine(exception);
+                            SafeConsole.TryWriteLine(exception);
                             await Task.Delay(300.Milliseconds());
                         }
 
@@ -133,7 +133,7 @@ namespace Vostok.Logging.FileLog
             for (var i = 0; i < eventsCount; i++)
             {
                 var currentEvent = eventsToWrite[i];
-                writer.Write(settings.ConversionPattern.Format(currentEvent));
+                // TODO(krait): writer.Write(settings.ConversionPattern.Format(currentEvent));
             }
 
             writer.Flush();

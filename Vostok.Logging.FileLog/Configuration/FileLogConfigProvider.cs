@@ -6,12 +6,10 @@ using Vostok.Configuration.Binders;
 using Vostok.Configuration.Extensions;
 using Vostok.Configuration.Sources;
 using Vostok.Logging.Core;
-using Vostok.Logging.Core.Parsing;
-using Console = Vostok.Logging.Core.Console;
 
 namespace Vostok.Logging.FileLog.Configuration
 {
-    internal class FileLogConfigProvider<TSettings> : IFileLogConfigProvider<TSettings>
+    internal class FileLogConfigProvider<TSettings>
         where TSettings : new()
     {
         private const string configurationTagName = "configuration";
@@ -59,7 +57,7 @@ namespace Vostok.Logging.FileLog.Configuration
         private static ConfigurationProvider GetConfiguredConfigProvider()
         {
             var binder = new DefaultSettingsBinder()
-                .WithCustomParser<ConversionPattern>(ConversionPattern.TryParse)
+                // TODO(krait): .WithCustomParser<ConversionPattern>(ConversionPattern.TryParse)
                 .WithCustomParser<Encoding>(EncodingParser.TryParse);
 
             var configProviderSettings = new ConfigurationProviderSettings {Binder = binder, ErrorCallBack = ErrorCallback};
@@ -68,7 +66,7 @@ namespace Vostok.Logging.FileLog.Configuration
 
         private static void ErrorCallback(Exception exception)
         {
-            Console.TryWriteLine(exception);
+            SafeConsole.TryWriteLine(exception);
         }
     }
 }
