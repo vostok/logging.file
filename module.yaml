@@ -1,4 +1,4 @@
-sdk *default:
+notests *default:
   build:
     target: Vostok.Logging.FileLog.sln
     configuration: NoTests
