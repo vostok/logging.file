@@ -6,46 +6,46 @@ using Vostok.Configuration.Binders;
 using Vostok.Configuration.Extensions;
 using Vostok.Configuration.Sources;
 using Vostok.Logging.Core;
+using Vostok.Logging.Core.ConversionPattern;
 
 namespace Vostok.Logging.FileLog.Configuration
 {
-    internal class FileLogConfigProvider<TSettings>
-        where TSettings : new()
+    internal class FileLogConfigProvider
     {
         private const string configurationTagName = "configuration";
 
         private readonly IConfigurationProvider configProvider;
-        private readonly TSettings defaultSettings = new TSettings();
-
-        public FileLogConfigProvider(string fileName, string sectionName)
-            : this(new XmlFileSource(fileName).ScopeTo(configurationTagName, sectionName))
-        {
-        }
+        private readonly FileLogSettings defaultSettings = new FileLogSettings();
 
         public FileLogConfigProvider(string sectionName)
             : this(AppConfigFileName, sectionName)
         {
         }
 
-        public FileLogConfigProvider(TSettings settings)
+        public FileLogConfigProvider(FileLogSettings settings)
         {
             configProvider = GetConfiguredConfigProvider().SetManually(settings, true);
         }
 
-        private FileLogConfigProvider(IConfigurationSource settingsSource)
+        public FileLogConfigProvider(IConfigurationSource configSource)
         {
-            configProvider = GetConfiguredConfigProvider().SetupSourceFor<TSettings>(settingsSource);
+            configProvider = GetConfiguredConfigProvider().SetupSourceFor<FileLogSettings>(configSource);
         }
 
-        public TSettings Settings => TryGetSettings();
+        private FileLogConfigProvider(string fileName, string sectionName)
+            : this(new XmlFileSource(fileName).ScopeTo(configurationTagName, sectionName))
+        {
+        }
+
+        public FileLogSettings Settings => TryGetSettings();
 
         private static string AppConfigFileName => $"{AppDomain.CurrentDomain.FriendlyName}.config";
 
-        private TSettings TryGetSettings()
+        private FileLogSettings TryGetSettings()
         {
             try
             {
-                return configProvider.Get<TSettings>();
+                return configProvider.Get<FileLogSettings>();
             }
             catch (Exception exception)
             {
@@ -57,11 +57,17 @@ namespace Vostok.Logging.FileLog.Configuration
         private static ConfigurationProvider GetConfiguredConfigProvider()
         {
             var binder = new DefaultSettingsBinder()
-                // TODO(krait): .WithCustomParser<ConversionPattern>(ConversionPattern.TryParse)
+                .WithCustomParser<ConversionPattern>(TryParseConversionPattern)
                 .WithCustomParser<Encoding>(EncodingParser.TryParse);
 
             var configProviderSettings = new ConfigurationProviderSettings {Binder = binder, ErrorCallBack = ErrorCallback};
             return new ConfigurationProvider(configProviderSettings);
+        }
+
+        private static bool TryParseConversionPattern(string value, out ConversionPattern pattern)
+        {
+            pattern = ConversionPatternParser.Parse(value);
+            return true;
         }
 
         private static void ErrorCallback(Exception exception)

@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
+using Vostok.Logging.Core.ConversionPattern;
 using Vostok.Logging.FileLog.Configuration;
 
 namespace Vostok.Logging.FileLog.Tests
@@ -49,14 +51,14 @@ namespace Vostok.Logging.FileLog.Tests
         }
 
         [Test]
-        public void FileLog_should_rewrite_logfile_if_AppendToFile_was_enabled()
+        public void FileLog_should_rewrite_logfile_if_configured_so()
         {
             var messages = new[] { "Hello, World 1", "Hello, World 2" };
 
             log.Info(messages[0]);
             WaitForOperationCanceled();
 
-            UpdateSettings(s => s.AppendToFile = false);
+            UpdateSettings(s => s.FileOpenMode = FileOpenMode.Rewrite);
 
             log.Info(messages[1]);
             WaitForOperationCanceled();
@@ -67,14 +69,18 @@ namespace Vostok.Logging.FileLog.Tests
         }
 
         [Test]
-        public void FileLog_should_use_date_in_logfile_name_if_EnableRolling_was_enabled()
+        public void FileLog_should_use_date_in_logfile_name_for_ByTime_rolling_strategy()
         {
             var messages = new[] { "Hello, World 1", "Hello, World 2" };
 
             log.Info(messages[0]);
             WaitForOperationCanceled();
 
-            UpdateSettings(s => s.EnableRolling = true);
+            UpdateSettings(s => s.RollingStrategy = new FileLogSettings.RollingStrategyOptions
+            {
+                Type = RollingStrategyType.ByTime,
+                Period = 1.Days()
+            });
 
             log.Info(messages[1]);
             WaitForOperationCanceled();
@@ -94,9 +100,7 @@ namespace Vostok.Logging.FileLog.Tests
             log.Info(messages[0], new { trace = 134 });
             WaitForOperationCanceled();
 
-            UpdateSettings(s => s.ConversionPattern = 
-                null // TODO(krait): ConversionPattern.FromString("%l %p(trace) %m%n")
-                );
+            UpdateSettings(s => s.ConversionPattern = ConversionPatternParser.Parse("%l %p(trace) %m%n"));
 
             log.Info(messages[1], new { trace = 134 });
             WaitForOperationCanceled();
@@ -130,9 +134,7 @@ namespace Vostok.Logging.FileLog.Tests
             settings = new FileLogSettings
             {
                 FilePath = $"{Guid.NewGuid().ToString().Substring(0, 8)}.log",
-                ConversionPattern = null, // TODO(krait): ConversionPattern.FromString("%m%n"),
-                EnableRolling = false,
-                AppendToFile = true,
+                ConversionPattern = ConversionPatternParser.Parse("%m%n"),
                 Encoding = Encoding.UTF8
             };
 
@@ -151,8 +153,7 @@ namespace Vostok.Logging.FileLog.Tests
         private static FileLogSettings TempFileSettings => new FileLogSettings
         {
             FilePath = "temp",
-            EnableRolling = false,
-            ConversionPattern = null // TODO(krait): ConversionPattern.FromString(string.Empty)
+            ConversionPattern = ConversionPatternParser.Parse(string.Empty)
         };
 
         private static void DeleteFile(string fileName)
@@ -176,7 +177,7 @@ namespace Vostok.Logging.FileLog.Tests
         private void UpdateSettings(FileLogSettings settingsPatch)
         {
             settings = settingsPatch;
-            Logging.FileLog.FileLog.Configure(settings);
+            log = new FileLog(settingsPatch);
             WaitForOperationCanceled();
         }
 
@@ -186,10 +187,11 @@ namespace Vostok.Logging.FileLog.Tests
             {
                 FilePath = settings.FilePath,
                 ConversionPattern = settings.ConversionPattern,
-                EnableRolling = settings.EnableRolling,
-                AppendToFile = settings.AppendToFile,
+                RollingStrategy = settings.RollingStrategy,
+                FileOpenMode = settings.FileOpenMode,
                 Encoding = settings.Encoding,
-                EventsQueueCapacity = settings.EventsQueueCapacity
+                EventsQueueCapacity = settings.EventsQueueCapacity,
+                EnabledLogLevels = settings.EnabledLogLevels
             };
 
             settingsPatch(copy);
@@ -218,7 +220,7 @@ namespace Vostok.Logging.FileLog.Tests
 
         private FileLogSettings settings;
 
-        private readonly Logging.FileLog.FileLog log = new Logging.FileLog.FileLog();
+        private FileLog log;
         private readonly List<string> createdFiles = new List<string>(2);
     }
 }
