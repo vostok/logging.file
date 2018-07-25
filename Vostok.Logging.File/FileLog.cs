@@ -2,16 +2,16 @@
 using System.Linq;
 using Vostok.Configuration.Abstractions;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.FileLog
+namespace Vostok.Logging.File
 {
     public class FileLog : ILog
     {
-        private static readonly ConcurrentDictionary<IConfigurationSource, FileLogConfigProvider> providersBySource =
+        private static readonly ConcurrentDictionary<IConfigurationSource, FileLogConfigProvider> ProvidersBySource =
             new ConcurrentDictionary<IConfigurationSource, FileLogConfigProvider>();
 
-        private static readonly ConcurrentDictionary<string, FileLogConfigProvider> providersByName =
+        private static readonly ConcurrentDictionary<string, FileLogConfigProvider> ProvidersByName =
             new ConcurrentDictionary<string, FileLogConfigProvider>();
 
         private readonly FileLogConfigProvider configProvider;
@@ -19,10 +19,10 @@ namespace Vostok.Logging.FileLog
         public FileLog(FileLogSettings settings) => configProvider = new FileLogConfigProvider(settings);
 
         public FileLog(string name) =>
-            configProvider = providersByName.GetOrAdd(name, s => new FileLogConfigProvider(s));
+            configProvider = ProvidersByName.GetOrAdd(name, s => new FileLogConfigProvider(s));
 
         public FileLog(IConfigurationSource configSource) =>
-            configProvider = providersBySource.GetOrAdd(configSource, cs => new FileLogConfigProvider(cs));
+            configProvider = ProvidersBySource.GetOrAdd(configSource, cs => new FileLogConfigProvider(cs));
 
         public void Log(LogEvent @event)
         {

@@ -4,7 +4,7 @@ using Vostok.Configuration.Abstractions.Validation;
 
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
-namespace Vostok.Logging.FileLog.Configuration
+namespace Vostok.Logging.File.Configuration
 {
     internal class FileLogSettingsValidator : ISettingsValidator<FileLogSettings>
     {
@@ -34,7 +34,7 @@ namespace Vostok.Logging.FileLog.Configuration
             {
                 Path.GetFullPath(settings.FilePath);
             }
-            catch (Exception exception) when(exception is ArgumentException || exception is NotSupportedException)
+            catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
             {
                 errors.ReportError($"{nameof(settings.FilePath)} has incorrect format.");
             }

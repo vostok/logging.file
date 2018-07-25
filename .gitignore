@@ -287,3 +287,4 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 /._*.sln
+Vostok.Logging.File/Properties/AssemblyTitle.cs

@@ -4,7 +4,7 @@ using System.Text;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Vostok.Logging.FileLog.Tests
+namespace Vostok.Logging.File.Tests
 {
     [TestFixture]
     internal class InlineParsers_Tests

@@ -9,9 +9,9 @@ using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Core.ConversionPattern;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.FileLog.Tests
+namespace Vostok.Logging.File.Tests
 {
     [TestFixture]
     internal class FileLog_Tests
@@ -162,8 +162,8 @@ namespace Vostok.Logging.FileLog.Tests
             {
                 try
                 {
-                    if (File.Exists(fileName))
-                        File.Delete(fileName);
+                    if (System.IO.File.Exists(fileName))
+                        System.IO.File.Delete(fileName);
 
                     break;
                 }
@@ -211,7 +211,7 @@ namespace Vostok.Logging.FileLog.Tests
 
         private static IEnumerable<string> ReadAllLines(string fileName)
         {
-            using (var file = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var file = System.IO.File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(file))
             {
                 return reader.ReadToEnd().Split(Environment.NewLine.ToArray()).Where(s => !string.IsNullOrEmpty(s));

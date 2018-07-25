@@ -1,4 +1,4 @@
-﻿namespace Vostok.Logging.FileLog.Configuration
+﻿namespace Vostok.Logging.File.Configuration
 {
     public enum FileOpenMode
     {

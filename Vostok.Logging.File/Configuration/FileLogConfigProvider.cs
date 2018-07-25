@@ -8,11 +8,11 @@ using Vostok.Configuration.Sources;
 using Vostok.Logging.Core;
 using Vostok.Logging.Core.ConversionPattern;
 
-namespace Vostok.Logging.FileLog.Configuration
+namespace Vostok.Logging.File.Configuration
 {
     internal class FileLogConfigProvider
     {
-        private const string configurationTagName = "configuration";
+        private const string ConfigurationTagName = "configuration";
 
         private readonly IConfigurationProvider configProvider;
         private readonly FileLogSettings defaultSettings = new FileLogSettings();
@@ -33,7 +33,7 @@ namespace Vostok.Logging.FileLog.Configuration
         }
 
         private FileLogConfigProvider(string fileName, string sectionName)
-            : this(new XmlFileSource(fileName).ScopeTo(configurationTagName, sectionName))
+            : this(new XmlFileSource(fileName).ScopeTo(ConfigurationTagName, sectionName))
         {
         }
 
@@ -70,9 +70,7 @@ namespace Vostok.Logging.FileLog.Configuration
             return true;
         }
 
-        private static void ErrorCallback(Exception exception)
-        {
+        private static void ErrorCallback(Exception exception) =>
             SafeConsole.TryWriteLine(exception);
-        }
     }
 }

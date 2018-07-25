@@ -6,29 +6,27 @@ using Vostok.Commons.Synchronization;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Core;
 using Vostok.Logging.Core.ConversionPattern;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.FileLog
+namespace Vostok.Logging.File
 {
     internal static class FileLogMuxer
     {
-        private static readonly ConcurrentDictionary<FileLogConfigProvider, FileLogState> logStates =
+        private static readonly ConcurrentDictionary<FileLogConfigProvider, FileLogState> LogStates =
             new ConcurrentDictionary<FileLogConfigProvider, FileLogState>();
 
-        private static readonly AtomicBoolean isInitialized = new AtomicBoolean(false);
-
-        private static readonly ConversionPatternRenderer conversionPatternRenderer = new ConversionPatternRenderer();
+        private static readonly AtomicBoolean IsInitialized = new AtomicBoolean(false);
 
         public static void Log(FileLogConfigProvider provider, LogEvent @event)
         {
-            if (!isInitialized)
+            if (!IsInitialized)
                 Initialize();
 
             FileLogState state;
 
             do
             {
-                state = logStates.GetOrAdd(provider, s => new FileLogState(null, provider.Settings));
+                state = LogStates.GetOrAdd(provider, s => new FileLogState(null, provider.Settings));
             } while (state.IsClosedForWriting);
 
             state.Events.TryAdd(@event);
@@ -42,11 +40,11 @@ namespace Vostok.Logging.FileLog
                     while (true)
                     {
                         // TODO(krait): monitor new instances
-                        foreach (var pair in logStates)
+                        foreach (var pair in LogStates)
                             LogEventsForInstance(pair.Key, pair.Value);
 
-                        if (logStates.Select(pair => pair.Value).All(e => e.Events.Count == 0))
-                            await Task.WhenAny(logStates.Select(pair => pair.Value).Select(e => e.Events.WaitForNewItemsAsync()));
+                        if (LogStates.Select(pair => pair.Value).All(e => e.Events.Count == 0))
+                            await Task.WhenAny(LogStates.Select(pair => pair.Value).Select(e => e.Events.WaitForNewItemsAsync()));
                     }
                 });
         }
@@ -58,14 +56,14 @@ namespace Vostok.Logging.FileLog
             if (!ReferenceEquals(newSettings, state.Settings))
             {
                 state.IsClosedForWriting = true;
-                logStates[configProvider] = new FileLogState(state, newSettings);
+                LogStates[configProvider] = new FileLogState(state, newSettings);
             }
 
             var eventsCount = state.Events.Drain(state.TemporaryBuffer, 0, state.TemporaryBuffer.Length);
             for (var i = 0; i < eventsCount; i++)
             {
                 var currentEvent = state.TemporaryBuffer[i];
-                conversionPatternRenderer.Render(state.Settings.ConversionPattern, currentEvent, state.TextWriter);
+                ConversionPatternRenderer.Render(state.Settings.ConversionPattern, currentEvent, state.TextWriter);
             }
 
             state.TextWriter.Flush();
@@ -73,7 +71,7 @@ namespace Vostok.Logging.FileLog
 
         private static void Initialize()
         {
-            if (isInitialized.TrySetTrue())
+            if (IsInitialized.TrySetTrue())
                 StartLoggingTask();
         }
 
@@ -111,7 +109,7 @@ namespace Vostok.Logging.FileLog
             {
                 var fileMode = Settings.FileOpenMode == FileOpenMode.Rewrite ? FileMode.OpenOrCreate : FileMode.Append;
 
-                var stream = File.Open(Settings.FilePath, fileMode, FileAccess.Write, FileShare.Read);
+                var stream = System.IO.File.Open(Settings.FilePath, fileMode, FileAccess.Write, FileShare.Read);
                 return new StreamWriter(stream, Settings.Encoding);
             }
         }
