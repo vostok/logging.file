@@ -4,7 +4,7 @@ using Vostok.Commons.Conversions;
 using Vostok.Commons.ValueObjects;
 using Vostok.Configuration.Abstractions;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.Core.ConversionPattern;
+using Vostok.Logging.Core;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
@@ -15,7 +15,7 @@ namespace Vostok.Logging.FileLog.Configuration
     {
         public string FilePath { get; set; } = @"logs\log";
 
-        public ConversionPattern ConversionPattern { get; set; } = new ConversionPatternBuilder().Default().ToPattern();
+        public ConversionPattern ConversionPattern { get; set; } = ConversionPattern.Default;
 
         public FileOpenMode FileOpenMode { get; set; } = FileOpenMode.Append;
 

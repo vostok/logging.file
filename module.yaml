@@ -13,6 +13,7 @@ notests *default:
     - vostok.logging.core@dev
     - vostok.configuration@dev
     - vostok.configuration.abstractions@dev
+    - vostok.commons.collections
     - vostok.devtools
 
 full-build > notests:

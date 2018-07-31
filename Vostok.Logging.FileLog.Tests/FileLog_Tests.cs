@@ -8,7 +8,7 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.Core.ConversionPattern;
+using Vostok.Logging.Core;
 using Vostok.Logging.FileLog.Configuration;
 
 namespace Vostok.Logging.FileLog.Tests
@@ -100,7 +100,7 @@ namespace Vostok.Logging.FileLog.Tests
             log.Info(messages[0], new { trace = 134 });
             WaitForOperationCanceled();
 
-            UpdateSettings(s => s.ConversionPattern = ConversionPatternParser.Parse("%l %p(trace) %m%n"));
+            UpdateSettings(s => s.ConversionPattern = ConversionPattern.Parse("%l %p(trace) %m%n"));
 
             log.Info(messages[1], new { trace = 134 });
             WaitForOperationCanceled();
@@ -134,7 +134,7 @@ namespace Vostok.Logging.FileLog.Tests
             settings = new FileLogSettings
             {
                 FilePath = $"{Guid.NewGuid().ToString().Substring(0, 8)}.log",
-                ConversionPattern = ConversionPatternParser.Parse("%m%n"),
+                ConversionPattern = ConversionPattern.Parse("%m%n"),
                 Encoding = Encoding.UTF8
             };
 
@@ -153,7 +153,7 @@ namespace Vostok.Logging.FileLog.Tests
         private static FileLogSettings TempFileSettings => new FileLogSettings
         {
             FilePath = "temp",
-            ConversionPattern = ConversionPatternParser.Parse(string.Empty)
+            ConversionPattern = ConversionPattern.Parse(string.Empty)
         };
 
         private static void DeleteFile(string fileName)

@@ -6,7 +6,6 @@ using Vostok.Configuration.Binders;
 using Vostok.Configuration.Extensions;
 using Vostok.Configuration.Sources;
 using Vostok.Logging.Core;
-using Vostok.Logging.Core.ConversionPattern;
 
 namespace Vostok.Logging.FileLog.Configuration
 {
@@ -66,7 +65,7 @@ namespace Vostok.Logging.FileLog.Configuration
 
         private static bool TryParseConversionPattern(string value, out ConversionPattern pattern)
         {
-            pattern = ConversionPatternParser.Parse(value);
+            pattern = ConversionPattern.Parse(value);
             return true;
         }
 

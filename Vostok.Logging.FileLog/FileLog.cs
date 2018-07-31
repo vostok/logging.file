@@ -29,7 +29,7 @@ namespace Vostok.Logging.FileLog
             if (@event == null)
                 return;
 
-            FileLogMuxer.Log(configProvider, @event);
+            FileLogMuxer.Log(@event, configProvider.Settings, this);
         }
 
         public bool IsEnabledFor(LogLevel level) => configProvider.Settings.EnabledLogLevels.Contains(level);

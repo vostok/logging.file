@@ -1,35 +1,38 @@
 ﻿using System.Collections.Concurrent;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Vostok.Commons.Synchronization;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.Core;
-using Vostok.Logging.Core.ConversionPattern;
 using Vostok.Logging.FileLog.Configuration;
 
 namespace Vostok.Logging.FileLog
 {
     internal static class FileLogMuxer
     {
-        private static readonly ConcurrentDictionary<FileLogConfigProvider, FileLogState> LogStates =
-            new ConcurrentDictionary<FileLogConfigProvider, FileLogState>();
-
         private static readonly AtomicBoolean IsInitialized = new AtomicBoolean(false);
 
-        public static void Log(FileLogConfigProvider provider, LogEvent @event)
+        private static readonly ConcurrentDictionary<string, FileLogState> LogStatesByFile = new ConcurrentDictionary<string, FileLogState>();
+        private static readonly ConcurrentDictionary<string, FileLogSettings> LogSettingsByFile = new ConcurrentDictionary<string, FileLogSettings>();
+
+        private static readonly IEqualityComparer<FileLogSettings> SettingsComparer = new FileLogSettingsComparer();
+
+        public static void Log(LogEvent @event, FileLogSettings settings, FileLog instigator)
         {
             if (!IsInitialized)
                 Initialize();
 
-            FileLogState state;
+            var eventInfo = new LogEventInfo(@event, settings);
 
-            do
-            {
-                state = LogStates.GetOrAdd(provider, s => new FileLogState(null, provider.Settings));
-            } while (state.IsClosedForWriting);
+            var newState = new FileLogState(settings, instigator); // TODO(krait): wrap buffers with lazy
 
-            state.Events.TryAdd(@event);
+            var currentState = LogStatesByFile.GetOrAdd(settings.FilePath, newState);
+
+            if (ReferenceEquals(currentState.Owner, instigator))
+                LogSettingsByFile[settings.FilePath] = settings;
+
+            while (!currentState.TryAddEvent(eventInfo))
+                currentState = LogStatesByFile[settings.FilePath];
         }
 
         private static void StartLoggingTask()
@@ -39,79 +42,45 @@ namespace Vostok.Logging.FileLog
                 {
                     while (true)
                     {
-                        // TODO(krait): monitor new instances
-                        foreach (var pair in LogStates)
-                            LogEventsForInstance(pair.Key, pair.Value);
+                        foreach (var pair in LogStatesByFile)
+                            LogEvents(pair.Key);
 
-                        if (LogStates.Select(pair => pair.Value).All(e => e.Events.Count == 0))
-                            await Task.WhenAny(LogStates.Select(pair => pair.Value).Select(e => e.Events.WaitForNewItemsAsync()));
+                        if (LogStatesByFile.All(pair => pair.Value.Events.Count == 0)) // TODO(krait): unblock on new log state or settings change
+                            await Task.WhenAny(LogStatesByFile.Select(pair => pair.Value.Events.WaitForNewItemsAsync()));
                     }
                 });
         }
 
-        private static void LogEventsForInstance(FileLogConfigProvider configProvider, FileLogState state)
+        private static void LogEvents(string filePath)
         {
-            var newSettings = configProvider.Settings;
+            var newSettings = null as FileLogSettings;
+            while (!LogSettingsByFile.TryGetValue(filePath, out newSettings)) ;
 
-            if (!ReferenceEquals(newSettings, state.Settings))
+            var currentState = LogStatesByFile[filePath];
+            var stateWasUpdated = false;
+            if (!SettingsComparer.Equals(newSettings, currentState.Settings))
             {
-                state.IsClosedForWriting = true;
-                LogStates[configProvider] = new FileLogState(state, newSettings);
+                currentState.CloseForWriting();
+                LogStatesByFile[filePath] = new FileLogState(newSettings, currentState.Owner);
+                currentState.WaitForNoWriters();
+                stateWasUpdated = true;
             }
 
-            var eventsCount = state.Events.Drain(state.TemporaryBuffer, 0, state.TemporaryBuffer.Length);
-            for (var i = 0; i < eventsCount; i++)
+            int eventsCount;
+            do
             {
-                var currentEvent = state.TemporaryBuffer[i];
-                ConversionPatternRenderer.Render(state.Settings.ConversionPattern, currentEvent, state.TextWriter);
-            }
+                eventsCount = currentState.Events.Drain(currentState.TemporaryBuffer, 0, currentState.TemporaryBuffer.Length);
+                currentState.ObtainWriter().WriteEvents(currentState.TemporaryBuffer, eventsCount);
+            } while (eventsCount > 0 && stateWasUpdated);
 
-            state.TextWriter.Flush();
+            if (stateWasUpdated)
+                currentState.ObtainWriter().Dispose();
         }
 
         private static void Initialize()
         {
             if (IsInitialized.TrySetTrue())
                 StartLoggingTask();
-        }
-
-        private class FileLogState
-        {
-            public FileLogState(FileLogState oldState, FileLogSettings settings)
-            {
-                Settings = settings;
-
-                if (oldState?.Settings.EventsQueueCapacity == settings.EventsQueueCapacity)
-                {
-                    TemporaryBuffer = oldState.TemporaryBuffer;
-                    Events = oldState.Events;
-                }
-                else
-                {
-                    TemporaryBuffer = new LogEvent[settings.EventsQueueCapacity];
-                    Events = new BoundedBuffer<LogEvent>(settings.EventsQueueCapacity);
-                }
-
-                TextWriter = CreateFileWriter();
-            }
-
-            public FileLogSettings Settings { get; }
-
-            public LogEvent[] TemporaryBuffer { get; }
-
-            public BoundedBuffer<LogEvent> Events { get; }
-
-            public TextWriter TextWriter { get; }
-
-            public bool IsClosedForWriting { get; set; }
-
-            private TextWriter CreateFileWriter() // TODO(krait): use RollingStrategy
-            {
-                var fileMode = Settings.FileOpenMode == FileOpenMode.Rewrite ? FileMode.OpenOrCreate : FileMode.Append;
-
-                var stream = System.IO.File.Open(Settings.FilePath, fileMode, FileAccess.Write, FileShare.Read);
-                return new StreamWriter(stream, Settings.Encoding);
-            }
         }
     }
 }
