@@ -5,7 +5,7 @@ using Vostok.Configuration.Abstractions;
 using Vostok.Configuration.Binders;
 using Vostok.Configuration.Extensions;
 using Vostok.Configuration.Sources;
-using Vostok.Logging.Core;
+using Vostok.Logging.Formatting;
 
 namespace Vostok.Logging.FileLog.Configuration
 {
@@ -56,16 +56,16 @@ namespace Vostok.Logging.FileLog.Configuration
         private static ConfigurationProvider GetConfiguredConfigProvider()
         {
             var binder = new DefaultSettingsBinder()
-                .WithCustomParser<ConversionPattern>(TryParseConversionPattern)
+                .WithCustomParser<OutputTemplate>(TryParseOutputTemplate)
                 .WithCustomParser<Encoding>(EncodingParser.TryParse);
 
             var configProviderSettings = new ConfigurationProviderSettings {Binder = binder, ErrorCallBack = ErrorCallback};
             return new ConfigurationProvider(configProviderSettings);
         }
 
-        private static bool TryParseConversionPattern(string value, out ConversionPattern pattern)
+        private static bool TryParseOutputTemplate(string value, out OutputTemplate template)
         {
-            pattern = ConversionPattern.Parse(value);
+            template = OutputTemplate.Parse(value);
             return true;
         }
 

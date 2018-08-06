@@ -9,8 +9,9 @@ notests *default:
     - Vostok.Logging.FileLog/bin/Release/netstandard2.0/Vostok.Logging.FileLog.dll
 
   deps:
-    - vostok.logging.abstractions@dev
-    - vostok.logging.core@dev
+    - vostok.commons.primitives
+    - vostok.logging.formatting
+    - vostok.logging.abstractions
     - vostok.configuration@dev
     - vostok.configuration.abstractions@dev
     - vostok.commons.collections

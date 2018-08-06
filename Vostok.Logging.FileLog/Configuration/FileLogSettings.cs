@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Text;
-using Vostok.Commons.Conversions;
-using Vostok.Commons.ValueObjects;
+using Vostok.Commons.Primitives;
 using Vostok.Configuration.Abstractions;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.Core;
+using Vostok.Logging.Formatting;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
@@ -15,7 +14,7 @@ namespace Vostok.Logging.FileLog.Configuration
     {
         public string FilePath { get; set; } = @"logs\log";
 
-        public ConversionPattern ConversionPattern { get; set; } = ConversionPattern.Default;
+        public OutputTemplate OutputTemplate { get; set; } = OutputTemplate.Default;
 
         public FileOpenMode FileOpenMode { get; set; } = FileOpenMode.Append;
 
@@ -32,9 +31,9 @@ namespace Vostok.Logging.FileLog.Configuration
             public int MaxFiles = 5;
             public RollingStrategyType Type { get; set; } = RollingStrategyType.None;
 
-            public TimeSpan Period { get; set; } = 1.Days();
+            public TimeSpan Period { get; set; } = TimeSpan.FromDays(1);
 
-            public DataSize MaxSize { get; set; } = 100.Megabytes();
+            public DataSize MaxSize { get; set; } = DataSize.FromMegabytes(100);
         }
     }
 }

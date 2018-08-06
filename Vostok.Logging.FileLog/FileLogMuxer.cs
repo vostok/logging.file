@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Vostok.Commons.Synchronization;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.FileLog.Configuration;
 
@@ -10,7 +9,7 @@ namespace Vostok.Logging.FileLog
 {
     internal static class FileLogMuxer
     {
-        private static readonly AtomicBoolean IsInitialized = new AtomicBoolean(false);
+        private static readonly bool IsInitialized; // TODO(krait): double-checked locking
 
         private static readonly ConcurrentDictionary<string, FileLogState> LogStatesByFile = new ConcurrentDictionary<string, FileLogState>();
         private static readonly ConcurrentDictionary<string, FileLogSettings> LogSettingsByFile = new ConcurrentDictionary<string, FileLogSettings>();
@@ -79,8 +78,7 @@ namespace Vostok.Logging.FileLog
 
         private static void Initialize()
         {
-            if (IsInitialized.TrySetTrue())
-                StartLoggingTask();
+            StartLoggingTask();
         }
     }
 }

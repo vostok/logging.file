@@ -23,9 +23,9 @@ namespace Vostok.Logging.FileLog.Tests
         [Test]
         public void FileLogSettings_with_null_ConversionPattern_should_not_be_valid()
         {
-            settings.ConversionPattern = null;
+            settings.OutputTemplate = null;
 
-            errorMessages.Single().Should().Contain(nameof(settings.ConversionPattern));
+            errorMessages.Single().Should().Contain(nameof(settings.OutputTemplate));
         }
 
         [Test]
@@ -63,7 +63,7 @@ namespace Vostok.Logging.FileLog.Tests
         [Test]
         public void FileLogSettingsValidator_should_detect_multiple_errors()
         {
-            settings.ConversionPattern = null;
+            settings.OutputTemplate = null;
             settings.Encoding = null;
 
             errorMessages.Should().HaveCount(2);

@@ -13,8 +13,8 @@ namespace Vostok.Logging.FileLog.Configuration
             if (settings.Encoding == null)
                 errors.ReportError($"{nameof(settings.Encoding)} is not set.");
 
-            if (settings.ConversionPattern == null)
-                errors.ReportError($"{nameof(settings.ConversionPattern)} is not set.");
+            if (settings.OutputTemplate == null)
+                errors.ReportError($"{nameof(settings.OutputTemplate)} is not set.");
 
             if (settings.EventsQueueCapacity <= 0)
                 errors.ReportError($"{nameof(settings.Encoding)} is less than or equal to zero.");

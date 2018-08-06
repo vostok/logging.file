@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using Vostok.Configuration.Abstractions;
-using Vostok.Logging.Core;
+using Vostok.Logging.Formatting;
 
 namespace Vostok.Logging.FileLog
 {
@@ -20,7 +20,9 @@ namespace Vostok.Logging.FileLog
             {
                 try
                 {
-                    events[i].Settings.ConversionPattern.Render(events[i].Event, writer);
+                    var template = events[i].Settings.OutputTemplate;
+
+                    LogEventFormatter.Format(events[i].Event, writer, template);
                 }
                 catch
                 {

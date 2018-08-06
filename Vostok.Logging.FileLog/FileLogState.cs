@@ -17,7 +17,7 @@ namespace Vostok.Logging.FileLog
             Owner = owner;
 
             TemporaryBuffer = new LogEventInfo[settings.EventsQueueCapacity];
-            Events = new BoundedBuffer<LogEventInfo>(settings.EventsQueueCapacity);
+            Events = new ConcurrentBoundedQueue<LogEventInfo>(settings.EventsQueueCapacity);
         }
 
         public FileLogSettings Settings { get; }
@@ -25,7 +25,7 @@ namespace Vostok.Logging.FileLog
 
         public LogEventInfo[] TemporaryBuffer { get; }
 
-        public BoundedBuffer<LogEventInfo> Events { get; }
+        public ConcurrentBoundedQueue<LogEventInfo> Events { get; }
 
         public EventsWriter ObtainWriter()
         {
