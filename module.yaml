@@ -12,7 +12,7 @@ notests *default:
     - vostok.commons.primitives
     - vostok.logging.formatting
     - vostok.logging.abstractions
-    - vostok.configuration@dev
+    - vostok.configuration
     - vostok.configuration.abstractions
     - vostok.commons.collections/src
     - vostok.devtools
