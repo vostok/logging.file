@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Vostok.Logging.FileLog
+namespace Vostok.Logging.File
 {
     internal static class SafeConsole
     {

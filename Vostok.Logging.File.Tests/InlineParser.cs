@@ -1,4 +1,4 @@
-﻿namespace Vostok.Logging.FileLog.Tests
+﻿namespace Vostok.Logging.File.Tests
 {
     internal delegate bool TryParseDelegate<T>(string value, out T result);
 

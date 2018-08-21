@@ -1,12 +1,12 @@
 notests *default:
   build:
-    target: Vostok.Logging.FileLog.sln
+    target: Vostok.Logging.File.sln
     configuration: NoTests
     tool:
       name: dotnet
 
   install:
-    - Vostok.Logging.FileLog/bin/Release/netstandard2.0/Vostok.Logging.FileLog.dll
+    - Vostok.Logging.File/bin/Release/netstandard2.0/Vostok.Logging.File.dll
 
   deps:
     - vostok.commons.primitives
@@ -19,5 +19,5 @@ notests *default:
 
 full-build > notests:
   build:
-    target: Vostok.Logging.FileLog.sln
+    target: Vostok.Logging.File.sln
     configuration: Release

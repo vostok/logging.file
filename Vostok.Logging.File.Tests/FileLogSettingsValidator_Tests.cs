@@ -5,9 +5,9 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Configuration.Abstractions.Validation;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.FileLog.Tests
+namespace Vostok.Logging.File.Tests
 {
     [TestFixture]
     internal class FileLogSettingsValidator_Tests

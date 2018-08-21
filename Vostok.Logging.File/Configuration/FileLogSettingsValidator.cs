@@ -4,7 +4,7 @@ using Vostok.Configuration.Abstractions.Validation;
 
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
-namespace Vostok.Logging.FileLog.Configuration
+namespace Vostok.Logging.File.Configuration
 {
     internal class FileLogSettingsValidator : ISettingsValidator<FileLogSettings>
     {

@@ -2,9 +2,9 @@
 using System.Linq;
 using Vostok.Configuration.Abstractions;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.FileLog
+namespace Vostok.Logging.File
 {
     public class FileLog : ILog
     {

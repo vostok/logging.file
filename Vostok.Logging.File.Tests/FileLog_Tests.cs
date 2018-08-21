@@ -8,10 +8,10 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 using Vostok.Logging.Formatting;
 
-namespace Vostok.Logging.FileLog.Tests
+namespace Vostok.Logging.File.Tests
 {
     [TestFixture]
     internal class FileLog_Tests

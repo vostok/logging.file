@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.FileLog
+namespace Vostok.Logging.File
 {
     internal class FileLogSettingsComparer : IEqualityComparer<FileLogSettings>
     {

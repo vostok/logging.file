@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using Vostok.Configuration.Abstractions;
 using Vostok.Logging.Formatting;
 
-namespace Vostok.Logging.FileLog
+namespace Vostok.Logging.File
 {
     internal class EventsWriter : IDisposable
     {

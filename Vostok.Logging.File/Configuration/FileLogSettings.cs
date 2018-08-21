@@ -7,7 +7,7 @@ using Vostok.Logging.Formatting;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
-namespace Vostok.Logging.FileLog.Configuration
+namespace Vostok.Logging.File.Configuration
 {
     [ValidateBy(typeof (FileLogSettingsValidator))] // TODO(krait): update validator
     public class FileLogSettings

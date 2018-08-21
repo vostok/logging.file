@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Threading;
 using Vostok.Commons.Collections;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.FileLog
+namespace Vostok.Logging.File
 {
     internal class FileLogState
     {

@@ -7,7 +7,7 @@ using Vostok.Configuration.Extensions;
 using Vostok.Configuration.Sources;
 using Vostok.Logging.Formatting;
 
-namespace Vostok.Logging.FileLog.Configuration
+namespace Vostok.Logging.File.Configuration
 {
     internal class FileLogConfigProvider
     {

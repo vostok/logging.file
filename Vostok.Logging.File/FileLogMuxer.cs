@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.FileLog.Configuration;
+using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.FileLog
+namespace Vostok.Logging.File
 {
     internal static class FileLogMuxer
     {

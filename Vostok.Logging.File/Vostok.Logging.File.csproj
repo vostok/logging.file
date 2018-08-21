@@ -29,6 +29,8 @@
     <PackageLicenseUrl>https://github.com/vostok/logging.file/blob/master/LICENSE</PackageLicenseUrl>
     <PackageTags>vostok vostok.logging</PackageTags>
     <RepositoryUrl>https://github.com/vostok/logging.file</RepositoryUrl>
+    <AssemblyName>Vostok.Logging.File</AssemblyName>
+    <RootNamespace>Vostok.Logging.File</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
