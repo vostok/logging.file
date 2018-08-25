@@ -1,84 +1,124 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
+using Waiter = System.Threading.Tasks.TaskCompletionSource<bool>;
 
 namespace Vostok.Logging.File
 {
-    internal static class FileLogMuxer
+    internal class FileLogMuxer : IFileLogMuxer
     {
-        private static readonly bool IsInitialized; // TODO(krait): double-checked locking
+        private static readonly TimeSpan NewEventsTimeout = TimeSpan.FromSeconds(1);
 
-        private static readonly ConcurrentDictionary<string, FileLogState> LogStatesByFile = new ConcurrentDictionary<string, FileLogState>();
-        private static readonly ConcurrentDictionary<string, FileLogSettings> LogSettingsByFile = new ConcurrentDictionary<string, FileLogSettings>();
+        private readonly AsyncManualResetEvent flushSignal = new AsyncManualResetEvent(true);
+        private readonly List<Waiter> flushWaiters = new List<Waiter>();
+        private readonly object initLock = new object();
 
-        private static readonly IEqualityComparer<FileLogSettings> SettingsComparer = new FileLogSettingsComparer();
+        private readonly LogEventInfo[] temporaryBuffer;
+        private readonly ConcurrentDictionary<string, LogState> statesByFile = new ConcurrentDictionary<string, LogState>();
 
-        public static void Log(LogEvent @event, FileLogSettings settings, FileLog instigator)
+        private bool isInitialized;
+
+        public FileLogMuxer(int temporaryBufferCapacity) => 
+            temporaryBuffer = new LogEventInfo[temporaryBufferCapacity];
+
+        public long EventsLost => statesByFile.Sum(pair => pair.Value.EventsLost);
+
+        public bool TryLog(LogEvent @event, FileLogSettings settings, FileLog instigator)
         {
-            if (!IsInitialized)
+            if (!isInitialized)
                 Initialize();
 
             var eventInfo = new LogEventInfo(@event, settings);
+            var newState = new LogState(instigator, settings); // TODO(krait): lazy
+            var state = statesByFile.GetOrAdd(settings.FilePath, newState);
 
-            var newState = new FileLogState(settings, instigator); // TODO(krait): wrap buffers with lazy
+            if (!state.TryAdd(eventInfo, settings, instigator))
+                return false;
 
-            var currentState = LogStatesByFile.GetOrAdd(settings.FilePath, newState);
+            if (state != newState)
+                flushSignal.Set();
 
-            if (ReferenceEquals(currentState.Owner, instigator))
-                LogSettingsByFile[settings.FilePath] = settings;
-
-            while (!currentState.TryAddEvent(eventInfo))
-                currentState = LogStatesByFile[settings.FilePath];
+            return true;
         }
 
-        private static void StartLoggingTask()
+        // TODO(krait): flush by file?
+        public Task FlushAsync()
+        {
+            var waiter = new Waiter();
+
+            lock (flushWaiters)
+                flushWaiters.Add(waiter);
+
+            flushSignal.Set();
+
+            return waiter.Task;
+        }
+
+        public void Close(FileLogSettings settings)
+        {
+            if (!statesByFile.TryGetValue(settings.FilePath, out var state))
+                return;
+
+            state.Close();
+        }
+
+        private void StartLoggingTask()
         {
             Task.Run(
                 async () =>
                 {
                     while (true)
                     {
-                        foreach (var pair in LogStatesByFile)
-                            LogEvents(pair.Key);
+                        try
+                        {
+                            List<Waiter> currentWaiters;
+                            lock (flushWaiters)
+                            {
+                                flushWaiters.RemoveAll(w => w.Task.IsCompleted);
+                                currentWaiters = flushWaiters.ToList();
+                            }
 
-                        if (LogStatesByFile.All(pair => pair.Value.Events.Count == 0)) // TODO(krait): unblock on new log state or settings change
-                            await Task.WhenAny(LogStatesByFile.Select(pair => pair.Value.Events.WaitForNewItemsAsync()));
+                            LogEvents();
+
+                            foreach (var waiter in currentWaiters)
+                            {
+                                waiter.TrySetResult(true);
+                            }
+
+                            var waitTasks = statesByFile.Select(pair => pair.Value.TryWaitForNewItemsAsync(NewEventsTimeout));
+                            await Task.WhenAny(waitTasks.Concat(flushSignal.WaitAsync()));
+                            flushSignal.Reset();
+                        }
+                        catch (Exception error)
+                        {
+                            SafeConsole.TryWriteLine(error);
+                            await Task.Delay(100);
+                        }
                     }
                 });
         }
 
-        private static void LogEvents(string filePath)
+        private void LogEvents()
         {
-            var newSettings = null as FileLogSettings;
-            while (!LogSettingsByFile.TryGetValue(filePath, out newSettings)) ;
-
-            var currentState = LogStatesByFile[filePath];
-            var stateWasUpdated = false;
-            if (!SettingsComparer.Equals(newSettings, currentState.Settings))
+            foreach (var pair in statesByFile)
             {
-                currentState.CloseForWriting();
-                LogStatesByFile[filePath] = new FileLogState(newSettings, currentState.Owner);
-                currentState.WaitForNoWriters();
-                stateWasUpdated = true;
+                pair.Value.WriteEvents(temporaryBuffer);
             }
-
-            int eventsCount;
-            do
-            {
-                eventsCount = currentState.Events.Drain(currentState.TemporaryBuffer, 0, currentState.TemporaryBuffer.Length);
-                currentState.ObtainWriter().WriteEvents(currentState.TemporaryBuffer, eventsCount);
-            } while (eventsCount > 0 && stateWasUpdated);
-
-            if (stateWasUpdated)
-                currentState.ObtainWriter().Dispose();
         }
 
-        private static void Initialize()
+        private void Initialize()
         {
-            StartLoggingTask();
+            lock (initLock)
+                if (!isInitialized)
+                {
+                    StartLoggingTask();
+                    isInitialized = true;
+                }
         }
     }
 }

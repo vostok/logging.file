@@ -4,6 +4,8 @@ namespace Vostok.Logging.File
 {
     internal static class SafeConsole
     {
+        public static bool ConsoleExists => Environment.UserInteractive && Console.Title.Length > 0;
+
         public static void TryWriteLine(string message)
         {
             try
@@ -16,8 +18,7 @@ namespace Vostok.Logging.File
             }
         }
 
-        public static void TryWriteLine(object obj) =>
-            TryWriteLine(obj?.ToString());
+        public static void TryWriteLine(object obj) => TryWriteLine(obj?.ToString());
 
         public static void TryWrite(string message)
         {
@@ -31,9 +32,6 @@ namespace Vostok.Logging.File
             }
         }
 
-        public static void TryWrite(object obj) =>
-            TryWrite(obj?.ToString());
-
-        public static bool ConsoleExists => Environment.UserInteractive && Console.Title.Length > 0;
+        public static void TryWrite(object obj) => TryWrite(obj?.ToString());
     }
 }

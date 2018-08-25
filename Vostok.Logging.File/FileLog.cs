@@ -1,39 +1,50 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
 using System.Linq;
-using Vostok.Configuration.Abstractions;
+using System.Threading;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
 
 namespace Vostok.Logging.File
 {
+    [PublicAPI]
     public class FileLog : ILog
     {
-        private static readonly ConcurrentDictionary<IConfigurationSource, FileLogConfigProvider> ProvidersBySource =
-            new ConcurrentDictionary<IConfigurationSource, FileLogConfigProvider>();
+        private static readonly FileLogMuxerProvider DefaultMuxerProvider = new FileLogMuxerProvider();
 
-        private static readonly ConcurrentDictionary<string, FileLogConfigProvider> ProvidersByName =
-            new ConcurrentDictionary<string, FileLogConfigProvider>();
+        private readonly FileLogMuxerProvider muxerProvider;
+        private readonly SafeSettingsProvider settingsProvider;
+        private long eventsLost;
 
-        private readonly FileLogConfigProvider configProvider;
+        public FileLog(FileLogSettings settings)
+            : this(() => settings)
+        {
+        }
 
-        public FileLog(FileLogSettings settings) => configProvider = new FileLogConfigProvider(settings);
+        public FileLog(Func<FileLogSettings> settingsProvider) =>
+            this.settingsProvider = new SafeSettingsProvider(() => SettingsValidator.ValidateSettings(settingsProvider()));
 
-        public FileLog(string name) =>
-            configProvider = ProvidersByName.GetOrAdd(name, s => new FileLogConfigProvider(s));
-
-        public FileLog(IConfigurationSource configSource) =>
-            configProvider = ProvidersBySource.GetOrAdd(configSource, cs => new FileLogConfigProvider(cs));
+        public long EventsLost => Interlocked.Read(ref eventsLost);
 
         public void Log(LogEvent @event)
         {
             if (@event == null)
                 return;
 
-            FileLogMuxer.Log(@event, configProvider.Settings, this);
+            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, settingsProvider.Get(), this))
+                Interlocked.Increment(ref eventsLost);
         }
 
-        public bool IsEnabledFor(LogLevel level) => configProvider.Settings.EnabledLogLevels.Contains(level);
+        public bool IsEnabledFor(LogLevel level) => settingsProvider.Get().EnabledLogLevels.Contains(level);
 
+        // TODO(krait): implement same as in ConsoleLog
         public ILog ForContext(string context) => this;
+
+        public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync();
+
+        public void Flush() => FlushAsync().GetAwaiter().GetResult();
+
+        public void Close() => DefaultMuxerProvider.ObtainMuxer().Close(settingsProvider.Get());
     }
 }

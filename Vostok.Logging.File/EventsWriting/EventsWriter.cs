@@ -1,17 +1,13 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Vostok.Logging.Formatting;
 
-namespace Vostok.Logging.File
+namespace Vostok.Logging.File.EventsWriting
 {
-    internal class EventsWriter : IDisposable
+    internal class EventsWriter : IEventsWriter
     {
         private readonly TextWriter writer;
 
-        public EventsWriter(TextWriter writer)
-        {
-            this.writer = writer;
-        }
+        public EventsWriter(TextWriter writer) => this.writer = writer;
 
         public void WriteEvents(LogEventInfo[] events, int eventsCount)
         {
@@ -31,7 +27,7 @@ namespace Vostok.Logging.File
 
             writer.Flush();
         }
-        
+
         public void Dispose() => writer?.Dispose();
     }
 }
