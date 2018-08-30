@@ -37,7 +37,7 @@ namespace Vostok.Logging.File
             var newMuxer = new SingleFileMuxer(instigator, settings); // TODO(krait): lazy
             var muxer = muxersByFile.GetOrAdd(settings.FilePath, newMuxer);
 
-            if (!muxer.TryAdd(eventInfo, settings, instigator))
+            if (!muxer.TryAdd(eventInfo, instigator))
                 return false;
 
             if (muxer != newMuxer)

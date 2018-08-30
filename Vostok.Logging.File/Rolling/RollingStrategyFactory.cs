@@ -1,50 +1,55 @@
 ﻿using System;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Rolling.Strategies;
+using Vostok.Logging.File.Rolling.SuffixFormatters;
 
 namespace Vostok.Logging.File.Rolling
 {
     internal class RollingStrategyFactory
     {
-        public IRollingStrategy CreateStrategy(RollingStrategyType type, Func<FileLogSettings> settingsProvider)
+        public IRollingStrategy CreateStrategy(string basePath, RollingStrategyType type, Func<FileLogSettings> settingsProvider)
         {
             var fileSystem = new FileSystem();
+            var fileNameTuner = new FileNameTuner(basePath);
 
             switch (type)
             {
                 case RollingStrategyType.None:
                     return new DisabledRollingStrategy(fileSystem);
                 case RollingStrategyType.ByTime:
-                    return CreateTimeBasedStrategy(settingsProvider, fileSystem);
+                    return CreateTimeBasedStrategy(settingsProvider, fileSystem, fileNameTuner);
                 case RollingStrategyType.BySize:
-                    return CreateSizeBasedStrategy(settingsProvider, fileSystem);
+                    return CreateSizeBasedStrategy(settingsProvider, fileSystem, fileNameTuner);
                 case RollingStrategyType.Hybrid:
-                    return CreateHybridStrategy(settingsProvider, fileSystem);
+                    return CreateHybridStrategy(settingsProvider, fileSystem, fileNameTuner);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type));
             }
         }
 
-        private static IRollingStrategy CreateTimeBasedStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem)
+        private static IRollingStrategy CreateTimeBasedStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem, IFileNameTuner fileNameTuner, TimeBasedSuffixFormatter suffixFormatter = null)
         {
-            var suffixFormatter = new TimeBasedSuffixFormatter(() => settingsProvider().RollingStrategy.Period);
+            suffixFormatter = suffixFormatter ?? new TimeBasedSuffixFormatter(() => settingsProvider().RollingStrategy.Period);
 
-            return new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => DateTime.Now);
+            return new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => DateTime.Now, fileNameTuner);
         }
 
-        private static IRollingStrategy CreateSizeBasedStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem)
+        private static IRollingStrategy CreateSizeBasedStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem, IFileNameTuner fileNameTuner, SizeBasedSuffixFormatter suffixFormatter = null)
         {
-            var suffixFormatter = new SizeBasedSuffixFormatter();
+            suffixFormatter = suffixFormatter ?? new SizeBasedSuffixFormatter();
 
-            return new SizeBasedRollingStrategy(fileSystem, suffixFormatter, new SizeBasedRoller(fileSystem, () => settingsProvider().RollingStrategy.MaxSize));
+            return new SizeBasedRollingStrategy(fileSystem, suffixFormatter, new SizeBasedRoller(fileSystem, () => settingsProvider().RollingStrategy.MaxSize), fileNameTuner);
         }
 
-        private static IRollingStrategy CreateHybridStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem)
+        private static IRollingStrategy CreateHybridStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem, IFileNameTuner fileNameTuner)
         {
-            var sizeSuffixFormatter = new SizeBasedSuffixFormatter();
             var timeSuffixFormatter = new TimeBasedSuffixFormatter(() => settingsProvider().RollingStrategy.Period);
+            var sizeSuffixFormatter = new SizeBasedSuffixFormatter();
+            var timeStrategy = CreateTimeBasedStrategy(settingsProvider, fileSystem, fileNameTuner, timeSuffixFormatter);
+            var sizeStrategy = CreateSizeBasedStrategy(settingsProvider, fileSystem, fileNameTuner, sizeSuffixFormatter);
+            var suffixFormatter = new HybridSuffixFormatter(timeSuffixFormatter, sizeSuffixFormatter);
 
-            return new HybridRollingStrategy(fileSystem, timeSuffixFormatter, sizeSuffixFormatter, () => DateTime.Now, new SizeBasedRoller(fileSystem, () => settingsProvider().RollingStrategy.MaxSize));
+            return new HybridRollingStrategy(fileSystem, timeStrategy, sizeStrategy, suffixFormatter, fileNameTuner);
         }
     }
 }

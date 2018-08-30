@@ -3,6 +3,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.File.Rolling;
 using Vostok.Logging.File.Rolling.Strategies;
+using Vostok.Logging.File.Rolling.SuffixFormatters;
 
 namespace Vostok.Logging.File.Tests
 {
@@ -24,7 +25,11 @@ namespace Vostok.Logging.File.Tests
 
             var roller = Substitute.For<ISizeBasedRoller>();
 
-            strategy = new SizeBasedRollingStrategy(fileSystem, suffixFormatter, roller);
+            var fileNameTuner = Substitute.For<IFileNameTuner>();
+            fileNameTuner.RemoveExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
+            fileNameTuner.RestoreExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
+
+            strategy = new SizeBasedRollingStrategy(fileSystem, suffixFormatter, roller, fileNameTuner);
         }
 
         [Test]

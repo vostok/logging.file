@@ -1,4 +1,4 @@
-﻿namespace Vostok.Logging.File.Rolling
+﻿namespace Vostok.Logging.File.Rolling.SuffixFormatters
 {
     internal interface IFileSuffixFormatter<TSuffix> where TSuffix : struct
     {

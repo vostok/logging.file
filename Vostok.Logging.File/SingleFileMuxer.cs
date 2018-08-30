@@ -32,7 +32,7 @@ namespace Vostok.Logging.File
             var fileSystem = new FileSystem();
             writerProvider = new EventsWriterProvider(
                 settings.FilePath,
-                RollingStrategyFactory.CreateStrategy(settings.RollingStrategy.Type, () => settings),
+                RollingStrategyFactory.CreateStrategy(settings.FilePath, settings.RollingStrategy.Type, () => settings),
                 fileSystem,
                 new RollingGarbageCollector(fileSystem, () => settings.RollingStrategy.MaxFiles),
                 () => settings);
@@ -40,11 +40,11 @@ namespace Vostok.Logging.File
 
         public long EventsLost => Interlocked.Read(ref eventsLost);
 
-        public bool TryAdd(LogEventInfo info, FileLogSettings settings, FileLog instigator)
+        public bool TryAdd(LogEventInfo info, FileLog instigator)
         {
-            if (instigator == owner && settings != this.settings)
+            if (instigator == owner && info.Settings != settings)
             {
-                this.settings = settings;
+                settings = info.Settings;
             }
 
             if (events.TryAdd(info))

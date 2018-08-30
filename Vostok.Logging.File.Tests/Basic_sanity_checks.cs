@@ -141,6 +141,44 @@ namespace Vostok.Logging.File.Tests
         }
 
         [Test]
+        public void Should_roll_by_size_with_extension()
+        {
+            using (var folder = new TemporaryFolder())
+            {
+                var logName = folder.GetFileName("log.txt");
+
+                var log = new FileLog(new FileLogSettings
+                {
+                    FilePath = logName,
+                    RollingStrategy = new RollingStrategyOptions
+                    {
+                        Type = RollingStrategyType.BySize,
+                        MaxSize = 1024
+                    }
+                });
+
+                for (int i = 0; i < 100; i++)
+                {
+                    log.Info("Hello, world!");
+                    Thread.Sleep(10);
+                }
+
+                log.Flush();
+                log.Close();
+
+                var files = new FileSystem().GetFilesByPrefix(logName.Substring(0, logName.Length - 4));
+                files.Length.Should().Be(5);
+
+                foreach (var file in files)
+                {
+                    Console.WriteLine($"{file}: {new FileInfo(file).Length}");
+                }
+
+                Console.WriteLine(System.IO.File.ReadAllText(files.Last()));
+            }
+        }
+
+        [Test]
         public void Should_roll_by_time()
         {
             using (var folder = new TemporaryFolder())

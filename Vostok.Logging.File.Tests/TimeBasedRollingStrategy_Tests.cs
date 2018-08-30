@@ -3,6 +3,8 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.File.Rolling;
+using Vostok.Logging.File.Rolling.Strategies;
+using Vostok.Logging.File.Rolling.SuffixFormatters;
 
 namespace Vostok.Logging.File.Tests
 {
@@ -23,7 +25,11 @@ namespace Vostok.Logging.File.Tests
             suffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns(callInfo => callInfo.Arg<DateTime>().ToString("yyyy.MM.dd"));
             suffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(callInfo => DateTime.TryParse(callInfo.Arg<string>(), out var dt) ? dt : null as DateTime?);
 
-            strategy = new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => now);
+            var fileNameTuner = Substitute.For<IFileNameTuner>();
+            fileNameTuner.RemoveExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
+            fileNameTuner.RestoreExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
+
+            strategy = new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => now, fileNameTuner);
         }
         
         [Test]

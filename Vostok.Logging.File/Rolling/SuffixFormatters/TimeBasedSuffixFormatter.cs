@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Vostok.Logging.File.Configuration;
 
-namespace Vostok.Logging.File.Rolling
+namespace Vostok.Logging.File.Rolling.SuffixFormatters
 {
     internal class TimeBasedSuffixFormatter : IFileSuffixFormatter<DateTime>
     {
