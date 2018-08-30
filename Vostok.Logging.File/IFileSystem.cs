@@ -1,4 +1,6 @@
-﻿using Vostok.Logging.File.EventsWriting;
+﻿using System.Text;
+using Vostok.Logging.File.Configuration;
+using Vostok.Logging.File.EventsWriting;
 
 namespace Vostok.Logging.File
 {
@@ -8,8 +10,10 @@ namespace Vostok.Logging.File
 
         long GetFileSize(string file);
 
+        bool Exists(string file);
+
         bool TryRemoveFile(string file);
 
-        IEventsWriter OpenFile(string file);
+        IEventsWriter OpenFile(string file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize);
     }
 }

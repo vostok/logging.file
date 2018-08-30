@@ -1,19 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 
-namespace Vostok.Logging.File.Rolling
+namespace Vostok.Logging.File.Rolling.Strategies
 {
     internal class HybridRollingStrategy : IRollingStrategy
     {
-        private readonly string basePath;
         private readonly ISizeBasedRoller sizeBasedRoller;
         private readonly IFileSystem fileSystem;
         private readonly IFileSuffixFormatter<DateTime> timeSuffixFormatter;
         private readonly IFileSuffixFormatter<int> sizeSuffixFormatter;
         private readonly Func<DateTime> timeProvider;
 
-        public HybridRollingStrategy(string basePath, IFileSystem fileSystem, IFileSuffixFormatter<DateTime> timeSuffixFormatter, IFileSuffixFormatter<int> sizeSuffixFormatter, Func<DateTime> timeProvider, ISizeBasedRoller sizeBasedRoller)
+        public HybridRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<DateTime> timeSuffixFormatter, IFileSuffixFormatter<int> sizeSuffixFormatter, Func<DateTime> timeProvider, ISizeBasedRoller sizeBasedRoller)
         {
-            this.basePath = basePath;
             this.sizeBasedRoller = sizeBasedRoller;
             this.fileSystem = fileSystem;
             this.timeSuffixFormatter = timeSuffixFormatter;
@@ -21,9 +20,9 @@ namespace Vostok.Logging.File.Rolling
             this.timeProvider = timeProvider;
         }
 
-        public string[] DiscoverExistingFiles() => RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, TryParseSuffix);
+        public IEnumerable<string> DiscoverExistingFiles(string basePath) => RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, TryParseSuffix);
 
-        public string GetCurrentFile()
+        public string GetCurrentFile(string basePath)
         {
             var timeBasedPrefix = basePath + timeSuffixFormatter.FormatSuffix(timeProvider());
 

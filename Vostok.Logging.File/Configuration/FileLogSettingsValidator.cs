@@ -50,7 +50,7 @@ namespace Vostok.Logging.File.Configuration
             if ((settings.RollingStrategy.Type & RollingStrategyType.BySize) > 0 && settings.RollingStrategy.MaxSize <= 0)
                 throw new ArgumentOutOfRangeException(nameof(settings.RollingStrategy.MaxSize));
 
-            if ((settings.RollingStrategy.Type & RollingStrategyType.ByTime) > 0 && settings.RollingStrategy.Period <= TimeSpan.Zero)
+            if ((settings.RollingStrategy.Type & RollingStrategyType.ByTime) > 0 && !Enum.IsDefined(typeof(RollingPeriod), settings.RollingStrategy.Period))
                 throw new ArgumentOutOfRangeException(nameof(settings.RollingStrategy.Period));
         }
 

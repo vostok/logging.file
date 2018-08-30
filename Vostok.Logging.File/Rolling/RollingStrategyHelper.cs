@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Vostok.Logging.File.Rolling
@@ -24,14 +25,14 @@ namespace Vostok.Logging.File.Rolling
         }
 
         // TODO(krait): support file extension
-        public static string[] DiscoverExistingFiles<TSuffix>(string basePath, IFileSystem fileSystem, Func<string, TSuffix?> suffixParser)
+        public static IEnumerable<string> DiscoverExistingFiles<TSuffix>(string basePath, IFileSystem fileSystem, Func<string, TSuffix?> suffixParser)
             where TSuffix : struct
         {
             var allFiles = fileSystem.GetFilesByPrefix(basePath);
 
             var filesWithSuffix = allFiles.Select(path => (path, suffix: suffixParser(path.Substring(basePath.Length))));
 
-            return filesWithSuffix.OrderBy(file => file.suffix).Select(file => file.path).ToArray();
+            return filesWithSuffix.Where(file => file.suffix != null).OrderBy(file => file.suffix).Select(file => file.path);
         }
     }
 }

@@ -19,14 +19,14 @@ namespace Vostok.Logging.File
         private readonly object initLock = new object();
 
         private readonly LogEventInfo[] temporaryBuffer;
-        private readonly ConcurrentDictionary<string, LogState> statesByFile = new ConcurrentDictionary<string, LogState>();
+        private readonly ConcurrentDictionary<string, SingleFileMuxer> muxersByFile = new ConcurrentDictionary<string, SingleFileMuxer>();
 
         private bool isInitialized;
 
         public FileLogMuxer(int temporaryBufferCapacity) => 
             temporaryBuffer = new LogEventInfo[temporaryBufferCapacity];
 
-        public long EventsLost => statesByFile.Sum(pair => pair.Value.EventsLost);
+        public long EventsLost => muxersByFile.Sum(pair => pair.Value.EventsLost);
 
         public bool TryLog(LogEvent @event, FileLogSettings settings, FileLog instigator)
         {
@@ -34,13 +34,13 @@ namespace Vostok.Logging.File
                 Initialize();
 
             var eventInfo = new LogEventInfo(@event, settings);
-            var newState = new LogState(instigator, settings); // TODO(krait): lazy
-            var state = statesByFile.GetOrAdd(settings.FilePath, newState);
+            var newMuxer = new SingleFileMuxer(instigator, settings); // TODO(krait): lazy
+            var muxer = muxersByFile.GetOrAdd(settings.FilePath, newMuxer);
 
-            if (!state.TryAdd(eventInfo, settings, instigator))
+            if (!muxer.TryAdd(eventInfo, settings, instigator))
                 return false;
 
-            if (state != newState)
+            if (muxer != newMuxer)
                 flushSignal.Set();
 
             return true;
@@ -61,7 +61,7 @@ namespace Vostok.Logging.File
 
         public void Close(FileLogSettings settings)
         {
-            if (!statesByFile.TryGetValue(settings.FilePath, out var state))
+            if (!muxersByFile.TryGetValue(settings.FilePath, out var state))
                 return;
 
             state.Close();
@@ -90,7 +90,7 @@ namespace Vostok.Logging.File
                                 waiter.TrySetResult(true);
                             }
 
-                            var waitTasks = statesByFile.Select(pair => pair.Value.TryWaitForNewItemsAsync(NewEventsTimeout));
+                            var waitTasks = muxersByFile.Select(pair => pair.Value.TryWaitForNewItemsAsync(NewEventsTimeout));
                             await Task.WhenAny(waitTasks.Concat(flushSignal.WaitAsync()));
                             flushSignal.Reset();
                         }
@@ -105,7 +105,7 @@ namespace Vostok.Logging.File
 
         private void LogEvents()
         {
-            foreach (var pair in statesByFile)
+            foreach (var pair in muxersByFile)
             {
                 pair.Value.WriteEvents(temporaryBuffer);
             }

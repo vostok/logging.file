@@ -9,7 +9,7 @@ using Vostok.Logging.File.Rolling;
 
 namespace Vostok.Logging.File
 {
-    internal class LogState
+    internal class SingleFileMuxer
     {
         private static readonly RollingStrategyFactory RollingStrategyFactory = new RollingStrategyFactory();
 
@@ -23,17 +23,19 @@ namespace Vostok.Logging.File
         private volatile FileLogSettings settings;
         private bool closed;
 
-        public LogState(FileLog owner, FileLogSettings settings)
+        public SingleFileMuxer(FileLog owner, FileLogSettings settings)
         {
             this.owner = owner;
             events = new ConcurrentBoundedQueue<LogEventInfo>(settings.EventsQueueCapacity);
 
             // TODO(krait): support warm change of rolling strategy type
-            var fileSystem = new FileSystem(() => settings);
+            var fileSystem = new FileSystem();
             writerProvider = new EventsWriterProvider(
-                RollingStrategyFactory.CreateStrategy(settings.FilePath, settings.RollingStrategy.Type, () => settings),
+                settings.FilePath,
+                RollingStrategyFactory.CreateStrategy(settings.RollingStrategy.Type, () => settings),
                 fileSystem,
-                new RollingGarbageCollector(fileSystem, () => settings.RollingStrategy.MaxFiles));
+                new RollingGarbageCollector(fileSystem, () => settings.RollingStrategy.MaxFiles),
+                () => settings);
         }
 
         public long EventsLost => Interlocked.Read(ref eventsLost);

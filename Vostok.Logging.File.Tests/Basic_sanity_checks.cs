@@ -63,7 +63,7 @@ namespace Vostok.Logging.File.Tests
                 log.Flush();
                 log.Close();
 
-                var files = new FileSystem(() => new FileLogSettings()).GetFilesByPrefix(logName);
+                var files = new FileSystem().GetFilesByPrefix(logName);
                 files.Length.Should().Be(3);
 
                 foreach (var file in files)
@@ -128,7 +128,7 @@ namespace Vostok.Logging.File.Tests
                 log.Flush();
                 log.Close();
 
-                var files = new FileSystem(() => new FileLogSettings()).GetFilesByPrefix(logName);
+                var files = new FileSystem().GetFilesByPrefix(logName);
                 files.Length.Should().Be(5);
 
                 foreach (var file in files)
@@ -153,7 +153,7 @@ namespace Vostok.Logging.File.Tests
                     RollingStrategy = new RollingStrategyOptions
                     {
                         Type = RollingStrategyType.ByTime,
-                        Period = 1.Seconds()
+                        Period = RollingPeriod.Second
                     }
                 });
 
@@ -166,7 +166,7 @@ namespace Vostok.Logging.File.Tests
                 log.Flush();
                 log.Close();
 
-                var files = new FileSystem(() => new FileLogSettings()).GetFilesByPrefix(logName);
+                var files = new FileSystem().GetFilesByPrefix(logName);
                 files.Length.Should().BeGreaterThan(1);
 
                 foreach (var file in files)
@@ -191,7 +191,7 @@ namespace Vostok.Logging.File.Tests
                     RollingStrategy = new RollingStrategyOptions
                     {
                         Type = RollingStrategyType.Hybrid,
-                        Period = 1.Seconds(),
+                        Period = RollingPeriod.Second,
                         MaxSize = 300
                     }
                 });
@@ -206,7 +206,7 @@ namespace Vostok.Logging.File.Tests
                 Thread.Sleep(1000);
                 log.Close();
 
-                var files = new FileSystem(() => new FileLogSettings()).GetFilesByPrefix(logName);
+                var files = new FileSystem().GetFilesByPrefix(logName);
                 files.Length.Should().BeGreaterThan(1);
 
                 foreach (var file in files)

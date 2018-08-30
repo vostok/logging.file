@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
 
@@ -7,11 +8,6 @@ namespace Vostok.Logging.File
 {
     internal class FileSystem : IFileSystem
     {
-        private readonly Func<FileLogSettings> settingsProvider;
-
-        public FileSystem(Func<FileLogSettings> settingsProvider) =>
-            this.settingsProvider = settingsProvider;
-
         public string[] GetFilesByPrefix(string prefix)
         {
             var directory = Path.GetDirectoryName(prefix);
@@ -24,6 +20,8 @@ namespace Vostok.Logging.File
         }
 
         public long GetFileSize(string file) => new FileInfo(file).Length;
+
+        public bool Exists(string file) => System.IO.File.Exists(file);
 
         public bool TryRemoveFile(string file)
         {
@@ -46,13 +44,11 @@ namespace Vostok.Logging.File
             return false;
         }
 
-        public IEventsWriter OpenFile(string file)
+        public IEventsWriter OpenFile(string file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize)
         {
-            var settings = settingsProvider();
-
-            var fileMode = settings.FileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
-            var stream = new FileStream(file, fileMode, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete, settings.OutputBufferSize); // TODO(krait): is it ok to have double buffering?
-            var writer = new StreamWriter(stream, settings.Encoding, settings.OutputBufferSize, false);
+            var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
+            var stream = new FileStream(file, fileMode, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete, 1);
+            var writer = new StreamWriter(stream, encoding, bufferSize, false);
 
             return new EventsWriter(writer);
         }
