@@ -47,7 +47,7 @@ namespace Vostok.Logging.File.Configuration
             if (settings.RollingStrategy.MaxFiles < 0)
                 throw new ArgumentOutOfRangeException(nameof(settings.RollingStrategy.MaxFiles));
 
-            if ((settings.RollingStrategy.Type & RollingStrategyType.BySize) > 0 && settings.RollingStrategy.MaxSize.Bytes <= 0)
+            if ((settings.RollingStrategy.Type & RollingStrategyType.BySize) > 0 && settings.RollingStrategy.MaxSize <= 0)
                 throw new ArgumentOutOfRangeException(nameof(settings.RollingStrategy.MaxSize));
 
             if ((settings.RollingStrategy.Type & RollingStrategyType.ByTime) > 0 && settings.RollingStrategy.Period <= TimeSpan.Zero)

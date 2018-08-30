@@ -9,12 +9,10 @@ notests *default:
     - Vostok.Logging.File/bin/Release/netstandard2.0/Vostok.Logging.File.dll
 
   deps:
-    - vostok.commons.primitives
     - vostok.logging.formatting
     - vostok.logging.abstractions
-    - vostok.configuration
-    - vostok.configuration.abstractions
     - vostok.commons.collections/src
+    - vostok.commons.threading/src
     - vostok.devtools
 
 full-build > notests:

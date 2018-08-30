@@ -1,5 +1,4 @@
-﻿using Vostok.Commons.Primitives;
-using Vostok.Logging.File.EventsWriting;
+﻿using Vostok.Logging.File.EventsWriting;
 
 namespace Vostok.Logging.File
 {
@@ -7,7 +6,7 @@ namespace Vostok.Logging.File
     {
         string[] GetFilesByPrefix(string prefix);
 
-        DataSize GetFileSize(string file);
+        long GetFileSize(string file);
 
         bool TryRemoveFile(string file);
 

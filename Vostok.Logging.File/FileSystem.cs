@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Vostok.Commons.Primitives;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
 
@@ -24,7 +23,7 @@ namespace Vostok.Logging.File
             return Directory.GetFiles(directory, baseName + "*");
         }
 
-        public DataSize GetFileSize(string file) => new DataSize(new FileInfo(file).Length);
+        public long GetFileSize(string file) => new FileInfo(file).Length;
 
         public bool TryRemoveFile(string file)
         {

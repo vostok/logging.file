@@ -1,5 +1,4 @@
 ﻿using System;
-using Vostok.Commons.Primitives;
 
 namespace Vostok.Logging.File.Configuration
 {
@@ -11,6 +10,6 @@ namespace Vostok.Logging.File.Configuration
 
         public TimeSpan Period { get; set; } = TimeSpan.FromDays(1);
 
-        public DataSize MaxSize { get; set; } = DataSize.FromMegabytes(100);
+        public long MaxSize { get; set; } = 100 * 1024 * 1024;
     }
 }

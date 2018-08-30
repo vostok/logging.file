@@ -19,10 +19,10 @@ namespace Vostok.Logging.File.Configuration
 
         public Encoding Encoding { get; set; } = Encoding.UTF8;
 
-        public int OutputBufferSize { get; set; } = 4096;
+        public int OutputBufferSize { get; set; } = 65536;
 
         public LogLevel[] EnabledLogLevels { get; set; } = (LogLevel[])Enum.GetValues(typeof(LogLevel));
 
-        public int EventsQueueCapacity { get; set; } = 10 * 1000;
+        public int EventsQueueCapacity { get; set; } = 50 * 1000;
     }
 }

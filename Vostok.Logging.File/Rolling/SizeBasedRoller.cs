@@ -1,14 +1,13 @@
 ﻿using System;
-using Vostok.Commons.Primitives;
 
 namespace Vostok.Logging.File.Rolling
 {
     internal class SizeBasedRoller : ISizeBasedRoller
     {
         private readonly IFileSystem fileSystem;
-        private readonly Func<DataSize> maxFileSizeProvider;
+        private readonly Func<long> maxFileSizeProvider;
 
-        public SizeBasedRoller(IFileSystem fileSystem, Func<DataSize> maxFileSizeProvider)
+        public SizeBasedRoller(IFileSystem fileSystem, Func<long> maxFileSizeProvider)
         {
             this.fileSystem = fileSystem;
             this.maxFileSizeProvider = maxFileSizeProvider;

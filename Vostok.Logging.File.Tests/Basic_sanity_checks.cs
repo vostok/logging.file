@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
-using Vostok.Commons.Primitives;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
 
@@ -50,7 +49,7 @@ namespace Vostok.Logging.File.Tests
                     RollingStrategy = new RollingStrategyOptions
                     {
                         Type = RollingStrategyType.BySize,
-                        MaxSize = DataSize.FromKilobytes(1),
+                        MaxSize = 1024,
                         MaxFiles = 3
                     }
                 });
@@ -117,7 +116,7 @@ namespace Vostok.Logging.File.Tests
                 var log = new FileLog(new FileLogSettings { FilePath = logName, RollingStrategy = new RollingStrategyOptions
                 {
                     Type = RollingStrategyType.BySize,
-                    MaxSize = DataSize.FromKilobytes(1)
+                    MaxSize = 1024
                 }});
 
                 for (int i = 0; i < 100; i++)
@@ -193,7 +192,7 @@ namespace Vostok.Logging.File.Tests
                     {
                         Type = RollingStrategyType.Hybrid,
                         Period = 1.Seconds(),
-                        MaxSize = DataSize.FromBytes(300)
+                        MaxSize = 300
                     }
                 });
 

@@ -45,9 +45,6 @@
     <Reference Include="Vostok.Logging.Formatting">
       <HintPath>..\..\vostok.logging.formatting\Vostok.Logging.Formatting\bin\Release\netstandard2.0\Vostok.Logging.Formatting.dll</HintPath>
     </Reference>
-    <Reference Include="Vostok.Commons.Primitives">
-      <HintPath>..\..\vostok.commons.primitives\Vostok.Commons.Primitives\bin\Release\netstandard2.0\Vostok.Commons.Primitives.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
