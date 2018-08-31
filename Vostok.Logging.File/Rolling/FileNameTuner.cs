@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Vostok.Logging.File.Rolling
 {
@@ -24,7 +25,11 @@ namespace Vostok.Logging.File.Rolling
             if (string.IsNullOrEmpty(extension) || file.Length < extension.Length)
                 return file;
 
-            return file.Substring(0, file.Length - extension.Length);
+            var extensionStart = file.Length - extension.Length;
+            if (string.Compare(file, extensionStart, extension, 0, extension.Length, StringComparison.OrdinalIgnoreCase) == 0)
+                return file.Substring(0, extensionStart);
+
+            return file;
         }
     }
 }

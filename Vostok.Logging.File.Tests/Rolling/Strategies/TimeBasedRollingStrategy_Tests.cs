@@ -6,7 +6,7 @@ using Vostok.Logging.File.Rolling;
 using Vostok.Logging.File.Rolling.Strategies;
 using Vostok.Logging.File.Rolling.SuffixFormatters;
 
-namespace Vostok.Logging.File.Tests
+namespace Vostok.Logging.File.Tests.Rolling.Strategies
 {
     [TestFixture]
     internal class TimeBasedRollingStrategy_Tests
@@ -14,6 +14,7 @@ namespace Vostok.Logging.File.Tests
         private TimeBasedRollingStrategy strategy;
         private IFileSystem fileSystem;
         private DateTime now;
+        private IFileNameTuner fileNameTuner;
 
         [SetUp]
         public void TestSetup()
@@ -25,7 +26,7 @@ namespace Vostok.Logging.File.Tests
             suffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns(callInfo => callInfo.Arg<DateTime>().ToString("yyyy.MM.dd"));
             suffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(callInfo => DateTime.TryParse(callInfo.Arg<string>(), out var dt) ? dt : null as DateTime?);
 
-            var fileNameTuner = Substitute.For<IFileNameTuner>();
+            fileNameTuner = Substitute.For<IFileNameTuner>();
             fileNameTuner.RemoveExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
             fileNameTuner.RestoreExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
 
@@ -48,6 +49,16 @@ namespace Vostok.Logging.File.Tests
             strategy.DiscoverExistingFiles(@"logs\log").Should().Equal(@"logs\log2018.08.25", @"logs\log2018.08.26", @"logs\log2018.08.27");
         }
 
+        [Test]
+        public void DiscoverExistingFiles_should_support_file_extensions()
+        {
+            fileSystem.GetFilesByPrefix(@"logs\log").Returns(new[] { @"logs\log2018.08.27.txt", @"logs\log2018.08.26.txt", @"logs\log2018.08.25.txt" });
+            fileNameTuner.RemoveExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>().Replace(".txt", ""));
+            fileNameTuner.RestoreExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>() + ".txt");
+
+            strategy.DiscoverExistingFiles(@"logs\log.txt").Should().Equal(@"logs\log2018.08.25.txt", @"logs\log2018.08.26.txt", @"logs\log2018.08.27.txt");
+        }
+
         [TestCase("2018-08-25")]
         [TestCase("2018-08-27")]
         public void GetCurrentFile_should_return_base_path_plus_current_date_suffix(string date)
@@ -55,6 +66,16 @@ namespace Vostok.Logging.File.Tests
             now = DateTime.Parse(date);
 
             strategy.GetCurrentFile(@"logs\log").Should().Be(@"logs\log" + now.ToString("yyyy.MM.dd"));
+        }
+
+        [Test]
+        public void GetCurrentFile_should_support_file_extensions()
+        {
+            now = DateTime.Parse("2018-08-27");
+            fileNameTuner.RemoveExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>().Replace(".txt", ""));
+            fileNameTuner.RestoreExtension(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>() + ".txt");
+
+            strategy.GetCurrentFile(@"logs\log.txt").Should().Be(@"logs\log2018.08.27.txt");
         }
     }
 }

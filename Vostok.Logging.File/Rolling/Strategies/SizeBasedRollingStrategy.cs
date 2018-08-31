@@ -31,7 +31,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
             if (lastFile.suffix != null)
             {
                 part = lastFile.suffix.Value;
-                if (sizeBasedRoller.ShouldRollOver(lastFile.path))
+                if (sizeBasedRoller.ShouldRollOver(fileNameTuner.RestoreExtension(lastFile.path)))
                     part++;
             }
 

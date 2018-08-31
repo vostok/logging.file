@@ -23,7 +23,7 @@ namespace Vostok.Logging.File.Rolling.SuffixFormatters
                 return null;
 
             var leftPart = suffix.Substring(0, lastDotIndex);
-            var rightPart = suffix.Substring(lastDotIndex + 1);
+            var rightPart = suffix.Substring(lastDotIndex);
 
             var date = timeSuffixFormatter.TryParseSuffix(leftPart);
             var part = sizeSuffixFormatter.TryParseSuffix(rightPart);

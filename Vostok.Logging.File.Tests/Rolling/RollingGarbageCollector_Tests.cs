@@ -5,7 +5,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.File.Rolling;
 
-namespace Vostok.Logging.File.Tests
+namespace Vostok.Logging.File.Tests.Rolling
 {
     [TestFixture]
     internal class RollingGarbageCollector_Tests

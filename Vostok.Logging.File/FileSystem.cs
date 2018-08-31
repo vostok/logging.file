@@ -19,7 +19,12 @@ namespace Vostok.Logging.File
             return Directory.GetFiles(directory, baseName + "*");
         }
 
-        public long GetFileSize(string file) => new FileInfo(file).Length;
+        public long GetFileSize(string file)
+        { 
+            var fileInfo = new FileInfo(file);
+
+            return fileInfo.Exists ? fileInfo.Length : 0;
+        }
 
         public bool Exists(string file) => System.IO.File.Exists(file);
 

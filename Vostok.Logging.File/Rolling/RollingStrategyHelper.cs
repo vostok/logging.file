@@ -6,7 +6,6 @@ namespace Vostok.Logging.File.Rolling
 {
     internal static class RollingStrategyHelper
     {
-        // TODO(krait): support file extension
         public static IEnumerable<(string path, TSuffix? suffix)> DiscoverExistingFiles<TSuffix>(string basePath, IFileSystem fileSystem, IFileSuffixFormatter<TSuffix> suffixFormatter, IFileNameTuner fileNameTuner)
             where TSuffix : struct
         {
@@ -14,7 +13,7 @@ namespace Vostok.Logging.File.Rolling
 
             var allFiles = fileSystem.GetFilesByPrefix(basePath);
 
-            var filesWithSuffix = allFiles.Select(path => (path, suffix: suffixFormatter.TryParseSuffix(fileNameTuner.RemoveExtension(path.Substring(basePath.Length)))));
+            var filesWithSuffix = allFiles.Select(fileNameTuner.RemoveExtension).Select(path => (path, suffix: suffixFormatter.TryParseSuffix(path.Substring(basePath.Length))));
 
             return filesWithSuffix.Where(file => file.suffix != null).OrderBy(file => file.suffix);
         }
