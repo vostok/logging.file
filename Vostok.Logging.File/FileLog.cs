@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Wrappers;
 using Vostok.Logging.File.Configuration;
@@ -19,9 +20,9 @@ namespace Vostok.Logging.File
         private readonly object handle = new object();
         private readonly FilePath filePath;
 
+        private AtomicBoolean wasUsed = new AtomicBoolean(false);
         private volatile bool isDisposed;
         private long eventsLost;
-        private int wasUsed; // TODO(krait): use AtomicBoolean
 
         public FileLog(FileLogSettings settings)
             : this(() => settings)
@@ -46,7 +47,7 @@ namespace Vostok.Logging.File
             if (@event == null)
                 return;
 
-            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, filePath, settingsProvider.Get(), handle, Interlocked.Increment(ref wasUsed) == 1))
+            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, filePath, settingsProvider.Get(), handle, wasUsed.TrySetTrue()))
                 Interlocked.Increment(ref eventsLost);
         }
 
@@ -67,7 +68,7 @@ namespace Vostok.Logging.File
         public void Dispose()
         {
             isDisposed = true;
-            if (wasUsed != 0)
+            if (wasUsed)
                 DefaultMuxerProvider.ObtainMuxer().RemoveLogReference(filePath);
             GC.SuppressFinalize(this);
         }
