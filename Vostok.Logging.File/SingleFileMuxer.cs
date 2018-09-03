@@ -8,6 +8,7 @@ using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
 using Vostok.Logging.File.Rolling;
+using Vostok.Logging.File.Rolling.Strategies;
 using Waiter = System.Threading.Tasks.TaskCompletionSource<bool>;
 
 namespace Vostok.Logging.File
@@ -19,6 +20,7 @@ namespace Vostok.Logging.File
         private readonly List<Waiter> flushWaiters = new List<Waiter>();
         private readonly ConcurrentBoundedQueue<LogEventInfo> events;
         private readonly EventsWriterProvider writerProvider;
+        private readonly FilePath filePath;
         private readonly object owner;
 
         private long eventsLost;
@@ -31,22 +33,26 @@ namespace Vostok.Logging.File
         public SingleFileMuxer(object owner, FilePath filePath, FileLogSettings settings, IFileSystem fileSystem)
         {
             this.owner = owner;
+            this.filePath = filePath;
             events = new ConcurrentBoundedQueue<LogEventInfo>(settings.EventsQueueCapacity);
 
             writerProvider = new EventsWriterProvider(
                 filePath,
-                new RollingStrategyProvider(filePath, RollingStrategyFactory, () => settings), 
+                new RollingStrategyProvider(filePath, RollingStrategyFactory, () => settings),
                 fileSystem,
                 new RollingGarbageCollector(fileSystem, () => settings.RollingStrategy.MaxFiles),
+                new CooldownController(),
                 () => settings);
         }
 
         public long EventsLost => Interlocked.Read(ref eventsLost);
 
+        public bool IsHealthy => writerProvider.IsHealthy;
+
         public bool TryAdd(LogEventInfo info, object instigator)
         {
             if (isDisposed)
-                return false; // TODO(krait): or throw?
+                throw new ObjectDisposedException(GetType().Name);
 
             if (instigator == owner && info.Settings != settings)
             {
@@ -62,18 +68,26 @@ namespace Vostok.Logging.File
 
         public void WriteEvents(LogEventInfo[] temporaryBuffer)
         {
-            List<Waiter> currentWaiters;
-            lock (flushWaiters)
+            try
             {
-                flushWaiters.RemoveAll(w => w.Task.IsCompleted);
-                currentWaiters = flushWaiters.ToList();
+                List<Waiter> currentWaiters;
+                lock (flushWaiters)
+                {
+                    flushWaiters.RemoveAll(w => w.Task.IsCompleted);
+                    currentWaiters = flushWaiters.ToList();
+                }
+
+                if (TryWriteEventsInternal(temporaryBuffer))
+                {
+                    foreach (var waiter in currentWaiters)
+                    {
+                        waiter.TrySetResult(true);
+                    }
+                }
             }
-
-            WriteEventsInternal(temporaryBuffer);
-
-            foreach (var waiter in currentWaiters)
+            catch (Exception error)
             {
-                waiter.TrySetResult(true);
+                SafeConsole.ReportError($"Failure in writing log events to file '{filePath.NormalizedPath}':", error);
             }
         }
 
@@ -100,9 +114,11 @@ namespace Vostok.Logging.File
             writerProvider.Dispose();
         }
 
-        private void WriteEventsInternal(LogEventInfo[] temporaryBuffer)
+        private bool TryWriteEventsInternal(LogEventInfo[] temporaryBuffer)
         {
             var eventsWriter = writerProvider.ObtainWriter();
+            if (eventsWriter == null)
+                return false;
 
             var eventsToDrain = events.Count;
 
@@ -132,6 +148,8 @@ namespace Vostok.Logging.File
 
                 eventsLostSinceLastIteration = currentEventsLost;
             }
+
+            return true;
         }
 
         private LogEventInfo CreateOverflowEvent(long discardedEvents)

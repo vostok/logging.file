@@ -2,7 +2,7 @@
 using System.Linq;
 using Vostok.Logging.File.Rolling.SuffixFormatters;
 
-namespace Vostok.Logging.File.Rolling
+namespace Vostok.Logging.File.Rolling.Strategies
 {
     internal static class RollingStrategyHelper
     {

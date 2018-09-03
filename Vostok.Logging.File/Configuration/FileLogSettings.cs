@@ -24,5 +24,7 @@ namespace Vostok.Logging.File.Configuration
         public LogLevel[] EnabledLogLevels { get; set; } = (LogLevel[])Enum.GetValues(typeof(LogLevel));
 
         public int EventsQueueCapacity { get; set; } = 50 * 1000;
+
+        public TimeSpan TargetFileUpdateCooldown = TimeSpan.FromSeconds(1);
     }
 }

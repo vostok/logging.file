@@ -28,6 +28,9 @@ namespace Vostok.Logging.File.Configuration
             if (settings.EventsQueueCapacity <= 0)
                 throw new ArgumentOutOfRangeException(nameof(settings.EventsQueueCapacity));
 
+            if (settings.TargetFileUpdateCooldown <= TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException(nameof(settings.TargetFileUpdateCooldown));
+
             return settings;
         }
 

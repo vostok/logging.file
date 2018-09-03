@@ -12,21 +12,32 @@ namespace Vostok.Logging.File.EventsWriting
         private readonly RollingStrategyProvider rollingStrategyProvider;
         private readonly IRollingGarbageCollector garbageCollector;
         private readonly Func<FileLogSettings> settingsProvider;
+        private readonly CooldownController cooldownController;
         private readonly object sync = new object();
 
-        private (string file, IEventsWriter writer) currentItem;
+        private (string file, FileLogSettings settings, IEventsWriter writer) currentItem;
         private bool isDisposed;
+        private bool wasUsed;
 
-        public EventsWriterProvider(FilePath basePath, RollingStrategyProvider rollingStrategyProvider, IFileSystem fileSystem, IRollingGarbageCollector garbageCollector, Func<FileLogSettings> settingsProvider)
+        public EventsWriterProvider(FilePath basePath, RollingStrategyProvider rollingStrategyProvider, IFileSystem fileSystem, IRollingGarbageCollector garbageCollector, CooldownController cooldownController, Func<FileLogSettings> settingsProvider)
         {
             this.basePath = basePath;
             this.rollingStrategyProvider = rollingStrategyProvider;
             this.fileSystem = fileSystem;
             this.garbageCollector = garbageCollector;
             this.settingsProvider = settingsProvider;
+            this.cooldownController = cooldownController;
         }
 
-        // TODO(krait): reopen writer if settings changed
+        public bool IsHealthy
+        {
+            get
+            {
+                lock (sync)
+                    return !wasUsed || ObtainWriter() != null;
+            }
+        }
+
         public IEventsWriter ObtainWriter()
         {
             lock (sync)
@@ -34,17 +45,24 @@ namespace Vostok.Logging.File.EventsWriting
                 if (isDisposed)
                     throw new ObjectDisposedException(GetType().Name);
 
-                var rollingStrategy = rollingStrategyProvider.ObtainStrategy();
+                wasUsed = true;
 
-                var currentFile = rollingStrategy.GetCurrentFile(basePath.NormalizedPath);
-
-                if (currentFile != currentItem.file)
+                if (cooldownController.IsCool)
                 {
+                    var rollingStrategy = rollingStrategyProvider.ObtainStrategy();
+
+                    var currentFile = rollingStrategy.GetCurrentFile(basePath.NormalizedPath);
+
                     var settings = settingsProvider();
 
-                    currentItem.writer?.Dispose();
-                    currentItem = (currentFile, fileSystem.OpenFile(currentFile, settings.FileOpenMode, settings.Encoding, settings.OutputBufferSize));
-                    garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
+                    if (currentFile != currentItem.file || ShouldReopenWriter(currentItem.settings, settings))
+                    {
+                        currentItem.writer?.Dispose();
+                        currentItem = (currentFile, settings, fileSystem.OpenFile(currentFile, settings.FileOpenMode, settings.Encoding, settings.OutputBufferSize));
+                        garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
+                    }
+
+                    cooldownController.IncurCooldown(settings.TargetFileUpdateCooldown);
                 }
 
                 return currentItem.writer;
@@ -59,6 +77,14 @@ namespace Vostok.Logging.File.EventsWriting
 
                 currentItem.writer?.Dispose();
             }
+        }
+
+        private bool ShouldReopenWriter(FileLogSettings oldSettings, FileLogSettings newSettings)
+        {
+            return oldSettings == null ||
+                   oldSettings.FileOpenMode != newSettings.FileOpenMode ||
+                   !Equals(oldSettings.Encoding, newSettings.Encoding) ||
+                   oldSettings.OutputBufferSize != newSettings.OutputBufferSize;
         }
     }
 }

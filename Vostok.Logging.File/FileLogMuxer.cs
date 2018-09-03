@@ -63,7 +63,7 @@ namespace Vostok.Logging.File
             return waiter;
         }
 
-        public Task FlushAsync() => Task.WhenAll(muxersByFile.Select(m => m.Value.FlushAsync()));
+        public Task FlushAsync() => Task.WhenAll(muxersByFile.Where(pair => pair.Value.IsHealthy).Select(m => m.Value.FlushAsync()));
 
         public void RemoveLogReference(FilePath file)
         {
@@ -91,13 +91,13 @@ namespace Vostok.Logging.File
                                 pair.Value.WriteEvents(temporaryBuffer);
                             }
 
-                            var waitTasks = muxersByFile.Select(pair => pair.Value.TryWaitForNewItemsAsync(NewEventsTimeout));
+                            var waitTasks = muxersByFile.Where(pair => pair.Value.IsHealthy).Select(pair => pair.Value.TryWaitForNewItemsAsync(NewEventsTimeout));
                             await Task.WhenAny(waitTasks.Concat(flushSignal.WaitAsync()));
                             flushSignal.Reset();
                         }
                         catch (Exception error)
                         {
-                            SafeConsole.TryWriteLine(error);
+                            SafeConsole.ReportError("Failure in writing log events:", error);
                             await Task.Delay(100);
                         }
                     }

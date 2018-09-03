@@ -23,6 +23,6 @@ namespace Vostok.Logging.File.Rolling.Strategies
         public IEnumerable<string> DiscoverExistingFiles(string basePath) =>
             RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, fileNameTuner).Select(file => fileNameTuner.RestoreExtension(file.path));
 
-        public string GetCurrentFile(string basePath) => fileNameTuner.RestoreExtension(fileNameTuner.RemoveExtension(basePath) + suffixFormatter.FormatSuffix(timeProvider())); // TODO(krait): make such expressions less cumbersome
+        public string GetCurrentFile(string basePath) => fileNameTuner.RestoreExtension(fileNameTuner.RemoveExtension(basePath) + suffixFormatter.FormatSuffix(timeProvider()));
     }
 }

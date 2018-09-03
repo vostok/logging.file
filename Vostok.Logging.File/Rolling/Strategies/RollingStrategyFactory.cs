@@ -1,9 +1,8 @@
 ﻿using System;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.Rolling.Strategies;
 using Vostok.Logging.File.Rolling.SuffixFormatters;
 
-namespace Vostok.Logging.File.Rolling
+namespace Vostok.Logging.File.Rolling.Strategies
 {
     internal class RollingStrategyFactory
     {

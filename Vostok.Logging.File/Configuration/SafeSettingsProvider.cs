@@ -24,7 +24,7 @@ namespace Vostok.Logging.File.Configuration
                 if (cachedSettings == null)
                     throw;
 
-                SafeConsole.TryWriteLine(exception);
+                SafeConsole.ReportError("Failed to update file log configuration:", exception);
                 return cachedSettings;
             }
         }

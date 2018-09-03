@@ -51,11 +51,19 @@ namespace Vostok.Logging.File
 
         public IEventsWriter OpenFile(string file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize)
         {
-            var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
-            var stream = new FileStream(file, fileMode, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete, 1);
-            var writer = new StreamWriter(stream, encoding, bufferSize, false);
+            try
+            {
+                var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
+                var stream = new FileStream(file, fileMode, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete, 1);
+                var writer = new StreamWriter(stream, encoding, bufferSize, false);
 
-            return new EventsWriter(writer);
+                return new EventsWriter(writer);
+            }
+            catch (Exception error)
+            {
+                SafeConsole.ReportError($"Failed to open log file {file}:", error);
+                return null;
+            }
         }
     }
 }

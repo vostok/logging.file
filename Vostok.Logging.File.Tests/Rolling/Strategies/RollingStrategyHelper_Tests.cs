@@ -3,9 +3,10 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.File.Rolling;
+using Vostok.Logging.File.Rolling.Strategies;
 using Vostok.Logging.File.Rolling.SuffixFormatters;
 
-namespace Vostok.Logging.File.Tests.Rolling
+namespace Vostok.Logging.File.Tests.Rolling.Strategies
 {
     [TestFixture]
     internal class RollingStrategyHelper_Tests
