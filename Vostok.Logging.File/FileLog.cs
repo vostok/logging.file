@@ -9,13 +9,17 @@ using Vostok.Logging.File.Configuration;
 namespace Vostok.Logging.File
 {
     [PublicAPI]
-    public class FileLog : ILog
+    public class FileLog : ILog, IDisposable
     {
         private static readonly FileLogMuxerProvider DefaultMuxerProvider = new FileLogMuxerProvider();
 
         private readonly FileLogMuxerProvider muxerProvider;
         private readonly SafeSettingsProvider settingsProvider;
+        private readonly object handle = new object();
         private long eventsLost;
+
+        private volatile bool isDisposed;
+        private int wasUsed; // TODO(krait): use AtomicBoolean
 
         public FileLog(FileLogSettings settings)
             : this(() => settings)
@@ -25,14 +29,19 @@ namespace Vostok.Logging.File
         public FileLog(Func<FileLogSettings> settingsProvider) =>
             this.settingsProvider = new SafeSettingsProvider(() => SettingsValidator.ValidateSettings(settingsProvider()));
 
+        ~FileLog() => Dispose();
+
         public long EventsLost => Interlocked.Read(ref eventsLost);
 
         public void Log(LogEvent @event)
         {
+            if (isDisposed)
+                throw new ObjectDisposedException(GetType().Name);
+
             if (@event == null)
                 return;
 
-            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, settingsProvider.Get(), this))
+            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, settingsProvider.Get(), handle, Interlocked.Increment(ref wasUsed) == 1))
                 Interlocked.Increment(ref eventsLost);
         }
 
@@ -41,10 +50,21 @@ namespace Vostok.Logging.File
         // TODO(krait): implement same as in ConsoleLog
         public ILog ForContext(string context) => this;
 
-        public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync();
+        public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync(settingsProvider.Get().FilePath);
 
         public void Flush() => FlushAsync().GetAwaiter().GetResult();
 
-        public void Close() => DefaultMuxerProvider.ObtainMuxer().Close(settingsProvider.Get());
+        public Task FlushAllAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync();
+
+        public void FlushAll() => FlushAllAsync().GetAwaiter().GetResult();
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            isDisposed = true;
+            if (wasUsed != 0)
+                DefaultMuxerProvider.ObtainMuxer().RemoveLogReference(settingsProvider.Get().FilePath);
+            GC.SuppressFinalize(this);
+        }
     }
 }

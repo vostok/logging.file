@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
@@ -21,14 +20,12 @@ namespace Vostok.Logging.File.Tests
             {
                 var logName = folder.GetFileName("log");
 
-                var log = new FileLog(new FileLogSettings {FilePath = logName});
-
-                log.Info("Hello, world!");
-                log.Info("Hello, world!");
-                log.Info("Hello, world!");
-
-                log.Flush();
-                log.Close();
+                using (var log = new FileLog(new FileLogSettings {FilePath = logName}))
+                {
+                    log.Info("Hello, world!");
+                    log.Info("Hello, world!");
+                    log.Info("Hello, world!");
+                }
 
                 System.IO.File.Exists(logName).Should().BeTrue();
 
@@ -43,25 +40,24 @@ namespace Vostok.Logging.File.Tests
             {
                 var logName = folder.GetFileName("log");
 
-                var log = new FileLog(new FileLogSettings
-                {
-                    FilePath = logName,
-                    RollingStrategy = new RollingStrategyOptions
+                using (var log = new FileLog(
+                    new FileLogSettings
                     {
-                        Type = RollingStrategyType.BySize,
-                        MaxSize = 1024,
-                        MaxFiles = 3
-                    }
-                });
-
-                for (int i = 0; i < 100; i++)
+                        FilePath = logName,
+                        RollingStrategy = new RollingStrategyOptions
+                        {
+                            Type = RollingStrategyType.BySize,
+                            MaxSize = 1024,
+                            MaxFiles = 3
+                        }
+                    }))
                 {
-                    log.Info("Hello, world!");
-                    Thread.Sleep(10);
+                    for (int i = 0; i < 100; i++)
+                    {
+                        log.Info("Hello, world!");
+                        Thread.Sleep(10);
+                    }
                 }
-
-                log.Flush();
-                log.Close();
 
                 var files = new FileSystem().GetFilesByPrefix(logName);
                 files.Length.Should().Be(3);
@@ -97,8 +93,8 @@ namespace Vostok.Logging.File.Tests
                 latch.Wait();
                 Task.WaitAll(writers);
 
-                new FileLog(new FileLogSettings { FilePath = logName }).Flush();
-                new FileLog(new FileLogSettings { FilePath = logName }).Close();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
 
                 System.IO.File.Exists(logName).Should().BeTrue();
 
@@ -113,20 +109,23 @@ namespace Vostok.Logging.File.Tests
             {
                 var logName = folder.GetFileName("log");
 
-                var log = new FileLog(new FileLogSettings { FilePath = logName, RollingStrategy = new RollingStrategyOptions
+                using (var log = new FileLog(
+                    new FileLogSettings
+                    {
+                        FilePath = logName,
+                        RollingStrategy = new RollingStrategyOptions
+                        {
+                            Type = RollingStrategyType.BySize,
+                            MaxSize = 1024
+                        }
+                    }))
                 {
-                    Type = RollingStrategyType.BySize,
-                    MaxSize = 1024
-                }});
-
-                for (int i = 0; i < 100; i++)
-                {
-                    log.Info("Hello, world!");
-                    Thread.Sleep(10);
+                    for (int i = 0; i < 100; i++)
+                    {
+                        log.Info("Hello, world!");
+                        Thread.Sleep(10);
+                    }
                 }
-
-                log.Flush();
-                log.Close();
 
                 var files = new FileSystem().GetFilesByPrefix(logName);
                 files.Length.Should().Be(5);
@@ -147,24 +146,23 @@ namespace Vostok.Logging.File.Tests
             {
                 var logName = folder.GetFileName("log.txt");
 
-                var log = new FileLog(new FileLogSettings
-                {
-                    FilePath = logName,
-                    RollingStrategy = new RollingStrategyOptions
+                using (var log = new FileLog(
+                    new FileLogSettings
                     {
-                        Type = RollingStrategyType.BySize,
-                        MaxSize = 1024
-                    }
-                });
-
-                for (int i = 0; i < 100; i++)
+                        FilePath = logName,
+                        RollingStrategy = new RollingStrategyOptions
+                        {
+                            Type = RollingStrategyType.BySize,
+                            MaxSize = 1024
+                        }
+                    }))
                 {
-                    log.Info("Hello, world!");
-                    Thread.Sleep(10);
+                    for (int i = 0; i < 100; i++)
+                    {
+                        log.Info("Hello, world!");
+                        Thread.Sleep(10);
+                    }
                 }
-
-                log.Flush();
-                log.Close();
 
                 var files = new FileSystem().GetFilesByPrefix(logName.Substring(0, logName.Length - 4));
                 files.Length.Should().Be(5);
@@ -185,24 +183,23 @@ namespace Vostok.Logging.File.Tests
             {
                 var logName = folder.GetFileName("log");
 
-                var log = new FileLog(new FileLogSettings
-                {
-                    FilePath = logName,
-                    RollingStrategy = new RollingStrategyOptions
+                using (var log = new FileLog(
+                    new FileLogSettings
                     {
-                        Type = RollingStrategyType.ByTime,
-                        Period = RollingPeriod.Second
-                    }
-                });
-
-                for (int i = 0; i < 100; i++)
+                        FilePath = logName,
+                        RollingStrategy = new RollingStrategyOptions
+                        {
+                            Type = RollingStrategyType.ByTime,
+                            Period = RollingPeriod.Second
+                        }
+                    }))
                 {
-                    log.Info("Hello, world!");
-                    Thread.Sleep(50);
+                    for (int i = 0; i < 100; i++)
+                    {
+                        log.Info("Hello, world!");
+                        Thread.Sleep(50);
+                    }
                 }
-
-                log.Flush();
-                log.Close();
 
                 var files = new FileSystem().GetFilesByPrefix(logName);
                 files.Length.Should().BeGreaterThan(1);
@@ -223,26 +220,24 @@ namespace Vostok.Logging.File.Tests
             {
                 var logName = folder.GetFileName("log");
 
-                var log = new FileLog(new FileLogSettings
-                {
-                    FilePath = logName,
-                    RollingStrategy = new RollingStrategyOptions
+                using (var log = new FileLog(
+                    new FileLogSettings
                     {
-                        Type = RollingStrategyType.Hybrid,
-                        Period = RollingPeriod.Second,
-                        MaxSize = 300
-                    }
-                });
-
-                for (int i = 0; i < 100; i++)
+                        FilePath = logName,
+                        RollingStrategy = new RollingStrategyOptions
+                        {
+                            Type = RollingStrategyType.Hybrid,
+                            Period = RollingPeriod.Second,
+                            MaxSize = 300
+                        }
+                    }))
                 {
-                    log.Info("Hello, world!");
-                    Thread.Sleep(100);
+                    for (int i = 0; i < 100; i++)
+                    {
+                        log.Info("Hello, world!");
+                        Thread.Sleep(100);
+                    }
                 }
-
-                //log.Flush();
-                Thread.Sleep(1000);
-                log.Close();
 
                 var files = new FileSystem().GetFilesByPrefix(logName);
                 files.Length.Should().BeGreaterThan(1);
