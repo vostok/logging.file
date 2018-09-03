@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
+using Vostok.Logging.Abstractions.Wrappers;
 using Vostok.Logging.File.Configuration;
 
 namespace Vostok.Logging.File
@@ -51,8 +52,8 @@ namespace Vostok.Logging.File
 
         public bool IsEnabledFor(LogLevel level) => settingsProvider.Get().EnabledLogLevels.Contains(level);
 
-        // TODO(krait): implement same as in ConsoleLog
-        public ILog ForContext(string context) => this;
+        public ILog ForContext(string context) =>
+            context == null ? (ILog)this : new SourceContextWrapper(this, context);
 
         public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync(filePath);
 
