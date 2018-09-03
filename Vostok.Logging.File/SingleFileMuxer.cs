@@ -28,15 +28,14 @@ namespace Vostok.Logging.File
 
         private int references;
 
-        public SingleFileMuxer(object owner, FileLogSettings settings, IFileSystem fileSystem)
+        public SingleFileMuxer(object owner, FilePath filePath, FileLogSettings settings, IFileSystem fileSystem)
         {
             this.owner = owner;
             events = new ConcurrentBoundedQueue<LogEventInfo>(settings.EventsQueueCapacity);
 
-            // TODO(krait): support warm change of rolling strategy type
             writerProvider = new EventsWriterProvider(
-                settings.FilePath,
-                RollingStrategyFactory.CreateStrategy(settings.FilePath, settings.RollingStrategy.Type, () => settings),
+                filePath,
+                new RollingStrategyProvider(filePath, RollingStrategyFactory, () => settings), 
                 fileSystem,
                 new RollingGarbageCollector(fileSystem, () => settings.RollingStrategy.MaxFiles),
                 () => settings);

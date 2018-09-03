@@ -2,15 +2,14 @@
 using System.Linq;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Rolling;
-using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File.EventsWriting
 {
     internal class EventsWriterProvider : IDisposable
     {
-        private readonly string baseFilePath;
-        private readonly IRollingStrategy rollingStrategy;
+        private readonly FilePath basePath;
         private readonly IFileSystem fileSystem;
+        private readonly RollingStrategyProvider rollingStrategyProvider;
         private readonly IRollingGarbageCollector garbageCollector;
         private readonly Func<FileLogSettings> settingsProvider;
         private readonly object sync = new object();
@@ -18,10 +17,10 @@ namespace Vostok.Logging.File.EventsWriting
         private (string file, IEventsWriter writer) currentItem;
         private bool isDisposed;
 
-        public EventsWriterProvider(string baseFilePath, IRollingStrategy rollingStrategy, IFileSystem fileSystem, IRollingGarbageCollector garbageCollector, Func<FileLogSettings> settingsProvider)
+        public EventsWriterProvider(FilePath basePath, RollingStrategyProvider rollingStrategyProvider, IFileSystem fileSystem, IRollingGarbageCollector garbageCollector, Func<FileLogSettings> settingsProvider)
         {
-            this.baseFilePath = baseFilePath;
-            this.rollingStrategy = rollingStrategy;
+            this.basePath = basePath;
+            this.rollingStrategyProvider = rollingStrategyProvider;
             this.fileSystem = fileSystem;
             this.garbageCollector = garbageCollector;
             this.settingsProvider = settingsProvider;
@@ -35,7 +34,9 @@ namespace Vostok.Logging.File.EventsWriting
                 if (isDisposed)
                     throw new ObjectDisposedException(GetType().Name);
 
-                var currentFile = rollingStrategy.GetCurrentFile(baseFilePath);
+                var rollingStrategy = rollingStrategyProvider.ObtainStrategy();
+
+                var currentFile = rollingStrategy.GetCurrentFile(basePath.NormalizedPath);
 
                 if (currentFile != currentItem.file)
                 {
@@ -43,7 +44,7 @@ namespace Vostok.Logging.File.EventsWriting
 
                     currentItem.writer?.Dispose();
                     currentItem = (currentFile, fileSystem.OpenFile(currentFile, settings.FileOpenMode, settings.Encoding, settings.OutputBufferSize));
-                    garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(baseFilePath).ToArray());
+                    garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
                 }
 
                 return currentItem.writer;

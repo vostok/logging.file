@@ -8,12 +8,12 @@ namespace Vostok.Logging.File
     {
         long EventsLost { get; }
 
-        bool TryLog(LogEvent @event, FileLogSettings settings, object instigator, bool firstTime);
+        bool TryLog(LogEvent @event, FilePath filePath, FileLogSettings settings, object instigator, bool firstTime);
 
-        Task FlushAsync(string file);
+        Task FlushAsync(FilePath file);
 
         Task FlushAsync();
 
-        void RemoveLogReference(string file);
+        void RemoveLogReference(FilePath file);
     }
 }

@@ -7,10 +7,10 @@ namespace Vostok.Logging.File.Rolling
 {
     internal class RollingStrategyFactory
     {
-        public IRollingStrategy CreateStrategy(string basePath, RollingStrategyType type, Func<FileLogSettings> settingsProvider)
+        public IRollingStrategy CreateStrategy(FilePath basePath, RollingStrategyType type, Func<FileLogSettings> settingsProvider)
         {
             var fileSystem = new FileSystem();
-            var fileNameTuner = new FileNameTuner(basePath);
+            var fileNameTuner = new FileNameTuner(basePath.NormalizedPath);
 
             switch (type)
             {

@@ -26,7 +26,7 @@ namespace Vostok.Logging.File.Rolling
                 return file;
 
             var extensionStart = file.Length - extension.Length;
-            if (string.Compare(file, extensionStart, extension, 0, extension.Length, StringComparison.OrdinalIgnoreCase) == 0)
+            if (string.Compare(file, extensionStart, extension, 0, extension.Length, FilePath.PathComparison) == 0)
                 return file.Substring(0, extensionStart);
 
             return file;

@@ -16,9 +16,10 @@ namespace Vostok.Logging.File
         private readonly FileLogMuxerProvider muxerProvider;
         private readonly SafeSettingsProvider settingsProvider;
         private readonly object handle = new object();
-        private long eventsLost;
+        private readonly FilePath filePath;
 
         private volatile bool isDisposed;
+        private long eventsLost;
         private int wasUsed; // TODO(krait): use AtomicBoolean
 
         public FileLog(FileLogSettings settings)
@@ -26,8 +27,11 @@ namespace Vostok.Logging.File
         {
         }
 
-        public FileLog(Func<FileLogSettings> settingsProvider) =>
+        public FileLog(Func<FileLogSettings> settingsProvider)
+        {
             this.settingsProvider = new SafeSettingsProvider(() => SettingsValidator.ValidateSettings(settingsProvider()));
+            filePath = new FilePath(settingsProvider().FilePath);
+        }
 
         ~FileLog() => Dispose();
 
@@ -41,7 +45,7 @@ namespace Vostok.Logging.File
             if (@event == null)
                 return;
 
-            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, settingsProvider.Get(), handle, Interlocked.Increment(ref wasUsed) == 1))
+            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, filePath, settingsProvider.Get(), handle, Interlocked.Increment(ref wasUsed) == 1))
                 Interlocked.Increment(ref eventsLost);
         }
 
@@ -50,7 +54,7 @@ namespace Vostok.Logging.File
         // TODO(krait): implement same as in ConsoleLog
         public ILog ForContext(string context) => this;
 
-        public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync(settingsProvider.Get().FilePath);
+        public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync(filePath);
 
         public void Flush() => FlushAsync().GetAwaiter().GetResult();
 
@@ -63,7 +67,7 @@ namespace Vostok.Logging.File
         {
             isDisposed = true;
             if (wasUsed != 0)
-                DefaultMuxerProvider.ObtainMuxer().RemoveLogReference(settingsProvider.Get().FilePath);
+                DefaultMuxerProvider.ObtainMuxer().RemoveLogReference(filePath);
             GC.SuppressFinalize(this);
         }
     }

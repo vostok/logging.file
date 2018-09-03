@@ -17,7 +17,7 @@ namespace Vostok.Logging.File
         private readonly object initLock = new object();
         private readonly IFileSystem fileSystem;
 
-        private readonly ConcurrentDictionary<string, SingleFileMuxer> muxersByFile = new ConcurrentDictionary<string, SingleFileMuxer>();
+        private readonly ConcurrentDictionary<FilePath, SingleFileMuxer> muxersByFile = new ConcurrentDictionary<FilePath, SingleFileMuxer>();
         private readonly LogEventInfo[] temporaryBuffer;
 
         private bool isInitialized;
@@ -30,14 +30,14 @@ namespace Vostok.Logging.File
 
         public long EventsLost => muxersByFile.Sum(pair => pair.Value.EventsLost);
 
-        public bool TryLog(LogEvent @event, FileLogSettings settings, object instigator, bool firstTime)
+        public bool TryLog(LogEvent @event, FilePath filePath, FileLogSettings settings, object instigator, bool firstTime)
         {
             if (!isInitialized)
                 Initialize();
 
             var eventInfo = new LogEventInfo(@event, settings);
-            var newMuxer = new Lazy<SingleFileMuxer>(() => new SingleFileMuxer(instigator, settings, fileSystem), LazyThreadSafetyMode.ExecutionAndPublication);
-            var muxer = muxersByFile.GetOrAdd(settings.FilePath, _ => newMuxer.Value);
+            var newMuxer = new Lazy<SingleFileMuxer>(() => new SingleFileMuxer(instigator, filePath, settings, fileSystem), LazyThreadSafetyMode.ExecutionAndPublication);
+            var muxer = muxersByFile.GetOrAdd(filePath, _ => newMuxer.Value);
 
             if (firstTime)
                 muxer.AddReference();
@@ -51,7 +51,7 @@ namespace Vostok.Logging.File
             return true;
         }
 
-        public Task FlushAsync(string file)
+        public Task FlushAsync(FilePath file)
         {
             if (!muxersByFile.TryGetValue(file, out var muxer))
                 return Task.CompletedTask;
@@ -65,7 +65,7 @@ namespace Vostok.Logging.File
 
         public Task FlushAsync() => Task.WhenAll(muxersByFile.Select(m => m.Value.FlushAsync()));
 
-        public void RemoveLogReference(string file)
+        public void RemoveLogReference(FilePath file)
         {
             if (!muxersByFile.TryGetValue(file, out var muxer))
                 return;
