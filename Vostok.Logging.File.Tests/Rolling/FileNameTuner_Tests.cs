@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Runtime.InteropServices;
+using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Logging.File.Rolling;
 
@@ -22,9 +23,12 @@ namespace Vostok.Logging.File.Tests.Rolling
         }
 
         [Test]
-        public void RemoveExtension_should_be_case_insensitive()
+        public void RemoveExtension_should_be_case_insensitive_on_windows()
         {
-            tuner.RemoveExtension(@"logs\log.TxT").Should().Be(@"logs\log");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                tuner.RemoveExtension(@"logs\log.TxT").Should().Be(@"logs\log");
+            else
+                tuner.RemoveExtension(@"logs\log.TxT").Should().Be(@"logs\log.TxT");
         }
 
         [Test]

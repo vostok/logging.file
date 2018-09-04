@@ -27,7 +27,7 @@ namespace Vostok.Logging.File.Tests
         [Test]
         public void Should_normalize_paths()
         {
-            new FilePath("log").Equals(new FilePath(@"logs\..\log")).Should().BeTrue();
+            new FilePath("log").Equals(new FilePath("logs/../log")).Should().BeTrue();
         }
 
         [Test]
