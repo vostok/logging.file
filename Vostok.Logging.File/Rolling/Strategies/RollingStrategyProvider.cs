@@ -10,14 +10,14 @@ namespace Vostok.Logging.File.Rolling.Strategies
         private readonly IRollingStrategyFactory strategyFactory;
         private readonly Func<FileLogSettings> settingsProvider;
 
+        private (RollingStrategyType type, IRollingStrategy strategy) currentItem;
+
         public RollingStrategyProvider(FilePath basePath, IRollingStrategyFactory strategyFactory, Func<FileLogSettings> settingsProvider)
         {
             this.basePath = basePath;
             this.strategyFactory = strategyFactory;
             this.settingsProvider = settingsProvider;
         }
-
-        private (RollingStrategyType type, IRollingStrategy strategy) currentItem;
 
         public IRollingStrategy ObtainStrategy()
         {

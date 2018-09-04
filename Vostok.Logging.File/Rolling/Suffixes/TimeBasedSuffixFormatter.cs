@@ -8,9 +8,18 @@ namespace Vostok.Logging.File.Rolling.Suffixes
 {
     internal class TimeBasedSuffixFormatter : IFileSuffixFormatter<DateTime>
     {
+        private static readonly Dictionary<RollingPeriod, string> formatsByPeriod = new Dictionary<RollingPeriod, string>
+        {
+            {RollingPeriod.Day, "yyyy.MM.dd"},
+            {RollingPeriod.Hour, "yyyy.MM.dd.HH"},
+            {RollingPeriod.Minute, "yyyy.MM.dd.HH.mm"},
+            {RollingPeriod.Second, "yyyy.MM.dd.HH.mm.ss"}
+        };
+
+        private static readonly string[] formats = formatsByPeriod.Values.ToArray();
         private readonly Func<RollingPeriod> rollingPeriodProvider;
 
-        public TimeBasedSuffixFormatter(Func<RollingPeriod> rollingPeriodProvider) => 
+        public TimeBasedSuffixFormatter(Func<RollingPeriod> rollingPeriodProvider) =>
             this.rollingPeriodProvider = rollingPeriodProvider;
 
         public string FormatSuffix(DateTime now)
@@ -30,15 +39,5 @@ namespace Vostok.Logging.File.Rolling.Suffixes
 
             return default;
         }
-
-        private static readonly Dictionary<RollingPeriod, string> formatsByPeriod = new Dictionary<RollingPeriod, string>
-        {
-            { RollingPeriod.Day, "yyyy.MM.dd" },
-            { RollingPeriod.Hour, "yyyy.MM.dd.HH" },
-            { RollingPeriod.Minute, "yyyy.MM.dd.HH.mm" },
-            { RollingPeriod.Second, "yyyy.MM.dd.HH.mm.ss" }
-        };
-
-        private static readonly string[] formats = formatsByPeriod.Values.ToArray();
     }
 }

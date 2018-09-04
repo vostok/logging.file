@@ -24,7 +24,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
             this.fileNameTuner = fileNameTuner;
         }
 
-        public IEnumerable<string> DiscoverExistingFiles(string basePath) => 
+        public IEnumerable<string> DiscoverExistingFiles(string basePath) =>
             RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, fileNameTuner).Select(file => fileNameTuner.RestoreExtension(file.path));
 
         public string GetCurrentFile(string basePath)

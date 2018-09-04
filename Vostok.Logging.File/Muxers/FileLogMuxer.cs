@@ -74,7 +74,7 @@ namespace Vostok.Logging.File.Muxers
             if (muxer.RemoveReference())
             {
                 muxer.Dispose();
-                muxersByFile.TryRemove(file, out var _);
+                muxersByFile.TryRemove(file, out _);
             }
         }
 
