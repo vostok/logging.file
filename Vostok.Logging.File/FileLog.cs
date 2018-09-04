@@ -60,8 +60,13 @@ namespace Vostok.Logging.File
 
         public bool IsEnabledFor(LogLevel level) => settingsProvider.Get().EnabledLogLevels.Contains(level);
 
-        public ILog ForContext(string context) =>
-            context == null ? (ILog)this : new SourceContextWrapper(this, context);
+        public ILog ForContext(string context)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            return new SourceContextWrapper(this, context);
+        }
 
         public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync(filePath);
 

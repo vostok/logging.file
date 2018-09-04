@@ -62,18 +62,6 @@ namespace Vostok.Logging.File.Tests
                 .ContainSingle(e => (string)e.Properties[WellKnownProperties.SourceContext] == "ctx3");
         }
 
-        [Test]
-        public void ForContext_should_support_null_context()
-        {
-            CaptureEvents(
-                    log => log
-                        .ForContext("ctx")
-                        .ForContext(null)
-                        .Info("Test."))
-                .Should()
-                .ContainSingle(e => e.Properties == null || !e.Properties.ContainsKey(WellKnownProperties.SourceContext));
-        }
-
         private static IEnumerable<LogEvent> CaptureEvents(Action<FileLog> action)
         {
             var events = new List<LogEvent>();
