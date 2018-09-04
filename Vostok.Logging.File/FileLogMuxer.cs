@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
+using Vostok.Logging.File.EventsWriting;
+using Vostok.Logging.File.Rolling;
+using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File
 {
@@ -15,28 +18,26 @@ namespace Vostok.Logging.File
 
         private readonly AsyncManualResetEvent flushSignal = new AsyncManualResetEvent(true);
         private readonly object initLock = new object();
-        private readonly IFileSystem fileSystem;
 
         private readonly ConcurrentDictionary<FilePath, SingleFileMuxer> muxersByFile = new ConcurrentDictionary<FilePath, SingleFileMuxer>();
         private readonly LogEventInfo[] temporaryBuffer;
 
         private bool isInitialized;
 
-        public FileLogMuxer(int temporaryBufferCapacity, IFileSystem fileSystem)
+        public FileLogMuxer(int temporaryBufferCapacity)
         {
-            this.fileSystem = fileSystem;
             temporaryBuffer = new LogEventInfo[temporaryBufferCapacity];
         }
 
         public long EventsLost => muxersByFile.Sum(pair => pair.Value.EventsLost);
 
-        public bool TryLog(LogEvent @event, FilePath filePath, FileLogSettings settings, object instigator, bool firstTime)
+        public bool TryLog(LogEvent @event, FilePath filePath, FileLogSettings settings, IEventsWriterProvider eventsWriterProvider, object instigator, bool firstTime)
         {
             if (!isInitialized)
                 Initialize();
 
             var eventInfo = new LogEventInfo(@event, settings);
-            var newMuxer = new Lazy<SingleFileMuxer>(() => new SingleFileMuxer(instigator, filePath, settings, fileSystem), LazyThreadSafetyMode.ExecutionAndPublication);
+            var newMuxer = new Lazy<SingleFileMuxer>(() => new SingleFileMuxer(instigator, filePath, settings, eventsWriterProvider), LazyThreadSafetyMode.ExecutionAndPublication);
             var muxer = muxersByFile.GetOrAdd(filePath, _ => newMuxer.Value);
 
             if (firstTime)

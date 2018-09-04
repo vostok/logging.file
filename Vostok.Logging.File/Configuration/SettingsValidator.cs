@@ -15,8 +15,14 @@ namespace Vostok.Logging.File.Configuration
             if (settings.OutputTemplate == null)
                 throw new ArgumentNullException(nameof(settings.OutputTemplate));
 
+            if (!Enum.IsDefined(typeof(FileOpenMode), settings.FileOpenMode))
+                throw new ArgumentOutOfRangeException(nameof(settings.FileOpenMode));
+
             if (settings.Encoding == null)
                 throw new ArgumentNullException(nameof(settings.Encoding));
+
+            if (settings.OutputBufferSize <= 0)
+                throw new ArgumentOutOfRangeException(nameof(settings.OutputBufferSize));
 
             if (settings.EnabledLogLevels == null)
                 throw new ArgumentNullException(nameof(settings.EnabledLogLevels));

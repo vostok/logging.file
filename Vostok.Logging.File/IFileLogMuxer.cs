@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
+using Vostok.Logging.File.EventsWriting;
 
 namespace Vostok.Logging.File
 {
@@ -8,7 +9,7 @@ namespace Vostok.Logging.File
     {
         long EventsLost { get; }
 
-        bool TryLog(LogEvent @event, FilePath filePath, FileLogSettings settings, object instigator, bool firstTime);
+        bool TryLog(LogEvent @event, FilePath filePath, FileLogSettings settings, IEventsWriterProvider eventsWriterProvider, object instigator, bool firstTime);
 
         Task FlushAsync(FilePath file);
 

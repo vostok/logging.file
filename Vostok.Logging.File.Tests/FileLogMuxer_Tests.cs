@@ -16,6 +16,7 @@ namespace Vostok.Logging.File.Tests
         private IFileSystem slowFileSystem;
         private IEventsWriter slowEventsWriter;
         private FileLogMuxer muxer;
+        private IEventsWriterProvider eventsWriterProvider;
 
         [SetUp]
         public void TestSetup()
@@ -25,7 +26,11 @@ namespace Vostok.Logging.File.Tests
             slowEventsWriter.When(ew => ew.WriteEvents(Arg.Any<LogEventInfo[]>(), Arg.Any<int>())).Do(_ => Thread.Sleep(100));
             slowFileSystem.OpenFile(new FilePath("log").NormalizedPath, Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>()).Returns(slowEventsWriter);
 
-            muxer = new FileLogMuxer(100, slowFileSystem);
+            eventsWriterProvider = Substitute.For<IEventsWriterProvider>();
+
+            muxer = new FileLogMuxer(100);
+
+            throw new NotImplementedException();
         }
 
         [Test]
@@ -37,7 +42,7 @@ namespace Vostok.Logging.File.Tests
             var @event = CreateLogEvent();
 
 
-            muxer.TryLog(@event, new FilePath(settings.FilePath),  settings, log, true);
+            muxer.TryLog(@event, new FilePath(settings.FilePath), settings, eventsWriterProvider, log, true);
 
             var task = muxer.FlushAsync(new FilePath(settings.FilePath));
             task.IsCompleted.Should().BeFalse();

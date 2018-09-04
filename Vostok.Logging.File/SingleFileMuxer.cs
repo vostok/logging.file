@@ -15,11 +15,9 @@ namespace Vostok.Logging.File
 {
     internal class SingleFileMuxer : IDisposable
     {
-        private static readonly RollingStrategyFactory RollingStrategyFactory = new RollingStrategyFactory();
-
         private readonly List<Waiter> flushWaiters = new List<Waiter>();
         private readonly ConcurrentBoundedQueue<LogEventInfo> events;
-        private readonly EventsWriterProvider writerProvider;
+        private readonly IEventsWriterProvider writerProvider;
         private readonly FilePath filePath;
         private readonly object owner;
 
@@ -30,19 +28,12 @@ namespace Vostok.Logging.File
 
         private int references;
 
-        public SingleFileMuxer(object owner, FilePath filePath, FileLogSettings settings, IFileSystem fileSystem)
+        public SingleFileMuxer(object owner, FilePath filePath, FileLogSettings settings, IEventsWriterProvider writerProvider)
         {
             this.owner = owner;
             this.filePath = filePath;
+            this.writerProvider = writerProvider;
             events = new ConcurrentBoundedQueue<LogEventInfo>(settings.EventsQueueCapacity);
-
-            writerProvider = new EventsWriterProvider(
-                filePath,
-                new RollingStrategyProvider(filePath, RollingStrategyFactory, () => settings),
-                fileSystem,
-                new RollingGarbageCollector(fileSystem, () => settings.RollingStrategy.MaxFiles),
-                new CooldownController(),
-                () => settings);
         }
 
         public long EventsLost => Interlocked.Read(ref eventsLost);

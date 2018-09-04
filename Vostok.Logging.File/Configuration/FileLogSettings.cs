@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Formatting;
@@ -26,5 +27,18 @@ namespace Vostok.Logging.File.Configuration
         public int EventsQueueCapacity { get; set; } = 50 * 1000;
 
         public TimeSpan TargetFileUpdateCooldown = TimeSpan.FromSeconds(1);
+
+        internal FileLogSettings Clone() => new FileLogSettings
+        {
+            FilePath = FilePath,
+            OutputTemplate = OutputTemplate,
+            FileOpenMode = FileOpenMode,
+            RollingStrategy = RollingStrategy.Clone(),
+            Encoding = Encoding,
+            OutputBufferSize = OutputBufferSize,
+            EnabledLogLevels = EnabledLogLevels.ToArray(),
+            EventsQueueCapacity = EventsQueueCapacity,
+            TargetFileUpdateCooldown = TargetFileUpdateCooldown
+        };
     }
 }

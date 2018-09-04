@@ -1,17 +1,15 @@
 ﻿using System;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.Rolling;
-using Vostok.Logging.File.Rolling.Strategies;
 
-namespace Vostok.Logging.File
+namespace Vostok.Logging.File.Rolling.Strategies
 {
-    internal class RollingStrategyProvider
+    internal class RollingStrategyProvider : IRollingStrategyProvider
     {
         private readonly FilePath basePath;
-        private readonly RollingStrategyFactory strategyFactory;
+        private readonly IRollingStrategyFactory strategyFactory;
         private readonly Func<FileLogSettings> settingsProvider;
 
-        public RollingStrategyProvider(FilePath basePath, RollingStrategyFactory strategyFactory, Func<FileLogSettings> settingsProvider)
+        public RollingStrategyProvider(FilePath basePath, IRollingStrategyFactory strategyFactory, Func<FileLogSettings> settingsProvider)
         {
             this.basePath = basePath;
             this.strategyFactory = strategyFactory;

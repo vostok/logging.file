@@ -22,6 +22,6 @@ namespace Vostok.Logging.File
         public IFileLogMuxer ObtainMuxer() => muxer.Value;
 
         private static FileLogMuxer CreateMuxer(FileLogGlobalSettings settings) => 
-            new FileLogMuxer(settings.EventsTemporaryBufferCapacity, new FileSystem());
+            new FileLogMuxer(settings.EventsTemporaryBufferCapacity);
     }
 }

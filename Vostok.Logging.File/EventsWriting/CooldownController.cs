@@ -2,7 +2,7 @@
 
 namespace Vostok.Logging.File.EventsWriting
 {
-    internal class CooldownController
+    internal class CooldownController : ICooldownController
     {
         private DateTime cooldownExpiration;
 

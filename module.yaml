@@ -19,3 +19,6 @@ full-build > notests:
   build:
     target: Vostok.Logging.File.sln
     configuration: Release
+
+  deps:
+    - vostok.commons.testing/src

@@ -7,6 +7,9 @@ using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Wrappers;
 using Vostok.Logging.File.Configuration;
+using Vostok.Logging.File.EventsWriting;
+using Vostok.Logging.File.Rolling;
+using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File
 {
@@ -15,8 +18,9 @@ namespace Vostok.Logging.File
     {
         private static readonly FileLogMuxerProvider DefaultMuxerProvider = new FileLogMuxerProvider();
 
-        private readonly FileLogMuxerProvider muxerProvider;
+        private readonly IEventsWriterProvider eventsWriterProvider;
         private readonly SafeSettingsProvider settingsProvider;
+        private readonly FileLogMuxerProvider muxerProvider;
         private readonly object handle = new object();
         private readonly FilePath filePath;
 
@@ -33,6 +37,7 @@ namespace Vostok.Logging.File
         {
             this.settingsProvider = new SafeSettingsProvider(() => SettingsValidator.ValidateSettings(settingsProvider()));
             filePath = new FilePath(settingsProvider().FilePath);
+            eventsWriterProvider = CreateWriterProvider(filePath, this.settingsProvider);
         }
 
         ~FileLog() => Dispose();
@@ -47,7 +52,7 @@ namespace Vostok.Logging.File
             if (@event == null)
                 return;
 
-            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, filePath, settingsProvider.Get(), handle, wasUsed.TrySetTrue()))
+            if (!DefaultMuxerProvider.ObtainMuxer().TryLog(@event, filePath, settingsProvider.Get(), eventsWriterProvider, handle, wasUsed.TrySetTrue()))
                 Interlocked.Increment(ref eventsLost);
         }
 
@@ -71,6 +76,19 @@ namespace Vostok.Logging.File
             if (wasUsed)
                 DefaultMuxerProvider.ObtainMuxer().RemoveLogReference(filePath);
             GC.SuppressFinalize(this);
+        }
+
+        private static IEventsWriterProvider CreateWriterProvider(FilePath filePath, SafeSettingsProvider settingsProvider)
+        {
+            var fileSystem = new FileSystem();
+
+            return new EventsWriterProvider(
+                filePath,
+                new RollingStrategyProvider(filePath, new RollingStrategyFactory(), settingsProvider.Get),
+                fileSystem,
+                new RollingGarbageCollector(fileSystem, () => settingsProvider.Get().RollingStrategy.MaxFiles),
+                new CooldownController(),
+                settingsProvider.Get);
         }
     }
 }

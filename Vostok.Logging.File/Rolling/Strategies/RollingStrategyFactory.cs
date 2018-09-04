@@ -4,7 +4,7 @@ using Vostok.Logging.File.Rolling.SuffixFormatters;
 
 namespace Vostok.Logging.File.Rolling.Strategies
 {
-    internal class RollingStrategyFactory
+    internal class RollingStrategyFactory : IRollingStrategyFactory
     {
         public IRollingStrategy CreateStrategy(FilePath basePath, RollingStrategyType type, Func<FileLogSettings> settingsProvider)
         {
