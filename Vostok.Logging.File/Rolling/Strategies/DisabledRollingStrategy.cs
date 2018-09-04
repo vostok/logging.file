@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Vostok.Logging.File.Helpers;
 
 namespace Vostok.Logging.File.Rolling.Strategies
 {

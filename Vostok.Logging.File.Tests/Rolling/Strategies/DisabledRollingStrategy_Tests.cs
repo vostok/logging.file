@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using Vostok.Logging.File.Helpers;
 using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File.Tests.Rolling.Strategies

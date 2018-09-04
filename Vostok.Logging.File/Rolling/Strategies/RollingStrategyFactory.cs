@@ -1,6 +1,8 @@
 ﻿using System;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.Rolling.SuffixFormatters;
+using Vostok.Logging.File.Helpers;
+using Vostok.Logging.File.Rolling.Helpers;
+using Vostok.Logging.File.Rolling.Suffixes;
 
 namespace Vostok.Logging.File.Rolling.Strategies
 {

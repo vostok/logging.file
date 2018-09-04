@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Vostok.Logging.File.Configuration;
+using Vostok.Logging.File.Helpers;
 using Vostok.Logging.File.Rolling;
 using Vostok.Logging.File.Rolling.Strategies;
 

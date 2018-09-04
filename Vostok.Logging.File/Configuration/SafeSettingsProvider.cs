@@ -1,4 +1,5 @@
 ﻿using System;
+using Vostok.Logging.File.Helpers;
 
 namespace Vostok.Logging.File.Configuration
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Vostok.Logging.File.Helpers;
 
 namespace Vostok.Logging.File.Rolling
 {

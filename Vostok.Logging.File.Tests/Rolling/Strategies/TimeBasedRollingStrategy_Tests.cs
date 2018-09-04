@@ -2,9 +2,11 @@
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using Vostok.Logging.File.Helpers;
 using Vostok.Logging.File.Rolling;
+using Vostok.Logging.File.Rolling.Helpers;
 using Vostok.Logging.File.Rolling.Strategies;
-using Vostok.Logging.File.Rolling.SuffixFormatters;
+using Vostok.Logging.File.Rolling.Suffixes;
 
 namespace Vostok.Logging.File.Tests.Rolling.Strategies
 {

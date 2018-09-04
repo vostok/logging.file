@@ -3,6 +3,7 @@ using System.Linq;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using Vostok.Logging.File.Helpers;
 using Vostok.Logging.File.Rolling;
 
 namespace Vostok.Logging.File.Tests.Rolling

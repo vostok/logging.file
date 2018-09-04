@@ -7,6 +7,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
+using Vostok.Logging.File.Helpers;
 
 namespace Vostok.Logging.File.Tests
 {

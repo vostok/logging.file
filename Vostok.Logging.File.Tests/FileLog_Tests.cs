@@ -6,6 +6,8 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
+using Vostok.Logging.File.Helpers;
+using Vostok.Logging.File.Muxers;
 using Vostok.Logging.Formatting;
 
 namespace Vostok.Logging.File.Tests

@@ -8,6 +8,8 @@ using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Wrappers;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
+using Vostok.Logging.File.Helpers;
+using Vostok.Logging.File.Muxers;
 
 namespace Vostok.Logging.File
 {

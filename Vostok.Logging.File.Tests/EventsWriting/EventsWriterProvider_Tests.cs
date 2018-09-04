@@ -5,6 +5,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
+using Vostok.Logging.File.Helpers;
 using Vostok.Logging.File.Rolling;
 using Vostok.Logging.File.Rolling.Strategies;
 
