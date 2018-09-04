@@ -10,7 +10,7 @@ namespace Vostok.Logging.File.Configuration
 {
     public class FileLogSettings
     {
-        public string FilePath { get; set; } = @"logs\log";
+        public string FilePath { get; set; } = "logs/log";
 
         public OutputTemplate OutputTemplate { get; set; } = OutputTemplate.Default;
 
