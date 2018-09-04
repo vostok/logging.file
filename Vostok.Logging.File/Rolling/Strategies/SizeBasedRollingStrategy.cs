@@ -9,35 +9,33 @@ namespace Vostok.Logging.File.Rolling.Strategies
     internal class SizeBasedRollingStrategy : IRollingStrategy
     {
         private readonly ISizeBasedRoller sizeBasedRoller;
-        private readonly IFileNameTuner fileNameTuner;
         private readonly IFileSystem fileSystem;
         private readonly IFileSuffixFormatter<int> suffixFormatter;
 
-        public SizeBasedRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<int> suffixFormatter, ISizeBasedRoller sizeBasedRoller, IFileNameTuner fileNameTuner)
+        public SizeBasedRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<int> suffixFormatter, ISizeBasedRoller sizeBasedRoller)
         {
             this.sizeBasedRoller = sizeBasedRoller;
-            this.fileNameTuner = fileNameTuner;
             this.fileSystem = fileSystem;
             this.suffixFormatter = suffixFormatter;
         }
 
-        public IEnumerable<string> DiscoverExistingFiles(string basePath) =>
-            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, fileNameTuner).Select(file => fileNameTuner.RestoreExtension(file.path));
+        public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath) =>
+            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter).Select(file => file.path);
 
-        public string GetCurrentFile(string basePath)
+        public FilePath GetCurrentFile(FilePath basePath)
         {
-            var filesWithSuffix = RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, fileNameTuner);
+            var filesWithSuffix = RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter);
 
             var part = 1;
             var lastFile = filesWithSuffix.LastOrDefault();
             if (lastFile.suffix != null)
             {
                 part = lastFile.suffix.Value;
-                if (sizeBasedRoller.ShouldRollOver(fileNameTuner.RestoreExtension(lastFile.path)))
+                if (sizeBasedRoller.ShouldRollOver(lastFile.path))
                     part++;
             }
 
-            return fileNameTuner.RestoreExtension(fileNameTuner.RemoveExtension(basePath) + suffixFormatter.FormatSuffix(part));
+            return basePath + suffixFormatter.FormatSuffix(part);
         }
     }
 }

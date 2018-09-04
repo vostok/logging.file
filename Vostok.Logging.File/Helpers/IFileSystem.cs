@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
 
@@ -6,14 +7,14 @@ namespace Vostok.Logging.File.Helpers
 {
     internal interface IFileSystem
     {
-        string[] GetFilesByPrefix(string prefix);
+        IEnumerable<FilePath> GetFilesByPrefix(FilePath file);
 
-        long GetFileSize(string file);
+        long GetFileSize(FilePath file);
 
-        bool Exists(string file);
+        bool Exists(FilePath file);
 
-        bool TryRemoveFile(string file);
+        bool TryRemoveFile(FilePath file);
 
-        IEventsWriter OpenFile(string file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize);
+        IEventsWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize);
     }
 }

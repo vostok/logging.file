@@ -36,13 +36,13 @@ namespace Vostok.Logging.File.Tests.Muxers
             owner = new object();
             tempBuffer = new LogEventInfo[1];
 
-            muxer = new SingleFileMuxer(owner, new FilePath("log"), new FileLogSettings(), writerProviderFactory);
+            muxer = new SingleFileMuxer(owner, "log", new FileLogSettings(), writerProviderFactory);
         }
 
         [Test]
         public void EventsLost_should_be_incremented_after_losing_an_event()
         {
-            muxer = new SingleFileMuxer(owner, new FilePath("log"), new FileLogSettings {EventsQueueCapacity = 0}, writerProviderFactory);
+            muxer = new SingleFileMuxer(owner, "log", new FileLogSettings {EventsQueueCapacity = 0}, writerProviderFactory);
 
             muxer.TryAdd(CreateEventInfo(), owner);
             muxer.TryAdd(CreateEventInfo(), owner);
@@ -59,7 +59,7 @@ namespace Vostok.Logging.File.Tests.Muxers
         [Test]
         public void TryLog_should_return_false_if_event_was_not_added()
         {
-            muxer = new SingleFileMuxer(owner, new FilePath("log"), new FileLogSettings { EventsQueueCapacity = 0 }, writerProviderFactory);
+            muxer = new SingleFileMuxer(owner, "log", new FileLogSettings { EventsQueueCapacity = 0 }, writerProviderFactory);
 
             muxer.TryAdd(CreateEventInfo(), owner).Should().BeFalse();
         }

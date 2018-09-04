@@ -64,7 +64,7 @@ namespace Vostok.Logging.File.Tests.Muxers
 
         private bool AddEvent(LogEvent @event = null)
         {
-            var result = muxer.TryLog(@event ?? CreateLogEvent(), new FilePath("log"), new FileLogSettings(), null, false);
+            var result = muxer.TryLog(@event ?? CreateLogEvent(), "log", new FileLogSettings(), null, false);
             return result;
         }
     }

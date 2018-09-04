@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Vostok.Logging.File.Helpers;
 
 namespace Vostok.Logging.File.Rolling.Strategies
 {
@@ -7,8 +8,8 @@ namespace Vostok.Logging.File.Rolling.Strategies
         /// <summary>
         /// Returned files must be sorted oldest to newest.
         /// </summary>
-        IEnumerable<string> DiscoverExistingFiles(string basePath);
+        IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath);
 
-        string GetCurrentFile(string basePath);
+        FilePath GetCurrentFile(FilePath basePath);
     }
 }

@@ -36,5 +36,43 @@ namespace Vostok.Logging.File.Tests.Helpers
         {
             new FilePath("log").GetHashCode().Should().Be(new FilePath("log").NormalizedPath.ToLowerInvariant().GetHashCode());
         }
+
+        [Test]
+        public void PathWithoutExtension_should_contain_path_without_extension()
+        {
+            new FilePath("logs/log.txt").PathWithoutExtension.Should().EndWith("log");
+        }
+
+        [Test]
+        public void Extension_should_contain_extension()
+        {
+            new FilePath("logs/log.txt").Extension.Should().Be(".txt");
+        }
+
+        [Test]
+        public void Plus_operator_should_add_suffix_to_path_without_extension()
+        {
+            var newPath = new FilePath("logs/log.txt") + "_xx";
+
+            newPath.NormalizedPath.Should().EndWith("log_xx.txt");
+            newPath.PathWithoutExtension.Should().EndWith("log_xx");
+            newPath.Extension.Should().Be(".txt");
+        }
+
+        [Test]
+        public void Extension_should_only_contain_last_extension()
+        {
+            var path = new FilePath("xxx/yy.txt.txt");
+
+            path.Extension.Should().Be(".txt");
+            path.PathWithoutExtension.Should().EndWith("yy.txt");
+        }
+
+        [TestCase("logs/log")]
+        [TestCase("logs/log.")]
+        public void Extension_should_be_empty_string_if_there_is_no_extension(string basePath)
+        {
+            new FilePath(basePath).Extension.Should().BeEmpty();
+        }
     }
 }

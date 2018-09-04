@@ -56,7 +56,7 @@ namespace Vostok.Logging.File
         {
             this.muxerProvider = muxerProvider;
             this.settingsProvider = new SafeSettingsProvider(() => SettingsValidator.ValidateSettings(settingsProvider()));
-            filePath = new FilePath(settingsProvider().FilePath);
+            filePath = settingsProvider().FilePath;
         }
 
         /// <inheritdoc />

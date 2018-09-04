@@ -53,7 +53,7 @@ namespace Vostok.Logging.File.Configuration
         /// Only log events with levels contained in this array will be logged.
         /// </summary>
         [NotNull]
-        public LogLevel[] EnabledLogLevels { get; set; } = (LogLevel[]) Enum.GetValues(typeof(LogLevel));
+        public LogLevel[] EnabledLogLevels { get; set; } = (LogLevel[])Enum.GetValues(typeof(LogLevel));
 
         /// <summary>
         /// Capacity of the log events queue.

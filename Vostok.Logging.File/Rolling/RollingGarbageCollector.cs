@@ -15,14 +15,14 @@ namespace Vostok.Logging.File.Rolling
             this.filesToKeepProvider = filesToKeepProvider;
         }
 
-        public void RemoveStaleFiles(string[] allFiles)
+        public void RemoveStaleFiles(FilePath[] allFiles)
         {
             var filesToKeep = filesToKeepProvider();
             if (filesToKeep < 1)
                 return;
 
             foreach (var file in allFiles.Take(allFiles.Length - filesToKeep))
-                fileSystem.TryRemoveFile(file);
+                fileSystem.TryRemoveFile(file.NormalizedPath);
         }
     }
 }

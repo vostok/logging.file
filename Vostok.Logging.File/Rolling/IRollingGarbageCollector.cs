@@ -1,7 +1,9 @@
-﻿namespace Vostok.Logging.File.Rolling
+﻿using Vostok.Logging.File.Helpers;
+
+namespace Vostok.Logging.File.Rolling
 {
     internal interface IRollingGarbageCollector
     {
-        void RemoveStaleFiles(string[] allFiles);
+        void RemoveStaleFiles(FilePath[] allFiles);
     }
 }

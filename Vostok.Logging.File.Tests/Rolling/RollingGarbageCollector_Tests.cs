@@ -12,17 +12,17 @@ namespace Vostok.Logging.File.Tests.Rolling
     internal class RollingGarbageCollector_Tests
     {
         private RollingGarbageCollector collector;
-        private List<string> removedFiles;
+        private List<FilePath> removedFiles;
         private int filesToKeep;
 
         [SetUp]
         public void TestSetup()
         {
             filesToKeep = 2;
-            removedFiles = new List<string>();
+            removedFiles = new List<FilePath>();
 
             var fileSystem = Substitute.For<IFileSystem>();
-            fileSystem.TryRemoveFile(Arg.Do<string>(s => removedFiles.Add(s)));
+            fileSystem.TryRemoveFile(Arg.Do<FilePath>(s => removedFiles.Add(s)));
 
             collector = new RollingGarbageCollector(fileSystem, () => filesToKeep);
         }
@@ -63,9 +63,9 @@ namespace Vostok.Logging.File.Tests.Rolling
             removedFiles.Should().BeEmpty();
         }
 
-        private static string[] DiscoverFiles(int files)
+        private static FilePath[] DiscoverFiles(int files)
         {
-            return Enumerable.Range(0, files).Select(i => i.ToString()).ToArray();
+            return Enumerable.Range(0, files).Select(i => (FilePath)i.ToString()).ToArray();
         }
     }
 }

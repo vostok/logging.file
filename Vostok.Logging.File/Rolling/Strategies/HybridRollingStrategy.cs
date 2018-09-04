@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vostok.Logging.File.Helpers;
-using Vostok.Logging.File.Rolling.Helpers;
 using Vostok.Logging.File.Rolling.Suffixes;
 
 namespace Vostok.Logging.File.Rolling.Strategies
@@ -13,21 +12,19 @@ namespace Vostok.Logging.File.Rolling.Strategies
         private readonly IRollingStrategy timeRollingStrategy;
         private readonly IRollingStrategy sizeRollingStrategy;
         private readonly IFileSuffixFormatter<(DateTime, int)> suffixFormatter;
-        private readonly IFileNameTuner fileNameTuner;
 
-        public HybridRollingStrategy(IFileSystem fileSystem, IRollingStrategy timeRollingStrategy, IRollingStrategy sizeRollingStrategy, IFileSuffixFormatter<(DateTime, int)> suffixFormatter, IFileNameTuner fileNameTuner)
+        public HybridRollingStrategy(IFileSystem fileSystem, IRollingStrategy timeRollingStrategy, IRollingStrategy sizeRollingStrategy, IFileSuffixFormatter<(DateTime, int)> suffixFormatter)
         {
             this.fileSystem = fileSystem;
             this.timeRollingStrategy = timeRollingStrategy;
             this.sizeRollingStrategy = sizeRollingStrategy;
             this.suffixFormatter = suffixFormatter;
-            this.fileNameTuner = fileNameTuner;
         }
 
-        public IEnumerable<string> DiscoverExistingFiles(string basePath) =>
-            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, fileNameTuner).Select(file => fileNameTuner.RestoreExtension(file.path));
+        public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath) =>
+            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter).Select(file => file.path);
 
-        public string GetCurrentFile(string basePath)
+        public FilePath GetCurrentFile(FilePath basePath)
         {
             var timeBasedPrefix = timeRollingStrategy.GetCurrentFile(basePath);
 

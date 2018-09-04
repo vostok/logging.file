@@ -1,21 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Vostok.Logging.File.Helpers;
-using Vostok.Logging.File.Rolling.Helpers;
 using Vostok.Logging.File.Rolling.Suffixes;
 
 namespace Vostok.Logging.File.Rolling.Strategies
 {
     internal static class RollingStrategyHelper
     {
-        public static IEnumerable<(string path, TSuffix? suffix)> DiscoverExistingFiles<TSuffix>(string basePath, IFileSystem fileSystem, IFileSuffixFormatter<TSuffix> suffixFormatter, IFileNameTuner fileNameTuner)
+        public static IEnumerable<(FilePath path, TSuffix? suffix)> DiscoverExistingFiles<TSuffix>(FilePath basePath, IFileSystem fileSystem, IFileSuffixFormatter<TSuffix> suffixFormatter)
             where TSuffix : struct
         {
-            basePath = fileNameTuner.RemoveExtension(basePath);
-
             var allFiles = fileSystem.GetFilesByPrefix(basePath);
 
-            var filesWithSuffix = allFiles.Select(fileNameTuner.RemoveExtension).Select(path => (path, suffix: suffixFormatter.TryParseSuffix(path.Substring(basePath.Length))));
+            var filesWithSuffix = allFiles.Select(path => (path, suffix: suffixFormatter.TryParseSuffix(path.PathWithoutExtension.Substring(basePath.PathWithoutExtension.Length))));
 
             return filesWithSuffix.Where(file => file.suffix != null).OrderBy(file => file.suffix);
         }

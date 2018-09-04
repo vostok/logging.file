@@ -14,13 +14,13 @@ namespace Vostok.Logging.File.Rolling.Helpers
             this.maxFileSizeProvider = maxFileSizeProvider;
         }
 
-        public bool ShouldRollOver(string currentFilePath)
+        public bool ShouldRollOver(FilePath currentFilePath)
         {
             if (currentFilePath != null)
             {
                 var maxFileSize = maxFileSizeProvider();
 
-                if (fileSystem.GetFileSize(currentFilePath) >= maxFileSize)
+                if (fileSystem.GetFileSize(currentFilePath.NormalizedPath) >= maxFileSize)
                     return true;
             }
 

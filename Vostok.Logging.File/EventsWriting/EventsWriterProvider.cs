@@ -17,7 +17,7 @@ namespace Vostok.Logging.File.EventsWriting
         private readonly ICooldownController cooldownController;
         private readonly object sync = new object();
 
-        private (string file, FileLogSettings settings, IEventsWriter writer) currentItem;
+        private (FilePath file, FileLogSettings settings, IEventsWriter writer) currentItem;
         private bool isDisposed;
         private bool wasUsed;
 
@@ -66,7 +66,7 @@ namespace Vostok.Logging.File.EventsWriting
                     if (currentFile != currentItem.file || ShouldReopenWriter(currentItem.settings, settings) || currentItem.writer == null)
                     {
                         currentItem.writer?.Dispose();
-                        currentItem = (currentFile, settings.Clone(), fileSystem.OpenFile(currentFile, settings.FileOpenMode, settings.Encoding, settings.OutputBufferSize));
+                        currentItem = (currentFile, settings.Clone(), fileSystem.OpenFile(currentFile.NormalizedPath, settings.FileOpenMode, settings.Encoding, settings.OutputBufferSize));
                         garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
                     }
 

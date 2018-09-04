@@ -23,7 +23,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
         {
             rollingPeriod = RollingPeriod.Day;
 
-            suffixFormatter.FormatSuffix(DateTime.Parse("2018-08-31T06:24:13")).Should().Be("2018.08.31");
+            suffixFormatter.FormatSuffix(DateTime.Parse("2018-08-31T06:24:13")).Should().Be("-2018-08-31");
         }
 
         [Test]
@@ -31,7 +31,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
         {
             rollingPeriod = RollingPeriod.Hour;
 
-            suffixFormatter.FormatSuffix(DateTime.Parse("2018-08-31T06:24:13")).Should().Be("2018.08.31.06");
+            suffixFormatter.FormatSuffix(DateTime.Parse("2018-08-31T06:24:13")).Should().Be("-2018-08-31-06");
         }
 
         [Test]
@@ -39,7 +39,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
         {
             rollingPeriod = RollingPeriod.Minute;
 
-            suffixFormatter.FormatSuffix(DateTime.Parse("2018-08-31T06:24:13")).Should().Be("2018.08.31.06.24");
+            suffixFormatter.FormatSuffix(DateTime.Parse("2018-08-31T06:24:13")).Should().Be("-2018-08-31-06-24");
         }
 
         [Test]
@@ -47,40 +47,40 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
         {
             rollingPeriod = RollingPeriod.Second;
 
-            suffixFormatter.FormatSuffix(DateTime.Parse("2018-08-31T06:24:13")).Should().Be("2018.08.31.06.24.13");
+            suffixFormatter.FormatSuffix(DateTime.Parse("2018-08-31T06:24:13")).Should().Be("-2018-08-31-06-24-13");
         }
 
         [Test]
         public void TryParseSuffix_should_support_format_for_Day_period()
         {
-            suffixFormatter.TryParseSuffix("2018.08.31").Should().Be(DateTime.Parse("2018-08-31"));
+            suffixFormatter.TryParseSuffix("-2018-08-31").Should().Be(DateTime.Parse("2018-08-31"));
         }
 
         [Test]
         public void TryParseSuffix_should_support_format_for_Hour_period()
         {
-            suffixFormatter.TryParseSuffix("2018.08.31.06").Should().Be(DateTime.Parse("2018-08-31T06:00:00"));
+            suffixFormatter.TryParseSuffix("-2018-08-31-06").Should().Be(DateTime.Parse("2018-08-31T06:00:00"));
         }
 
         [Test]
         public void TryParseSuffix_should_support_format_for_Minute_period()
         {
-            suffixFormatter.TryParseSuffix("2018.08.31.06.24").Should().Be(DateTime.Parse("2018-08-31T06:24:00"));
+            suffixFormatter.TryParseSuffix("-2018-08-31-06-24").Should().Be(DateTime.Parse("2018-08-31T06:24:00"));
         }
 
         [Test]
         public void TryParseSuffix_should_support_format_for_Second_period()
         {
-            suffixFormatter.TryParseSuffix("2018.08.31.06.24.13").Should().Be(DateTime.Parse("2018-08-31T06:24:13"));
+            suffixFormatter.TryParseSuffix("-2018-08-31-06-24-13").Should().Be(DateTime.Parse("2018-08-31T06:24:13"));
         }
 
         [TestCase("")]
         [TestCase("2018-08-31")]
-        [TestCase(".2018.08.21")]
-        [TestCase(".1")]
-        [TestCase("2018.08.31.066.24.13")]
-        [TestCase("2018.08.31.06.24.13.1")]
-        [TestCase("2018.08.31.6.24.13")]
+        [TestCase("#2018-08-21")]
+        [TestCase("-1")]
+        [TestCase("2018-08-31-066-24-13")]
+        [TestCase("2018-08-31-06-24-13-1")]
+        [TestCase("2018-08-31-6-24-13")]
         public void TryParseSuffix_should_return_null_for_incorrectly_formatted_suffixes(string suffix)
         {
             suffixFormatter.TryParseSuffix(suffix).Should().BeNull();

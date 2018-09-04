@@ -29,16 +29,16 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
         }
 
         [Test]
-        public void TryParseSuffix_should_split_suffix_before_last_dot()
+        public void TryParseSuffix_should_split_suffix_before_last_dash()
         {
-            timeSuffixFormatter.TryParseSuffix("1.2.3.4").Returns(default(DateTime));
-            sizeSuffixFormatter.TryParseSuffix(".5").Returns(5);
+            timeSuffixFormatter.TryParseSuffix("1-2-3-4").Returns(default(DateTime));
+            sizeSuffixFormatter.TryParseSuffix("-5").Returns(5);
 
-            suffixFormatter.TryParseSuffix("1.2.3.4.5").Should().Be((default(DateTime), 5));
+            suffixFormatter.TryParseSuffix("1-2-3-4-5").Should().Be((default(DateTime), 5));
         }
 
         [Test]
-        public void TryParseSuffix_should_return_null_if_there_is_no_dot()
+        public void TryParseSuffix_should_return_null_if_there_is_no_dash()
         {
             timeSuffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(default(DateTime));
             sizeSuffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(5);
@@ -51,7 +51,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
         {
             sizeSuffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(5);
 
-            suffixFormatter.TryParseSuffix("1.2.3.4.5").Should().BeNull();
+            suffixFormatter.TryParseSuffix("1-2-3-4-5").Should().BeNull();
         }
 
         [Test]
@@ -59,7 +59,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
         {
             timeSuffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(default(DateTime));
 
-            suffixFormatter.TryParseSuffix("1.2.3.4.5").Should().BeNull();
+            suffixFormatter.TryParseSuffix("1-2-3-4-5").Should().BeNull();
         }
     }
 }

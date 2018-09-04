@@ -12,12 +12,12 @@ namespace Vostok.Logging.File.Rolling.Strategies
             this.fileSystem = fileSystem;
         }
 
-        public IEnumerable<string> DiscoverExistingFiles(string basePath)
+        public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath)
         {
-            if (fileSystem.Exists(basePath))
+            if (fileSystem.Exists(basePath.NormalizedPath))
                 yield return basePath;
         }
 
-        public string GetCurrentFile(string basePath) => basePath;
+        public FilePath GetCurrentFile(FilePath basePath) => basePath;
     }
 }

@@ -17,7 +17,7 @@ namespace Vostok.Logging.File.Rolling.Suffixes
 
         public (DateTime, int)? TryParseSuffix(string suffix)
         {
-            var lastDotIndex = suffix.LastIndexOf('.');
+            var lastDotIndex = suffix.LastIndexOf('-');
 
             if (lastDotIndex < 0)
                 return null;

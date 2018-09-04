@@ -10,10 +10,10 @@ namespace Vostok.Logging.File.Rolling.Suffixes
     {
         private static readonly Dictionary<RollingPeriod, string> formatsByPeriod = new Dictionary<RollingPeriod, string>
         {
-            {RollingPeriod.Day, "yyyy.MM.dd"},
-            {RollingPeriod.Hour, "yyyy.MM.dd.HH"},
-            {RollingPeriod.Minute, "yyyy.MM.dd.HH.mm"},
-            {RollingPeriod.Second, "yyyy.MM.dd.HH.mm.ss"}
+            {RollingPeriod.Day, "-yyyy-MM-dd"},
+            {RollingPeriod.Hour, "-yyyy-MM-dd-HH"},
+            {RollingPeriod.Minute, "-yyyy-MM-dd-HH-mm"},
+            {RollingPeriod.Second, "-yyyy-MM-dd-HH-mm-ss"}
         };
 
         private static readonly string[] formats = formatsByPeriod.Values.ToArray();

@@ -61,15 +61,15 @@ namespace Vostok.Logging.File.Tests
                     }
                 }
 
-                var files = new FileSystem().GetFilesByPrefix(logName);
+                var files = new FileSystem().GetFilesByPrefix(logName).ToArray();
                 files.Length.Should().Be(3);
 
                 foreach (var file in files)
                 {
-                    Console.WriteLine($"{file}: {new FileInfo(file).Length}");
+                    Console.WriteLine($"{file}: {new FileInfo(file.NormalizedPath).Length}");
                 }
 
-                Console.WriteLine(System.IO.File.ReadAllText(files.Last()));
+                Console.WriteLine(System.IO.File.ReadAllText(files.Last().NormalizedPath));
             }
         }
 
@@ -130,15 +130,15 @@ namespace Vostok.Logging.File.Tests
                     }
                 }
 
-                var files = new FileSystem().GetFilesByPrefix(logName);
+                var files = new FileSystem().GetFilesByPrefix(logName).ToArray();
                 files.Length.Should().Be(5);
 
                 foreach (var file in files)
                 {
-                    Console.WriteLine($"{file}: {new FileInfo(file).Length}");
+                    Console.WriteLine($"{file}: {new FileInfo(file.NormalizedPath).Length}");
                 }
 
-                Console.WriteLine(System.IO.File.ReadAllText(files.Last()));
+                Console.WriteLine(System.IO.File.ReadAllText(files.Last().NormalizedPath));
             }
         }
 
@@ -168,15 +168,15 @@ namespace Vostok.Logging.File.Tests
                     }
                 }
 
-                var files = new FileSystem().GetFilesByPrefix(logName.Substring(0, logName.Length - 4));
+                var files = new FileSystem().GetFilesByPrefix(logName.Substring(0, logName.Length - 4)).ToArray();
                 files.Length.Should().Be(5);
 
                 foreach (var file in files)
                 {
-                    Console.WriteLine($"{file}: {new FileInfo(file).Length}");
+                    Console.WriteLine($"{file}: {new FileInfo(file.NormalizedPath).Length}");
                 }
 
-                Console.WriteLine(System.IO.File.ReadAllText(files.Last()));
+                Console.WriteLine(System.IO.File.ReadAllText(files.Last().NormalizedPath));
             }
         }
 
@@ -206,15 +206,15 @@ namespace Vostok.Logging.File.Tests
                     }
                 }
 
-                var files = new FileSystem().GetFilesByPrefix(logName);
+                var files = new FileSystem().GetFilesByPrefix(logName).ToArray();
                 files.Length.Should().BeGreaterThan(1);
 
                 foreach (var file in files)
                 {
-                    Console.WriteLine($"{file}: {new FileInfo(file).Length}");
+                    Console.WriteLine($"{file}: {new FileInfo(file.NormalizedPath).Length}");
                 }
 
-                Console.WriteLine(System.IO.File.ReadAllText(files.Last()));
+                Console.WriteLine(System.IO.File.ReadAllText(files.Last().NormalizedPath));
             }
         }
 
@@ -245,15 +245,15 @@ namespace Vostok.Logging.File.Tests
                     }
                 }
 
-                var files = new FileSystem().GetFilesByPrefix(logName);
+                var files = new FileSystem().GetFilesByPrefix(logName).ToArray();
                 files.Length.Should().BeGreaterThan(1);
 
                 foreach (var file in files)
                 {
-                    Console.WriteLine($"{file}: {new FileInfo(file).Length}");
+                    Console.WriteLine($"{file}: {new FileInfo(file.NormalizedPath).Length}");
                 }
 
-                Console.WriteLine(System.IO.File.ReadAllText(files.Last()));
+                Console.WriteLine(System.IO.File.ReadAllText(files.Last().NormalizedPath));
             }
         }
 

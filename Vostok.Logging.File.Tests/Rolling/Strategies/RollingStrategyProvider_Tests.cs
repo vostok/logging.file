@@ -21,7 +21,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
 
             settings = new FileLogSettings();
 
-            provider = new RollingStrategyProvider(new FilePath("log"), strategyFactory, () => settings);
+            provider = new RollingStrategyProvider("log", strategyFactory, () => settings);
         }
 
         [Test]
@@ -31,7 +31,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
 
             provider.ObtainStrategy();
 
-            strategyFactory.Received().CreateStrategy(new FilePath("log"), type, Arg.Any<Func<FileLogSettings>>());
+            strategyFactory.Received().CreateStrategy("log", type, Arg.Any<Func<FileLogSettings>>());
         }
 
         [Test]
@@ -43,8 +43,8 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
             settings.RollingStrategy.Type = RollingStrategyType.ByTime;
             provider.ObtainStrategy();
 
-            strategyFactory.Received().CreateStrategy(new FilePath("log"), RollingStrategyType.None, Arg.Any<Func<FileLogSettings>>());
-            strategyFactory.Received().CreateStrategy(new FilePath("log"), RollingStrategyType.ByTime, Arg.Any<Func<FileLogSettings>>());
+            strategyFactory.Received().CreateStrategy("log", RollingStrategyType.None, Arg.Any<Func<FileLogSettings>>());
+            strategyFactory.Received().CreateStrategy("log", RollingStrategyType.ByTime, Arg.Any<Func<FileLogSettings>>());
         }
 
         [Test]

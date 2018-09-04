@@ -16,8 +16,8 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         public void TestSetup()
         {
             fileSystem = Substitute.For<IFileSystem>();
-            fileSystem.GetFilesByPrefix(@"logs\log").Returns(new[] { @"logs\log", @"logs\log2" });
-            fileSystem.Exists(Arg.Any<string>()).Returns(true);
+            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log", "logs/log-2" });
+            fileSystem.Exists(Arg.Any<FilePath>()).Returns(true);
 
             strategy = new DisabledRollingStrategy(fileSystem);
         }
@@ -25,21 +25,21 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         [Test]
         public void DiscoverExistingFiles_should_return_only_base_file()
         {
-            strategy.DiscoverExistingFiles(@"logs\log").Should().Equal(@"logs\log");
+            strategy.DiscoverExistingFiles("logs/log").Should().Equal("logs/log");
         }
 
         [Test]
         public void DiscoverExistingFiles_should_return_nothing_if_base_file_does_not_exist()
         {
-            fileSystem.Exists(@"logs\log").Returns(false);
+            fileSystem.Exists("logs/log").Returns(false);
 
-            strategy.DiscoverExistingFiles(@"logs\log").Should().BeEmpty();
+            strategy.DiscoverExistingFiles("logs/log").Should().BeEmpty();
         }
 
         [Test]
         public void GetCurrentFile_should_return_base_file()
         {
-            strategy.GetCurrentFile(@"logs\log.txt").Should().Be(@"logs\log.txt");
+            strategy.GetCurrentFile("logs/log.txt").Should().Be((FilePath)"logs/log.txt");
         }
     }
 }
