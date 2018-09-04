@@ -11,6 +11,14 @@ using Vostok.Logging.File.EventsWriting;
 
 namespace Vostok.Logging.File
 {
+    /// <summary>
+    /// <para>A log which outputs events to a file.</para>
+    /// <para>
+    ///     The implementation is asynchronous: logged messages are not immediately rendered and written to file. 
+    ///     Instead, they are added to a queue which is processed by a background worker. The capacity of the queue 
+    ///     can be changed in settings if a settings provider is used. In case of a queue overflow some events may be dropped.
+    /// </para>
+    /// </summary>
     [PublicAPI]
     public class FileLog : ILog, IDisposable
     {
@@ -25,11 +33,18 @@ namespace Vostok.Logging.File
         private volatile bool isDisposed;
         private long eventsLost;
 
+        /// <summary>
+        /// Create a new console log with the given settings.
+        /// </summary>
         public FileLog(FileLogSettings settings)
             : this(() => settings)
         {
         }
 
+        // TODO(krait): clarify which settings can be updated
+        /// <summary>
+        /// Create a new console log with the given settings provider.
+        /// </summary>
         public FileLog(Func<FileLogSettings> settingsProvider)
             : this(DefaultMuxerProvider, settingsProvider)
         {
@@ -42,10 +57,30 @@ namespace Vostok.Logging.File
             filePath = new FilePath(settingsProvider().FilePath);
         }
 
+        /// <inheritdoc />
         ~FileLog() => Dispose();
 
+        /// <summary>
+        /// The total number of events dropped by all <see cref="FileLog"/> instances in process due to events queue overflow.
+        /// </summary>
+        public static long TotalEventsLost => DefaultMuxerProvider.ObtainMuxer().EventsLost;
+
+        /// <summary>
+        /// Waits until all currently buffered log events are actually written to their log files.
+        /// </summary>
+        public static Task FlushAllAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync();
+
+        /// <summary>
+        /// Waits until all currently buffered log events are actually written to their log files.
+        /// </summary>
+        public static void FlushAll() => FlushAllAsync().GetAwaiter().GetResult();
+
+        /// <summary>
+        /// The number of events dropped by this <see cref="FileLog"/> instance due to events queue overflow.
+        /// </summary>
         public long EventsLost => Interlocked.Read(ref eventsLost);
 
+        /// <inheritdoc />
         public void Log(LogEvent @event)
         {
             if (isDisposed)
@@ -58,8 +93,12 @@ namespace Vostok.Logging.File
                 Interlocked.Increment(ref eventsLost);
         }
 
+        /// <inheritdoc />
         public bool IsEnabledFor(LogLevel level) => settingsProvider.Get().EnabledLogLevels.Contains(level);
 
+        /// <summary>
+        /// Returns a log based on this <see cref="FileLog"/> instance that puts given <paramref name="context" /> string into <see cref="F:Vostok.Logging.Abstractions.WellKnownProperties.SourceContext" /> property of all logged events.
+        /// </summary>
         public ILog ForContext(string context)
         {
             if (context == null)
@@ -68,13 +107,15 @@ namespace Vostok.Logging.File
             return new SourceContextWrapper(this, context);
         }
 
+        /// <summary>
+        /// Waits until all log events buffered for current log file are actually written.
+        /// </summary>
         public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync(filePath);
 
+        /// <summary>
+        /// Waits until all log events buffered for current log file are actually written.
+        /// </summary>
         public void Flush() => FlushAsync().GetAwaiter().GetResult();
-
-        public Task FlushAllAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync();
-
-        public void FlushAll() => FlushAllAsync().GetAwaiter().GetResult();
 
         /// <inheritdoc />
         public void Dispose()
