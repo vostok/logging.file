@@ -6,11 +6,14 @@ namespace Vostok.Logging.File
 {
     internal class FileLogMuxerProvider : IFileLogMuxerProvider
     {
+        private readonly ISingleFileMuxerFactory singleFileMuxerFactory;
         private readonly Lazy<FileLogMuxer> muxer;
+
         private FileLogGlobalSettings muxerSettings = new FileLogGlobalSettings();
 
-        public FileLogMuxerProvider()
+        public FileLogMuxerProvider(ISingleFileMuxerFactory singleFileMuxerFactory)
         {
+            this.singleFileMuxerFactory = singleFileMuxerFactory;
             muxer = new Lazy<FileLogMuxer>(
                 () => CreateMuxer(muxerSettings),
                 LazyThreadSafetyMode.ExecutionAndPublication);
@@ -21,7 +24,7 @@ namespace Vostok.Logging.File
 
         public IFileLogMuxer ObtainMuxer() => muxer.Value;
 
-        private static FileLogMuxer CreateMuxer(FileLogGlobalSettings settings) => 
-            new FileLogMuxer(settings.EventsTemporaryBufferCapacity);
+        private FileLogMuxer CreateMuxer(FileLogGlobalSettings settings) => 
+            new FileLogMuxer(settings.EventsTemporaryBufferCapacity, singleFileMuxerFactory);
     }
 }

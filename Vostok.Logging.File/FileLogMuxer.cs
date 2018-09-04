@@ -17,27 +17,29 @@ namespace Vostok.Logging.File
         private static readonly TimeSpan NewEventsTimeout = TimeSpan.FromSeconds(1);
 
         private readonly AsyncManualResetEvent flushSignal = new AsyncManualResetEvent(true);
+        private readonly ISingleFileMuxerFactory singleFileMuxerFactory;
         private readonly object initLock = new object();
 
-        private readonly ConcurrentDictionary<FilePath, SingleFileMuxer> muxersByFile = new ConcurrentDictionary<FilePath, SingleFileMuxer>();
+        private readonly ConcurrentDictionary<FilePath, ISingleFileMuxer> muxersByFile = new ConcurrentDictionary<FilePath, ISingleFileMuxer>();
         private readonly LogEventInfo[] temporaryBuffer;
 
         private bool isInitialized;
 
-        public FileLogMuxer(int temporaryBufferCapacity)
+        public FileLogMuxer(int temporaryBufferCapacity, ISingleFileMuxerFactory singleFileMuxerFactory)
         {
+            this.singleFileMuxerFactory = singleFileMuxerFactory;
             temporaryBuffer = new LogEventInfo[temporaryBufferCapacity];
         }
 
         public long EventsLost => muxersByFile.Sum(pair => pair.Value.EventsLost);
 
-        public bool TryLog(LogEvent @event, FilePath filePath, FileLogSettings settings, IEventsWriterProvider eventsWriterProvider, object instigator, bool firstTime)
+        public bool TryLog(LogEvent @event, FilePath filePath, FileLogSettings settings, object instigator, bool firstTime)
         {
             if (!isInitialized)
                 Initialize();
 
             var eventInfo = new LogEventInfo(@event, settings);
-            var newMuxer = new Lazy<SingleFileMuxer>(() => new SingleFileMuxer(instigator, filePath, settings, eventsWriterProvider), LazyThreadSafetyMode.ExecutionAndPublication);
+            var newMuxer = new Lazy<ISingleFileMuxer>(() => singleFileMuxerFactory.CreateMuxer(instigator, filePath, settings), LazyThreadSafetyMode.ExecutionAndPublication);
             var muxer = muxersByFile.GetOrAdd(filePath, _ => newMuxer.Value);
 
             if (firstTime)

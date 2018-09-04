@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.File.Configuration;
 
@@ -13,7 +14,9 @@ namespace Vostok.Logging.File.Tests
         [SetUp]
         public void TestSetup()
         {
-            muxerProvider = new FileLogMuxerProvider();
+            var factory = Substitute.For<ISingleFileMuxerFactory>();
+
+            muxerProvider = new FileLogMuxerProvider(factory);
         }
 
         [Test]

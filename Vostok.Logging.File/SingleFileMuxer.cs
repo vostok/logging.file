@@ -13,7 +13,7 @@ using Waiter = System.Threading.Tasks.TaskCompletionSource<bool>;
 
 namespace Vostok.Logging.File
 {
-    internal class SingleFileMuxer : IDisposable
+    internal class SingleFileMuxer : ISingleFileMuxer
     {
         private readonly List<Waiter> flushWaiters = new List<Waiter>();
         private readonly ConcurrentBoundedQueue<LogEventInfo> events;
@@ -25,14 +25,17 @@ namespace Vostok.Logging.File
         private long eventsLostSinceLastIteration;
         private volatile FileLogSettings settings;
         private volatile bool isDisposed;
+        private volatile bool wasUsed;
 
         private int references;
 
-        public SingleFileMuxer(object owner, FilePath filePath, FileLogSettings settings, IEventsWriterProvider writerProvider)
+        public SingleFileMuxer(object owner, FilePath filePath, FileLogSettings settings, IEventsWriterProviderFactory writerProviderFactory)
         {
             this.owner = owner;
             this.filePath = filePath;
-            this.writerProvider = writerProvider;
+            this.settings = settings;
+
+            writerProvider = writerProviderFactory.CreateProvider(filePath, () => this.settings);
             events = new ConcurrentBoundedQueue<LogEventInfo>(settings.EventsQueueCapacity);
         }
 
@@ -45,7 +48,9 @@ namespace Vostok.Logging.File
             if (isDisposed)
                 throw new ObjectDisposedException(GetType().Name);
 
-            if (instigator == owner && info.Settings != settings)
+            wasUsed = true;
+
+            if (instigator == owner && info.Settings != settings) // TODO(krait): Bug: properties of cached instance can be modified from outside.
             {
                 settings = info.Settings;
             }
@@ -59,6 +64,8 @@ namespace Vostok.Logging.File
 
         public void WriteEvents(LogEventInfo[] temporaryBuffer)
         {
+            wasUsed = true;
+
             try
             {
                 List<Waiter> currentWaiters;
@@ -84,6 +91,9 @@ namespace Vostok.Logging.File
 
         public Task FlushAsync()
         {
+            if (!wasUsed)
+                return Task.CompletedTask;
+
             var waiter = new Waiter();
 
             lock (flushWaiters)
