@@ -19,12 +19,12 @@ namespace Vostok.Logging.File
                 LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        public void UpdateSettings(FileLogGlobalSettings newSettings) => 
+        public void UpdateSettings(FileLogGlobalSettings newSettings) =>
             muxerSettings = SettingsValidator.ValidateGlobalSettings(newSettings);
 
         public IFileLogMuxer ObtainMuxer() => muxer.Value;
 
-        private FileLogMuxer CreateMuxer(FileLogGlobalSettings settings) => 
+        private FileLogMuxer CreateMuxer(FileLogGlobalSettings settings) =>
             new FileLogMuxer(settings.EventsTemporaryBufferCapacity, singleFileMuxerFactory);
     }
 }

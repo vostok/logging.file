@@ -8,8 +8,6 @@ using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Wrappers;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
-using Vostok.Logging.File.Rolling;
-using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File
 {
@@ -17,7 +15,7 @@ namespace Vostok.Logging.File
     public class FileLog : ILog, IDisposable
     {
         private static readonly FileLogMuxerProvider DefaultMuxerProvider = new FileLogMuxerProvider(new SingleFileMuxerFactory(new EventsWriterProviderFactory()));
-        
+
         private readonly SafeSettingsProvider settingsProvider;
         private readonly IFileLogMuxerProvider muxerProvider;
         private readonly object handle = new object();

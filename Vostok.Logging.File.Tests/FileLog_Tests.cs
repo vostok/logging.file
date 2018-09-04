@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.EventsWriting;
 using Vostok.Logging.Formatting;
 
 namespace Vostok.Logging.File.Tests

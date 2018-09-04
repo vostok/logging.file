@@ -26,7 +26,7 @@ namespace Vostok.Logging.File.Configuration
 
         public int EventsQueueCapacity { get; set; } = 50 * 1000;
 
-        public TimeSpan TargetFileUpdateCooldown = TimeSpan.FromSeconds(1);
+        public TimeSpan TargetFileUpdateCooldown { get; set; } = TimeSpan.FromSeconds(1);
 
         internal FileLogSettings Clone() => new FileLogSettings
         {

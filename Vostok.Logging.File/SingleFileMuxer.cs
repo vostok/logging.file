@@ -7,8 +7,6 @@ using Vostok.Commons.Collections;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
-using Vostok.Logging.File.Rolling;
-using Vostok.Logging.File.Rolling.Strategies;
 using Waiter = System.Threading.Tasks.TaskCompletionSource<bool>;
 
 namespace Vostok.Logging.File

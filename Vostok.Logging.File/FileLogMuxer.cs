@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.EventsWriting;
-using Vostok.Logging.File.Rolling;
-using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File
 {

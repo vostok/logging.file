@@ -16,6 +16,6 @@
             Type = Type,
             Period = Period,
             MaxSize = MaxSize
-        }; // TODO(krait): test
+        };
     }
 }

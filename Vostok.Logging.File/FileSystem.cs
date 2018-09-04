@@ -20,7 +20,7 @@ namespace Vostok.Logging.File
         }
 
         public long GetFileSize(string file)
-        { 
+        {
             var fileInfo = new FileInfo(file);
 
             return fileInfo.Exists ? fileInfo.Length : 0;

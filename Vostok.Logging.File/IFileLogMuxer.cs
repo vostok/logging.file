@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.EventsWriting;
 
 namespace Vostok.Logging.File
 {

@@ -7,14 +7,10 @@ namespace Vostok.Logging.File
     {
         private readonly IEventsWriterProviderFactory writerProviderFactory;
 
-        public SingleFileMuxerFactory(IEventsWriterProviderFactory writerProviderFactory)
-        {
+        public SingleFileMuxerFactory(IEventsWriterProviderFactory writerProviderFactory) => 
             this.writerProviderFactory = writerProviderFactory;
-        }
 
-        public ISingleFileMuxer CreateMuxer(object owner, FilePath filePath, FileLogSettings settings)
-        {
-            return new SingleFileMuxer(owner, filePath, settings, writerProviderFactory);
-        }
+        public ISingleFileMuxer CreateMuxer(object owner, FilePath filePath, FileLogSettings settings) => 
+            new SingleFileMuxer(owner, filePath, settings, writerProviderFactory);
     }
 }

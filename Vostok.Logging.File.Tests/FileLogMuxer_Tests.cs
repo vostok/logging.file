@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using NSubstitute;
 using NUnit.Framework;
-using Vostok.Commons.Testing;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.EventsWriting;
 
 namespace Vostok.Logging.File.Tests
 {
