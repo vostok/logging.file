@@ -7,6 +7,7 @@ notests *default:
 
   install:
     - Vostok.Logging.File/bin/Release/netstandard2.0/Vostok.Logging.File.dll
+    - module vostok.logging.abstractions
 
   deps:
     - vostok.logging.formatting
