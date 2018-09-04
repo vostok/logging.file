@@ -50,7 +50,7 @@ namespace Vostok.Logging.File.Tests
                             MaxSize = 1024,
                             MaxFiles = 3
                         },
-                        TargetFileUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
@@ -119,7 +119,7 @@ namespace Vostok.Logging.File.Tests
                             Type = RollingStrategyType.BySize,
                             MaxSize = 1024
                         },
-                        TargetFileUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
@@ -157,7 +157,7 @@ namespace Vostok.Logging.File.Tests
                             Type = RollingStrategyType.BySize,
                             MaxSize = 1024
                         },
-                        TargetFileUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
@@ -195,7 +195,7 @@ namespace Vostok.Logging.File.Tests
                             Type = RollingStrategyType.ByTime,
                             Period = RollingPeriod.Second
                         },
-                        TargetFileUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
@@ -234,7 +234,7 @@ namespace Vostok.Logging.File.Tests
                             Period = RollingPeriod.Second,
                             MaxSize = 300
                         },
-                        TargetFileUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)

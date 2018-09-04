@@ -1,7 +1,11 @@
 ﻿using System;
+using JetBrains.Annotations;
+
+#pragma warning disable 1591
 
 namespace Vostok.Logging.File.Configuration
 {
+    [PublicAPI]
     [Flags]
     public enum RollingStrategyType
     {

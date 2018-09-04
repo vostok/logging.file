@@ -69,7 +69,7 @@ namespace Vostok.Logging.File.EventsWriting
                         garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
                     }
 
-                    cooldownController.IncurCooldown(settings.TargetFileUpdateCooldown);
+                    cooldownController.IncurCooldown(settings.RollingUpdateCooldown);
                 }
 
                 return currentItem.writer;

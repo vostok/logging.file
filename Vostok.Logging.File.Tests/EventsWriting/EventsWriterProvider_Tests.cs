@@ -168,7 +168,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
 
             provider.ObtainWriter();
 
-            cooldownController.Received().IncurCooldown(settings.TargetFileUpdateCooldown);
+            cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown);
         }
 
         [Test]
@@ -176,7 +176,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             provider.ObtainWriter();
 
-            cooldownController.Received().IncurCooldown(settings.TargetFileUpdateCooldown);
+            cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown);
         }
 
         [Test]
