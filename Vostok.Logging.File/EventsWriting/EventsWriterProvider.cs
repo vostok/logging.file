@@ -40,7 +40,7 @@ namespace Vostok.Logging.File.EventsWriting
         public async Task<IEventsWriter> ObtainWriterAsync()
         {
             if (cache.writer == null)
-                await cooldownController.WaitForCooldownAsync();
+                await cooldownController.WaitForCooldownAsync().ConfigureAwait(false);
 
             lock (sync)
             {

@@ -93,13 +93,14 @@ namespace Vostok.Logging.File.Muxers
                             }
 
                             var waitTasks = muxersByFile.Select(pair => pair.Value.TryWaitForNewItemsAsync(NewEventsTimeout));
-                            await Task.WhenAny(waitTasks.Concat(flushSignal.WaitAsync()));
+                            await Task.WhenAny(waitTasks.Concat(flushSignal.WaitAsync())).ConfigureAwait(false);
                             flushSignal.Reset();
                         }
                         catch (Exception error)
                         {
                             SafeConsole.ReportError("Failure in writing log events:", error);
-                            await Task.Delay(100);
+
+                            await Task.Delay(100).ConfigureAwait(false);
                         }
                     }
                 });

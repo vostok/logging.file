@@ -8,8 +8,8 @@ namespace Vostok.Logging.File.Helpers
         {
             try
             {
-                Console.Out.Write(message);
-                Console.Out.Write(error);
+                Console.Out.WriteLine("[FileLog] " + message);
+                Console.Out.WriteLine(error);
             }
             catch
             {
