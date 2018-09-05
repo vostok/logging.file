@@ -17,13 +17,12 @@ namespace Vostok.Logging.File.Rolling.Suffixes
 
         public (DateTime, int)? TryParseSuffix(string suffix)
         {
-            var lastDotIndex = suffix.LastIndexOf('-');
-
-            if (lastDotIndex < 0)
+            var lastDashIndex = suffix.LastIndexOf('-');
+            if (lastDashIndex < 0)
                 return null;
 
-            var leftPart = suffix.Substring(0, lastDotIndex);
-            var rightPart = suffix.Substring(lastDotIndex);
+            var leftPart = suffix.Substring(0, lastDashIndex);
+            var rightPart = suffix.Substring(lastDashIndex);
 
             var date = timeSuffixFormatter.TryParseSuffix(leftPart);
             var part = sizeSuffixFormatter.TryParseSuffix(rightPart);
