@@ -166,6 +166,7 @@ namespace Vostok.Logging.File
             lock (muxerRegistrationLock)
             {
                 muxerRegistration?.Dispose();
+                muxerRegistration = null;
             }
         }
 
@@ -186,7 +187,6 @@ namespace Vostok.Logging.File
         private IMuxerRegistration ObtainMuxerRegistration(FilePath file, FileLogSettings settings)
         {
             var currentRegistration = muxerRegistration;
-
             if (currentRegistration != null && currentRegistration.IsValid(file))
                 return currentRegistration;
 
@@ -197,6 +197,7 @@ namespace Vostok.Logging.File
 
                 muxerRegistration?.Dispose();
                 muxerRegistration = null;
+
                 return muxerRegistration = muxer.Register(file, settings, muxerHandle);
             }
         }
