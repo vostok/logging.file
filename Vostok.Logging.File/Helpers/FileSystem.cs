@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.EventsWriting;
 
 namespace Vostok.Logging.File.Helpers
 {
@@ -42,19 +41,18 @@ namespace Vostok.Logging.File.Helpers
             return false;
         }
 
-        public IEventsWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize)
+        public TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize)
         {
             try
             {
                 var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
                 var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete, 1);
-                var writer = new StreamWriter(stream, encoding, bufferSize, false);
 
-                return new EventsWriter(writer);
+                return new StreamWriter(stream, encoding, bufferSize, false);
             }
             catch (Exception error)
             {
-                SafeConsole.ReportError($"Failed to open log file {file}:", error);
+                SafeConsole.ReportError($"Failed to open log file '{file}':", error);
                 return null;
             }
         }

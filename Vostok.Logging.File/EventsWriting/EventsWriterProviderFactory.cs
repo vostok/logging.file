@@ -15,7 +15,7 @@ namespace Vostok.Logging.File.EventsWriting
             return new EventsWriterProvider(
                 filePath,
                 new RollingStrategyProvider(filePath, new RollingStrategyFactory(), settingsProvider),
-                FileSystem,
+                new EventsWriterFactory(FileSystem), 
                 new RollingGarbageCollector(FileSystem, () => settingsProvider().RollingStrategy.MaxFiles),
                 new CooldownController(),
                 settingsProvider);

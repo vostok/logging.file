@@ -5,8 +5,6 @@ using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Formatting;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace Vostok.Logging.File.Configuration
 {
     /// <summary>
@@ -22,7 +20,7 @@ namespace Vostok.Logging.File.Configuration
         public string FilePath { get; set; } = "logs/log";
 
         /// <summary>
-        /// The <see cref="OutputTemplate"/> used to render log messages.
+        /// The <see cref="Formatting.OutputTemplate"/> used to render log messages.
         /// </summary>
         [NotNull]
         public OutputTemplate OutputTemplate { get; set; } = OutputTemplate.Default;
@@ -64,18 +62,5 @@ namespace Vostok.Logging.File.Configuration
         /// Cooldown for calls to rolling-related code. This means that when conditions are met to switch to the next part of log file, the switching may be delayed for up to <see cref="RollingUpdateCooldown"/>.
         /// </summary>
         public TimeSpan RollingUpdateCooldown { get; set; } = TimeSpan.FromSeconds(1);
-
-        internal FileLogSettings Clone() => new FileLogSettings
-        {
-            FilePath = FilePath,
-            OutputTemplate = OutputTemplate,
-            FileOpenMode = FileOpenMode,
-            RollingStrategy = RollingStrategy.Clone(),
-            Encoding = Encoding,
-            OutputBufferSize = OutputBufferSize,
-            EnabledLogLevels = EnabledLogLevels.ToArray(),
-            EventsQueueCapacity = EventsQueueCapacity,
-            RollingUpdateCooldown = RollingUpdateCooldown
-        };
     }
 }

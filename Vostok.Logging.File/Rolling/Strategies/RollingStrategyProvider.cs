@@ -10,7 +10,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
         private readonly IRollingStrategyFactory strategyFactory;
         private readonly Func<FileLogSettings> settingsProvider;
 
-        private (RollingStrategyType type, IRollingStrategy strategy) currentItem;
+        private (RollingStrategyType type, IRollingStrategy strategy) cache;
 
         public RollingStrategyProvider(FilePath basePath, IRollingStrategyFactory strategyFactory, Func<FileLogSettings> settingsProvider)
         {
@@ -23,10 +23,10 @@ namespace Vostok.Logging.File.Rolling.Strategies
         {
             var newType = settingsProvider().RollingStrategy.Type;
 
-            if (newType != currentItem.type || currentItem.strategy == null)
-                currentItem = (newType, strategyFactory.CreateStrategy(basePath, newType, settingsProvider));
+            if (newType != cache.type || cache.strategy == null)
+                cache = (newType, strategyFactory.CreateStrategy(basePath, newType, settingsProvider));
 
-            return currentItem.strategy;
+            return cache.strategy;
         }
     }
 }

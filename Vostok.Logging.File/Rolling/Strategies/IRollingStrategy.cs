@@ -6,7 +6,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
     internal interface IRollingStrategy
     {
         /// <summary>
-        /// Returned files must be sorted oldest to newest.
+        /// Returned files must be sorted oldest to newest (by parsed suffix).
         /// </summary>
         IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath);
 

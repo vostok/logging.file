@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
@@ -10,28 +11,28 @@ namespace Vostok.Logging.File.EventsWriting
     internal class EventsWriterProvider : IEventsWriterProvider
     {
         private readonly FilePath basePath;
-        private readonly IFileSystem fileSystem;
         private readonly IRollingStrategyProvider rollingStrategyProvider;
+        private readonly IEventsWriterFactory eventsWriterFactory;
         private readonly IRollingGarbageCollector garbageCollector;
         private readonly Func<FileLogSettings> settingsProvider;
         private readonly ICooldownController cooldownController;
         private readonly object sync = new object();
 
-        private (FilePath file, FileLogSettings settings, IEventsWriter writer) currentItem;
+        private (FilePath file, FileLogSettings settings, IEventsWriter writer) cache;
         private bool isDisposed;
         private bool wasUsed;
 
         public EventsWriterProvider(
             FilePath basePath,
             IRollingStrategyProvider rollingStrategyProvider,
-            IFileSystem fileSystem,
+            IEventsWriterFactory eventsWriterFactory,
             IRollingGarbageCollector garbageCollector,
             ICooldownController cooldownController,
             Func<FileLogSettings> settingsProvider)
         {
             this.basePath = basePath;
             this.rollingStrategyProvider = rollingStrategyProvider;
-            this.fileSystem = fileSystem;
+            this.eventsWriterFactory = eventsWriterFactory;
             this.garbageCollector = garbageCollector;
             this.settingsProvider = settingsProvider;
             this.cooldownController = cooldownController;
@@ -63,17 +64,17 @@ namespace Vostok.Logging.File.EventsWriting
 
                     var settings = settingsProvider();
 
-                    if (currentFile != currentItem.file || ShouldReopenWriter(currentItem.settings, settings) || currentItem.writer == null)
+                    if (currentFile != cache.file || ShouldReopenWriter(cache.settings, settings) || cache.writer == null)
                     {
-                        currentItem.writer?.Dispose();
-                        currentItem = (currentFile, settings.Clone(), fileSystem.OpenFile(currentFile.NormalizedPath, settings.FileOpenMode, settings.Encoding, settings.OutputBufferSize));
+                        cache.writer?.Dispose();
+                        cache = (currentFile, settings, eventsWriterFactory.CreateWriter(currentFile, settings));
                         garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
                     }
 
                     cooldownController.IncurCooldown(settings.RollingUpdateCooldown);
                 }
 
-                return currentItem.writer;
+                return cache.writer;
             }
         }
 
@@ -83,7 +84,7 @@ namespace Vostok.Logging.File.EventsWriting
             {
                 isDisposed = true;
 
-                currentItem.writer?.Dispose();
+                cache.writer?.Dispose();
             }
         }
 

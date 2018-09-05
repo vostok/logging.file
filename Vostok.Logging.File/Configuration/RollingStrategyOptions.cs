@@ -9,7 +9,7 @@ namespace Vostok.Logging.File.Configuration
     public class RollingStrategyOptions
     {
         /// <summary>
-        /// How many log files to keep. Older files are automatically deleted when switching to a new file. Specify zero to avoid deleting old files.
+        /// How many log files to keep. Older files are automatically deleted when switching to a new file. Specify a value &lt;= 0 to avoid deleting old files.
         /// </summary>
         public int MaxFiles { get; set; } = 5;
 
@@ -26,14 +26,6 @@ namespace Vostok.Logging.File.Configuration
         /// <summary>
         /// Maximal size of one part of log file, in bytes. Affects only <see cref="RollingStrategyType.BySize"/> and <see cref="RollingStrategyType.Hybrid"/> strategies.
         /// </summary>
-        public long MaxSize { get; set; } = 100 * 1024 * 1024;
-
-        internal RollingStrategyOptions Clone() => new RollingStrategyOptions
-        {
-            MaxFiles = MaxFiles,
-            Type = Type,
-            Period = Period,
-            MaxSize = MaxSize
-        };
+        public long MaxSize { get; set; } = 1024 * 1024 * 1024;
     }
 }

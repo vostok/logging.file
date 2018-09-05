@@ -18,7 +18,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
 
         private FileLogSettings settings;
         private IRollingStrategyProvider strategyProvider;
-        private IFileSystem fileSystem;
+        private IEventsWriterFactory eventsWriterFactory;
         private IRollingGarbageCollector garbageCollector;
         private ICooldownController cooldownController;
         private IEventsWriter eventsWriter;
@@ -36,15 +36,15 @@ namespace Vostok.Logging.File.Tests.EventsWriting
 
             eventsWriter = Substitute.For<IEventsWriter>();
 
-            fileSystem = Substitute.For<IFileSystem>();
-            fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>()).Returns(eventsWriter);
+            eventsWriterFactory = Substitute.For<IEventsWriterFactory>();
+            eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(eventsWriter);
 
             garbageCollector = Substitute.For<IRollingGarbageCollector>();
 
             cooldownController = Substitute.For<ICooldownController>();
             cooldownController.IsCool.Returns(true);
 
-            provider = new EventsWriterProvider("log", strategyProvider, fileSystem, garbageCollector, cooldownController, () => settings);
+            provider = new EventsWriterProvider("log", strategyProvider, eventsWriterFactory, garbageCollector, cooldownController, () => settings);
 
             settings = new FileLogSettings();
         }
@@ -66,7 +66,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void IsHealthy_should_return_false_if_file_could_not_be_opened()
         {
-            fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>()).Returns(null as IEventsWriter);
+            eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(null as IEventsWriter);
 
             provider.ObtainWriter();
 
@@ -76,11 +76,11 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void IsHealthy_should_return_true_after_successful_reopening_of_file()
         {
-            fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>()).Returns(null as IEventsWriter);
+            eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(null as IEventsWriter);
 
             provider.ObtainWriter();
 
-            fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>()).Returns(eventsWriter);
+            eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(eventsWriter);
 
             provider.IsHealthy.Should().BeTrue();
         }
@@ -98,7 +98,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
             provider.ObtainWriter().Should().BeSameAs(eventsWriter);
             provider.ObtainWriter().Should().BeSameAs(eventsWriter);
 
-            fileSystem.Received(1).OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>());
+            eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>());
         }
 
         [Test]
@@ -109,8 +109,8 @@ namespace Vostok.Logging.File.Tests.EventsWriting
             strategy.GetCurrentFile(Arg.Any<FilePath>()).Returns("xxx");
             provider.ObtainWriter();
 
-            fileSystem.Received(1).OpenFile("log", Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>());
-            fileSystem.Received(1).OpenFile("xxx", Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>());
+            eventsWriterFactory.Received(1).CreateWriter("log", Arg.Any<FileLogSettings>());
+            eventsWriterFactory.Received(1).CreateWriter("xxx", Arg.Any<FileLogSettings>());
         }
 
         [Test]
@@ -118,11 +118,11 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             provider.ObtainWriter();
 
-            settings.FileOpenMode = FileOpenMode.Rewrite;
+            settings = new FileLogSettings {FileOpenMode = FileOpenMode.Rewrite};
             provider.ObtainWriter();
 
-            fileSystem.Received(1).OpenFile(Arg.Any<FilePath>(), FileOpenMode.Append, Arg.Any<Encoding>(), Arg.Any<int>());
-            fileSystem.Received(1).OpenFile(Arg.Any<FilePath>(), FileOpenMode.Rewrite, Arg.Any<Encoding>(), Arg.Any<int>());
+            eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => s.FileOpenMode == FileOpenMode.Append));
+            eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => s.FileOpenMode == FileOpenMode.Rewrite));
         }
 
         [Test]
@@ -130,11 +130,11 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             provider.ObtainWriter();
 
-            settings.Encoding = Encoding.ASCII;
+            settings = new FileLogSettings {Encoding = Encoding.ASCII};
             provider.ObtainWriter();
 
-            fileSystem.Received(1).OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Encoding.UTF8, Arg.Any<int>());
-            fileSystem.Received(1).OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Encoding.ASCII, Arg.Any<int>());
+            eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => Equals(s.Encoding, Encoding.UTF8)));
+            eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => Equals(s.Encoding, Encoding.ASCII)));
         }
 
         [Test]
@@ -142,11 +142,11 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             provider.ObtainWriter();
 
-            settings.OutputBufferSize = 42;
+            settings = new FileLogSettings {OutputBufferSize = 42};
             provider.ObtainWriter();
 
-            fileSystem.Received(1).OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), 65536);
-            fileSystem.Received(1).OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), 42);
+            eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => s.OutputBufferSize == 65536));
+            eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => s.OutputBufferSize == 42));
         }
 
         [Test]
@@ -156,16 +156,16 @@ namespace Vostok.Logging.File.Tests.EventsWriting
 
             cooldownController.IsCool.Returns(false);
 
-            settings.OutputBufferSize = 42;
+            settings = new FileLogSettings {OutputBufferSize = 42};
             provider.ObtainWriter();
 
-            fileSystem.Received(1).OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>());
+            eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>());
         }
 
         [Test]
         public void ObtainWriter_should_incur_cooldown_after_failed_writer_creation()
         {
-            fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>()).Returns(null as IEventsWriter);
+            eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(null as IEventsWriter);
 
             provider.ObtainWriter();
 
@@ -185,7 +185,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             provider.ObtainWriter();
 
-            settings.OutputBufferSize = 42;
+            settings = new FileLogSettings {OutputBufferSize = 42};
             provider.ObtainWriter();
 
             eventsWriter.Received().Dispose();
@@ -196,7 +196,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             provider.ObtainWriter();
 
-            settings.OutputBufferSize = 42;
+            settings = new FileLogSettings {OutputBufferSize = 42};
             provider.ObtainWriter();
 
             garbageCollector.Received().RemoveStaleFiles(Arg.Any<FilePath[]>());
@@ -207,7 +207,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             provider.ObtainWriter();
             
-            settings.OutputBufferSize = 42;
+            settings = new FileLogSettings {OutputBufferSize = 42};
             provider.ObtainWriter();
 
             Received.InOrder(
@@ -215,14 +215,14 @@ namespace Vostok.Logging.File.Tests.EventsWriting
                 {
                     strategyProvider.ObtainStrategy();
                     strategy.GetCurrentFile(Arg.Any<FilePath>());
-                    fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>());
+                    eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>());
                     garbageCollector.RemoveStaleFiles(Arg.Any<FilePath[]>());
                     cooldownController.IncurCooldown(Arg.Any<TimeSpan>());
 
                     strategyProvider.ObtainStrategy();
                     strategy.GetCurrentFile(Arg.Any<FilePath>());
                     eventsWriter.Dispose();
-                    fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>());
+                    eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>());
                     garbageCollector.RemoveStaleFiles(Arg.Any<FilePath[]>());
                     cooldownController.IncurCooldown(Arg.Any<TimeSpan>());
                 });

@@ -49,10 +49,8 @@ namespace Vostok.Logging.File.Muxers
 
             wasUsed = true;
 
-            if (instigator == owner && info.Settings != settings) // TODO(krait): Bug: properties of cached instance can be modified from outside.
-            {
+            if (instigator == owner)
                 settings = info.Settings;
-            }
 
             if (events.TryAdd(info))
                 return true;
