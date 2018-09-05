@@ -79,7 +79,7 @@ namespace Vostok.Logging.File
 
         internal FileLog(IMultiFileMuxer muxer, Func<FileLogSettings> settingsProvider)
         {
-            this.settingsProvider = new SafeSettingsProvider(() => SettingsValidator.ValidateSettings(settingsProvider()));
+            this.settingsProvider = new SafeSettingsProvider(settingsProvider);
             this.settingsProvider.Get();
             this.muxer = muxer;
 
