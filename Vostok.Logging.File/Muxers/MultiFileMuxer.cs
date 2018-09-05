@@ -73,13 +73,11 @@ namespace Vostok.Logging.File.Muxers
                 return new FileState(muxer, owner, 1);
             }
 
-            // TODO(iloktionov): maybe do not forget about new participant right away
             public FileState AddParticipant(object participant)
             {
                 return new FileState(Muxer, Owner ?? participant, References + 1);
             }
 
-            // TODO(iloktionov): maybe elect new owner from current participants
             public FileState RemoveParticipant(object participant)
             {
                 return new FileState(Muxer, ReferenceEquals(participant, Owner) ? null : Owner, References - 1);
