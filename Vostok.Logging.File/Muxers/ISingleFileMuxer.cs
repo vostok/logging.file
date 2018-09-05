@@ -7,8 +7,6 @@ namespace Vostok.Logging.File.Muxers
     {
         long EventsLost { get; }
 
-        bool IsHealthy { get; }
-
         void AddReference();
 
         Task FlushAsync();

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
@@ -7,6 +6,7 @@ using Vostok.Logging.Formatting;
 
 namespace Vostok.Logging.File.Configuration
 {
+    // TODO(krait): document warm settings
     /// <summary>
     /// Settings of a file log instance.
     /// </summary>
@@ -24,6 +24,12 @@ namespace Vostok.Logging.File.Configuration
         /// </summary>
         [NotNull]
         public OutputTemplate OutputTemplate { get; set; } = OutputTemplate.Default;
+
+        /// <summary>
+        /// If specified, this <see cref="IFormatProvider"/> will be used when formatting log events.
+        /// </summary>
+        [CanBeNull]
+        public IFormatProvider FormatProvider { get; set; }
 
         /// <summary>
         /// Specifies the way to treat an existing log file: append or rewrite.

@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using Vostok.Logging.File.Helpers;
 using Vostok.Logging.Formatting;
 
 namespace Vostok.Logging.File.EventsWriting
@@ -16,12 +18,13 @@ namespace Vostok.Logging.File.EventsWriting
                 try
                 {
                     var template = events[i].Settings.OutputTemplate;
+                    var formatProvider = events[i].Settings.FormatProvider;
 
-                    LogEventFormatter.Format(events[i].Event, writer, template);
+                    LogEventFormatter.Format(events[i].Event, writer, template, formatProvider);
                 }
-                catch
+                catch (Exception error)
                 {
-                    // ignored
+                    SafeConsole.ReportError("Failed to write a log event:", error);
                 }
             }
 

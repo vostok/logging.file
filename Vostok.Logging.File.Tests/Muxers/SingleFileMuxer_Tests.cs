@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -27,8 +28,7 @@ namespace Vostok.Logging.File.Tests.Muxers
             eventsWriter = Substitute.For<IEventsWriter>();
 
             eventsWriterProvider = Substitute.For<IEventsWriterProvider>();
-            eventsWriterProvider.ObtainWriter().Returns(eventsWriter);
-            eventsWriterProvider.IsHealthy.Returns(true);
+            eventsWriterProvider.ObtainWriterAsync().Returns(Task.FromResult(eventsWriter));
 
             writerProviderFactory = Substitute.For<IEventsWriterProviderFactory>();
             writerProviderFactory.CreateProvider(Arg.Any<FilePath>(), Arg.Do<Func<FileLogSettings>>(x => settingsInsideMuxer = x)).Returns(eventsWriterProvider);

@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Vostok.Logging.File.EventsWriting
 {
     internal interface IEventsWriterProvider : IDisposable
     {
-        bool IsHealthy { get; }
-
-        IEventsWriter ObtainWriter();
+        Task<IEventsWriter> ObtainWriterAsync();
     }
 }

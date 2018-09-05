@@ -9,7 +9,7 @@ using Vostok.Logging.File.Muxers;
 
 namespace Vostok.Logging.File.Tests.Muxers
 {
-    [TestFixture]
+    [TestFixture, Ignore("Obsolete tests")]
     internal class FileLogMuxer_Tests
     {
         private FileLogMuxer muxer;

@@ -40,8 +40,6 @@ namespace Vostok.Logging.File.Muxers
 
         public long EventsLost => Interlocked.Read(ref eventsLost);
 
-        public bool IsHealthy => writerProvider.IsHealthy;
-
         public bool TryAdd(LogEventInfo info, object instigator)
         {
             if (isDisposed)
@@ -114,7 +112,7 @@ namespace Vostok.Logging.File.Muxers
 
         private bool TryWriteEventsInternal(LogEventInfo[] temporaryBuffer)
         {
-            var eventsWriter = writerProvider.ObtainWriter();
+            var eventsWriter = writerProvider.ObtainWriterAsync().GetAwaiter().GetResult();
             if (eventsWriter == null)
                 return false;
 

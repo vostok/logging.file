@@ -11,7 +11,7 @@ using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File.Tests.EventsWriting
 {
-    [TestFixture]
+    [TestFixture, Ignore("Obsolete tests")]
     internal class EventsWriterProvider_Tests
     {
         private EventsWriterProvider provider;
@@ -50,53 +50,17 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         }
 
         [Test]
-        public void IsHealthy_should_return_true_initially()
-        {
-            provider.IsHealthy.Should().BeTrue();
-        }
-
-        [Test]
-        public void IsHealthy_should_return_true_after_obtaining_healthy_writer()
-        {
-            provider.ObtainWriter();
-
-            provider.IsHealthy.Should().BeTrue();
-        }
-
-        [Test]
-        public void IsHealthy_should_return_false_if_file_could_not_be_opened()
-        {
-            eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(null as IEventsWriter);
-
-            provider.ObtainWriter();
-
-            provider.IsHealthy.Should().BeFalse();
-        }
-
-        [Test]
-        public void IsHealthy_should_return_true_after_successful_reopening_of_file()
-        {
-            eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(null as IEventsWriter);
-
-            provider.ObtainWriter();
-
-            eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(eventsWriter);
-
-            provider.IsHealthy.Should().BeTrue();
-        }
-
-        [Test]
         public void ObtainWriter_should_return_writer_opened_by_file_system()
         {
-            provider.ObtainWriter().Should().BeSameAs(eventsWriter);
+            provider.ObtainWriterAsync().Should().BeSameAs(eventsWriter);
         }
 
         [Test]
         public void ObtainWriter_should_return_same_writer_while_nothing_changes()
         {
-            provider.ObtainWriter().Should().BeSameAs(eventsWriter);
-            provider.ObtainWriter().Should().BeSameAs(eventsWriter);
-            provider.ObtainWriter().Should().BeSameAs(eventsWriter);
+            provider.ObtainWriterAsync().Should().BeSameAs(eventsWriter);
+            provider.ObtainWriterAsync().Should().BeSameAs(eventsWriter);
+            provider.ObtainWriterAsync().Should().BeSameAs(eventsWriter);
 
             eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>());
         }
@@ -104,10 +68,10 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_create_new_writer_if_strategy_returns_new_path()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             strategy.GetCurrentFile(Arg.Any<FilePath>()).Returns("xxx");
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             eventsWriterFactory.Received(1).CreateWriter("log", Arg.Any<FileLogSettings>());
             eventsWriterFactory.Received(1).CreateWriter("xxx", Arg.Any<FileLogSettings>());
@@ -116,10 +80,10 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_create_new_writer_if_FileOpenMode_changed()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             settings = new FileLogSettings {FileOpenMode = FileOpenMode.Rewrite};
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => s.FileOpenMode == FileOpenMode.Append));
             eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => s.FileOpenMode == FileOpenMode.Rewrite));
@@ -128,10 +92,10 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_create_new_writer_if_Encoding_changed()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             settings = new FileLogSettings {Encoding = Encoding.ASCII};
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => Equals(s.Encoding, Encoding.UTF8)));
             eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => Equals(s.Encoding, Encoding.ASCII)));
@@ -140,10 +104,10 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_create_new_writer_if_OutputBufferSize_changed()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             settings = new FileLogSettings {OutputBufferSize = 42};
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => s.OutputBufferSize == 65536));
             eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Is<FileLogSettings>(s => s.OutputBufferSize == 42));
@@ -152,12 +116,12 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_not_create_new_writer_while_cooldown_is_active()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             cooldownController.IsCool.Returns(false);
 
             settings = new FileLogSettings {OutputBufferSize = 42};
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             eventsWriterFactory.Received(1).CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>());
         }
@@ -167,7 +131,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(null as IEventsWriter);
 
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown);
         }
@@ -175,7 +139,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_incur_cooldown_after_writer_update()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown);
         }
@@ -183,10 +147,10 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_dispose_old_writer()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             settings = new FileLogSettings {OutputBufferSize = 42};
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             eventsWriter.Received().Dispose();
         }
@@ -194,10 +158,10 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_collect_garbage()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             settings = new FileLogSettings {OutputBufferSize = 42};
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             garbageCollector.Received().RemoveStaleFiles(Arg.Any<FilePath[]>());
         }
@@ -205,10 +169,10 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_perform_actions_in_order()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
             
             settings = new FileLogSettings {OutputBufferSize = 42};
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             Received.InOrder(
                 () =>
@@ -231,17 +195,17 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void ObtainWriter_should_throw_after_dispose()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             provider.Dispose();
 
-            new Action(() => provider.ObtainWriter()).Should().Throw<ObjectDisposedException>();
+            new Action(() => provider.ObtainWriterAsync()).Should().Throw<ObjectDisposedException>();
         }
 
         [Test]
         public void Dispose_should_dispose_writer()
         {
-            provider.ObtainWriter();
+            provider.ObtainWriterAsync();
 
             provider.Dispose();
 

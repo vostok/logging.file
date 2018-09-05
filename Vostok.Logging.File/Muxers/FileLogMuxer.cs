@@ -64,7 +64,7 @@ namespace Vostok.Logging.File.Muxers
             return waiter;
         }
 
-        public Task FlushAsync() => Task.WhenAll(muxersByFile.Where(pair => pair.Value.IsHealthy).Select(m => m.Value.FlushAsync()));
+        public Task FlushAsync() => Task.WhenAll(muxersByFile.Select(m => m.Value.FlushAsync()));
 
         public void RemoveLogReference(FilePath file)
         {
@@ -92,7 +92,7 @@ namespace Vostok.Logging.File.Muxers
                                 pair.Value.WriteEvents(temporaryBuffer);
                             }
 
-                            var waitTasks = muxersByFile.Where(pair => pair.Value.IsHealthy).Select(pair => pair.Value.TryWaitForNewItemsAsync(NewEventsTimeout));
+                            var waitTasks = muxersByFile.Select(pair => pair.Value.TryWaitForNewItemsAsync(NewEventsTimeout));
                             await Task.WhenAny(waitTasks.Concat(flushSignal.WaitAsync()));
                             flushSignal.Reset();
                         }
