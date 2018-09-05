@@ -9,7 +9,7 @@ namespace Vostok.Logging.File.EventsWriting
 
         public bool IsCool => cooldownTask.IsCompleted;
 
-        public Task WaitForCooldownAsync() => cooldownTask; // TODO(krait): test
+        public Task WaitForCooldownAsync() => cooldownTask;
 
         public void IncurCooldown(TimeSpan duration) => cooldownTask = Task.Delay(duration);
     }

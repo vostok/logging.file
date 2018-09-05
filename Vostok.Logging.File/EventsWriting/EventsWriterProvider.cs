@@ -8,7 +8,7 @@ using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File.EventsWriting
 {
-    internal class EventsWriterProvider : IEventsWriterProvider // TODO(krait): update tests
+    internal class EventsWriterProvider : IEventsWriterProvider
     {
         private readonly FilePath basePath;
         private readonly IRollingStrategyProvider rollingStrategyProvider;

@@ -42,6 +42,24 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         }
 
         [Test]
+        public void WaitForCooldownAsync_should_return_completed_task_if_there_is_no_cooldown()
+        {
+            controller.WaitForCooldownAsync().IsCompleted.Should().BeTrue();
+        }
+
+        [Test]
+        public void WaitForCooldownAsync_should_wait_for_cooldown()
+        {
+            controller.IncurCooldown(TimeSpan.FromMilliseconds(100));
+
+            var task = controller.WaitForCooldownAsync();
+            task.IsCompleted.Should().BeFalse();
+
+            task.Wait(1000);
+            task.IsCompleted.Should().BeTrue();
+        }
+
+        [Test]
         public void Should_be_reusable()
         {
             controller.IncurCooldown(TimeSpan.FromMilliseconds(100));
