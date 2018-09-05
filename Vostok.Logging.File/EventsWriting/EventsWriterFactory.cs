@@ -7,7 +7,7 @@ namespace Vostok.Logging.File.EventsWriting
     {
         private readonly IFileSystem fileSystem;
 
-        public EventsWriterFactory(IFileSystem fileSystem) => 
+        public EventsWriterFactory(IFileSystem fileSystem) =>
             this.fileSystem = fileSystem;
 
         public IEventsWriter CreateWriter(FilePath currentFile, FileLogSettings settings) =>

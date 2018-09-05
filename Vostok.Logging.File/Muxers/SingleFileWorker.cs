@@ -44,7 +44,7 @@ namespace Vostok.Logging.File.Muxers
 
                     SafeConsole.ReportError("Failure in writing log events to a file:", error);
 
-                    return false;
+                    break;
                 }
             }
 
@@ -63,6 +63,8 @@ namespace Vostok.Logging.File.Muxers
                 }
 
                 eventsLostSinceLastIteration.Value = lostEventsAfterWriting;
+
+                return false;
             }
 
             return true;

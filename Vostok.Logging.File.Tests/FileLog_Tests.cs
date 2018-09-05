@@ -1,84 +1,168 @@
-﻿// using System;
-// using System.Collections.Generic;
-// using System.Linq;
-// using FluentAssertions;
-// using NSubstitute;
-// using NUnit.Framework;
-// using Vostok.Logging.Abstractions;
-// using Vostok.Logging.File.Configuration;
-// using Vostok.Logging.File.Helpers;
-// using Vostok.Logging.File.Muxers;
-// using Vostok.Logging.Formatting;
-//
-// namespace Vostok.Logging.File.Tests
-// {
-//     [TestFixture]
-//     internal class FileLog_Tests
-//     {
-//         [Test]
-//         public void Should_validate_settings()
-//         {
-//             var settings = new FileLogSettings()
-//             {
-//                 OutputTemplate = null
-//             };
-//
-//             new Action(() => new FileLog(settings).Info("xx")).Should().Throw<ArgumentNullException>();
-//         }
-//
-//         [Test]
-//         public void Should_be_enabled_for_configured_levels([Values] LogLevel level)
-//         {
-//             var settings = new FileLogSettings();
-//             settings.EnabledLogLevels = new[] {LogLevel.Error, LogLevel.Fatal};
-//
-//             new FileLog(settings).IsEnabledFor(level).Should().Be(settings.EnabledLogLevels.Contains(level));
-//         }
-//
-//         [Test]
-//         public void Should_log_messages()
-//         {
-//             CaptureEvents(log => log.Info("Test."))
-//                 .Should()
-//                 .ContainSingle(e => e.MessageTemplate == "Test.");
-//         }
-//
-//         [Test]
-//         public void ForContext_should_add_SourceContext_property()
-//         {
-//             CaptureEvents(log => log.ForContext("ctx").Info("Test."))
-//                 .Should()
-//                 .ContainSingle(e => (string)e.Properties[WellKnownProperties.SourceContext] == "ctx");
-//         }
-//
-//         [Test]
-//         public void ForContext_should_replace_SourceContext_property()
-//         {
-//             CaptureEvents(
-//                     log => log
-//                         .ForContext("ctx")
-//                         .ForContext("ctx2")
-//                         .ForContext("ctx3")
-//                         .Info("Test."))
-//                 .Should()
-//                 .ContainSingle(e => (string)e.Properties[WellKnownProperties.SourceContext] == "ctx3");
-//         }
-//
-//         private static IEnumerable<LogEvent> CaptureEvents(Action<FileLog> action)
-//         {
-//             var events = new List<LogEvent>();
-//
-//             var muxer = Substitute.For<IFileLogMuxer>();
-//             muxer.TryLog(Arg.Do<LogEvent>(e => events.Add(e)), Arg.Any<FilePath>(), Arg.Any<FileLogSettings>(), Arg.Any<object>(), Arg.Any<bool>()).Returns(true);
-//
-//             var muxerProvider = Substitute.For<IFileLogMuxerProvider>();
-//             muxerProvider.ObtainMuxer().Returns(muxer);
-//
-//             var log = new FileLog(muxerProvider, () => new FileLogSettings { OutputTemplate = OutputTemplate.Parse("{Message}") });
-//
-//             action(log);
-//
-//             return events;
-//         }
-//     }
-// }
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
+using NSubstitute;
+using NUnit.Framework;
+using Vostok.Logging.Abstractions;
+using Vostok.Logging.File.Configuration;
+using Vostok.Logging.File.Helpers;
+using Vostok.Logging.File.Muxers;
+using Vostok.Logging.Formatting;
+
+namespace Vostok.Logging.File.Tests
+{
+    [TestFixture]
+    internal class FileLog_Tests
+    {
+        private IMuxerRegistration registration;
+        private IMultiFileMuxer muxer;
+        private List<LogEvent> capturedEvents;
+        private FileLog log;
+        private FileLogSettings settings;
+
+        [SetUp]
+        public void TestSetup()
+        {
+            capturedEvents = new List<LogEvent>();
+
+            registration = Substitute.For<IMuxerRegistration>();
+            registration.IsValid("logs/log").Returns(true);
+
+            muxer = Substitute.For<IMultiFileMuxer>();
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Do<LogEventInfo>(e => capturedEvents.Add(e.Event)), Arg.Any<object>()).Returns(true);
+            muxer.Register(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>(), Arg.Any<object>()).Returns(registration);
+
+            settings = new FileLogSettings {FilePath = "logs/log", OutputTemplate = OutputTemplate.Parse("{Message}")};
+
+            log = new FileLog(muxer, () => settings);
+        }
+
+        [Test]
+        public void Should_validate_settings()
+        {
+            var settings = new FileLogSettings()
+            {
+                OutputTemplate = null
+            };
+
+            new Action(() => new FileLog(settings)).Should().Throw<ArgumentNullException>();
+        }
+
+        [Test]
+        public void Should_be_enabled_for_configured_levels([Values] LogLevel level)
+        {
+            var settings = new FileLogSettings();
+            settings.EnabledLogLevels = new[] { LogLevel.Error, LogLevel.Fatal };
+
+            new FileLog(settings).IsEnabledFor(level).Should().Be(settings.EnabledLogLevels.Contains(level));
+        }
+
+        [Test]
+        public void Should_obtain_registration_before_logging()
+        {
+            log.Info("Test.");
+
+            Received.InOrder(
+                () =>
+                {
+                    muxer.Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<object>());
+                    muxer.TryAdd("logs/log", Arg.Any<LogEventInfo>(), Arg.Any<object>());
+                });
+        }
+
+        [Test]
+        public void Should_obtain_registration_only_once()
+        {
+            log.Info("Test.");
+            log.Info("Test.");
+            log.Info("Test.");
+
+            muxer.Received(1).Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<object>());
+        }
+
+        [Test]
+        public void Should_dispose_registration_on_dispose()
+        {
+            log.Info("Test.");
+            log.Dispose();
+
+            registration.Received().Dispose();
+        }
+
+        [Test]
+        public void Should_dispose_registration_on_path_change()
+        {
+            registration.IsValid("xxx").Returns(false, false, true);
+            log.Info("Test.");
+
+            settings = new FileLogSettings {FilePath = "xxx"};
+            log.Info("Test.");
+
+            registration.Received().Dispose();
+        }
+
+        [Test]
+        public void Should_obtain_new_registration_on_path_change()
+        {
+            registration.IsValid("xxx").Returns(false, false, true);
+            log.Info("Test.");
+
+            settings = new FileLogSettings {FilePath = "xxx"};
+            log.Info("Test.");
+
+            muxer.Received(1).Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<object>());
+            muxer.Received(1).Register("xxx", Arg.Any<FileLogSettings>(), Arg.Any<object>());
+        }
+
+        [Test]
+        public void Should_flush_by_updated_file_path()
+        {
+            registration.IsValid("xxx").Returns(false, false, true);
+            settings = new FileLogSettings {FilePath = "xxx"};
+            log.Info("Test.");
+            log.Flush();
+
+            muxer.Received().FlushAsync("xxx");
+        }
+
+        [Test]
+        public void Should_increment_events_lost_on_losing_event()
+        {
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<object>()).Returns(false);
+
+            log.Info("Test.");
+            log.Info("Test.");
+
+            log.EventsLost.Should().Be(2);
+        }
+
+        [Test]
+        public void Should_log_messages()
+        {
+            log.Info("Test.");
+
+            capturedEvents.Should().ContainSingle(e => e.MessageTemplate == "Test.");
+        }
+
+        [Test]
+        public void ForContext_should_add_SourceContext_property()
+        {
+            log.ForContext("ctx").Info("Test.");
+
+            capturedEvents.Should().ContainSingle(e => (string)e.Properties[WellKnownProperties.SourceContext] == "ctx");
+        }
+
+        [Test]
+        public void ForContext_should_replace_SourceContext_property()
+        {
+            log
+                .ForContext("ctx")
+                .ForContext("ctx2")
+                .ForContext("ctx3")
+                .Info("Test.");
+
+            capturedEvents.Should().ContainSingle(e => (string)e.Properties[WellKnownProperties.SourceContext] == "ctx3");
+        }
+    }
+}

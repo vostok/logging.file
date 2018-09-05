@@ -10,13 +10,13 @@ namespace Vostok.Logging.File.Muxers
         long EventsLost { get; }
 
         IMuxerRegistration Register(
-            [NotNull] FilePath file, 
-            [NotNull] FileLogSettings settings, 
+            [NotNull] FilePath file,
+            [NotNull] FileLogSettings settings,
             [NotNull] object initiator);
 
         bool TryAdd(
-            [NotNull] FilePath file, 
-            [NotNull] LogEventInfo info, 
+            [NotNull] FilePath file,
+            [NotNull] LogEventInfo info,
             [NotNull] object initiator);
 
         Task FlushAsync([NotNull] FilePath file);

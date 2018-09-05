@@ -20,10 +20,10 @@ namespace Vostok.Logging.File.Muxers
             states = new ConcurrentDictionary<FilePath, FileState>();
         }
 
-        public long EventsLost => 
+        public long EventsLost =>
             states.Sum(pair => pair.Value.Muxer.EventsLost);
 
-        public bool TryAdd(FilePath file, LogEventInfo info, object initiator) => 
+        public bool TryAdd(FilePath file, LogEventInfo info, object initiator) =>
             states.TryGetValue(file, out var state) && state.Muxer.TryAdd(info, ReferenceEquals(initiator, state.Owner));
 
         public Task FlushAsync(FilePath file) =>
@@ -118,7 +118,7 @@ namespace Vostok.Logging.File.Muxers
                     }
                     else
                     {
-                        var statesCollection = (ICollection<KeyValuePair<FilePath, FileState>>) states;
+                        var statesCollection = (ICollection<KeyValuePair<FilePath, FileState>>)states;
                         if (statesCollection.Remove(new KeyValuePair<FilePath, FileState>(file, currentState)))
                         {
                             currentState.Muxer.Dispose();
