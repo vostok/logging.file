@@ -8,6 +8,9 @@ using Vostok.Logging.File.Rolling.Strategies;
 
 namespace Vostok.Logging.File.EventsWriting
 {
+    /// <summary>
+    /// Not thread-safe. Expected usage pattern: <see cref="ObtainWriterAsync"/> --> <see cref="ObtainWriterAsync"/> --> ... --> <see cref="Dispose"/>.
+    /// </summary>
     internal class EventsWriterProvider : IEventsWriterProvider
     {
         private readonly FilePath basePath;
@@ -16,10 +19,8 @@ namespace Vostok.Logging.File.EventsWriting
         private readonly IRollingGarbageCollector garbageCollector;
         private readonly ICooldownController cooldownController;
         private readonly Func<FileLogSettings> settingsProvider;
-        private readonly object sync = new object();
 
         private (FilePath file, FileLogSettings settings, IEventsWriter writer) cache;
-        private bool isDisposed;
 
         public EventsWriterProvider(
             FilePath basePath,
@@ -42,48 +43,37 @@ namespace Vostok.Logging.File.EventsWriting
             if (cache.writer == null)
                 await cooldownController.WaitForCooldownAsync().ConfigureAwait(false);
 
-            lock (sync)
+            if (cooldownController.IsCool)
             {
-                if (isDisposed)
-                    throw new ObjectDisposedException(GetType().Name);
+                var settings = settingsProvider();
 
-                if (cooldownController.IsCool)
+                try
                 {
-                    var settings = settingsProvider();
+                    var rollingStrategy = rollingStrategyProvider.ObtainStrategy();
 
-                    try
+                    var currentFile = rollingStrategy.GetCurrentFile(basePath.NormalizedPath);
+
+                    if (currentFile != cache.file || ShouldReopenWriter(cache.settings, settings) || cache.writer == null)
                     {
-                        var rollingStrategy = rollingStrategyProvider.ObtainStrategy();
-
-                        var currentFile = rollingStrategy.GetCurrentFile(basePath.NormalizedPath);
-
-                        if (currentFile != cache.file || ShouldReopenWriter(cache.settings, settings) || cache.writer == null)
-                        {
-                            cache.writer?.Dispose();
-                            cache.writer = null;
-                            cache = (currentFile, settings, eventsWriterFactory.CreateWriter(currentFile, settings));
-                            garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
-                        }
-                    }
-                    finally
-                    {
-                        cooldownController.IncurCooldown(settings.RollingUpdateCooldown);
+                        cache.writer?.Dispose();
+                        cache.writer = null;
+                        cache = (currentFile, settings, eventsWriterFactory.CreateWriter(currentFile, settings));
+                        garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
                     }
                 }
-
-                return cache.writer;
+                finally
+                {
+                    cooldownController.IncurCooldown(settings.RollingUpdateCooldown);
+                }
             }
+
+            return cache.writer;
         }
 
         public void Dispose()
         {
-            lock (sync)
-            {
-                isDisposed = true;
-
-                cache.writer?.Dispose();
-                cache.writer = null;
-            }
+            cache.writer?.Dispose();
+            cache.writer = null;
         }
 
         private static bool ShouldReopenWriter(FileLogSettings oldSettings, FileLogSettings newSettings)
