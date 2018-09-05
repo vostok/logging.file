@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Vostok.Logging.File.EventsWriting
@@ -9,6 +10,6 @@ namespace Vostok.Logging.File.EventsWriting
 
         Task WaitForCooldownAsync();
 
-        void IncurCooldown(TimeSpan duration);
+        void IncurCooldown(TimeSpan duration, CancellationToken cancellation);
     }
 }

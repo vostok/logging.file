@@ -15,10 +15,14 @@ namespace Vostok.Logging.File
     /// <summary>
     /// <para>A log which outputs events to a file.</para>
     /// <para>
-    ///     The implementation is asynchronous: logged messages are not immediately rendered and written to file. 
-    ///     Instead, they are added to a queue which is processed by a background worker. The capacity of the queue 
+    ///     The implementation is asynchronous and thread-safe: logged messages are not immediately rendered and written to file. 
+    ///     Instead, they are added to a lock-free queue which is processed by a background worker. The capacity of the queue 
     ///     can be changed in settings if a settings provider is used. In case of a queue overflow some events may be dropped.
     /// </para>
+    /// <para>Use <see cref="Flush"/> or <see cref="FlushAsync"/> to ensure that logged events are written to file.</para>
+    /// <para>Use <see cref="EventsLost"/> counter to see how many events were lost due to queue overflow.</para>
+    /// <para>Remember to <see cref="Dispose"/> a <see cref="FileLog"/> instance when you no longer need it to close the file handle.</para>
+    /// <para><see cref="Log"/> method never throws exceptions. On the other hand, <see cref="Flush"/> and <see cref="FlushAsync"/> may do so.</para>
     /// </summary>
     [PublicAPI]
     public class FileLog : ILog, IDisposable
@@ -37,7 +41,7 @@ namespace Vostok.Logging.File
         private Tuple<FileLogSettings, FilePath> fileCache;
 
         /// <summary>
-        /// Create a new console log with the given settings.
+        /// Create a new <see cref="FileLog"/> with given static settings.
         /// </summary>
         public FileLog(FileLogSettings settings)
             : this(() => settings)
@@ -45,16 +49,22 @@ namespace Vostok.Logging.File
         }
 
         /// <summary>
-        /// <para>Create a new console log with the given settings provider.</para>
+        /// <para>Create a new file log with the dynamic settings provided by given delegate.</para>
         /// <para>There are some subtleties about updating <see cref="FileLog"/> settings. There are three types of settings:</para>
         /// <list type="bullet">
         /// <item><description>
         /// <para>Settings that cannot be changed after the first event was logged through this <see cref="FileLog"/> instance:</para>
         /// <para><see cref="FileLogSettings.EventsQueueCapacity"/>, <see cref="FileLogSettings.EventsBufferCapacity"/></para>
+        /// <para>These two options, however, have a per-file scope (rather than global).</para>
         /// </description></item>
         /// <item><description>
         /// <para>Settings that will cause re-opening of log file when changed:</para>
-        /// <para><see cref="FileLogSettings.FileOpenMode"/>, <see cref="FileLogSettings.Encoding"/>, <see cref="FileLogSettings.OutputBufferSize"/>, <see cref="FileLogSettings.RollingStrategy"/></para>
+        /// <para>
+        /// <see cref="FileLogSettings.FilePath"/>,
+        /// <see cref="FileLogSettings.FileOpenMode"/>,
+        /// <see cref="FileLogSettings.Encoding"/>,
+        /// <see cref="FileLogSettings.OutputBufferSize"/>,
+        /// <see cref="FileLogSettings.RollingStrategy"/></para>
         /// <para>These settings are set on per-file level (rather than per-instance). Only the first <see cref="FileLog"/> to log something to a file will be allowed to modify settings for that file.</para>
         /// </description></item>
         /// <item><description>
@@ -82,18 +92,20 @@ namespace Vostok.Logging.File
         //~FileLog() => Dispose();
 
         /// <summary>
-        /// The total number of events dropped by all <see cref="FileLog"/> instances in process due to events queue overflow.
+        /// The total number of events dropped by all <see cref="FileLog"/> instances in process due to event queue overflows.
         /// </summary>
         public static long TotalEventsLost => DefaultMuxer.EventsLost;
 
         /// <summary>
-        /// Waits until all currently buffered log events are actually written to their log files.
+        /// Waits asynchronously until all currently buffered log events are actually written to their log files.
         /// </summary>
+        /// <exception cref="FileLogException">Unable to flush events to at least one of the files.</exception>
         public static Task FlushAllAsync() => DefaultMuxer.FlushAsync();
 
         /// <summary>
         /// Waits until all currently buffered log events are actually written to their log files.
         /// </summary>
+        /// <exception cref="FileLogException">Unable to flush events to at least one of the files.</exception>
         public static void FlushAll() => FlushAllAsync().GetAwaiter().GetResult();
 
         /// <summary>
@@ -111,7 +123,6 @@ namespace Vostok.Logging.File
             {
                 var settings = settingsProvider.Get();
                 var file = ObtainActualFile(settings);
-
                 var registration = ObtainMuxerRegistration(file, settings);
 
                 if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandle))
@@ -141,13 +152,15 @@ namespace Vostok.Logging.File
         }
 
         /// <summary>
-        /// Waits until all log events buffered for current log file are actually written.
+        /// Waits asynchronously until all log events buffered for current log file are actually written.
         /// </summary>
+        /// <exception cref="FileLogException">Unable to flush events to the file.</exception>
         public Task FlushAsync() => muxer.FlushAsync(ObtainActualFile(settingsProvider.Get()));
 
         /// <summary>
         /// Waits until all log events buffered for current log file are actually written.
         /// </summary>
+        /// <exception cref="FileLogException">Unable to flush events to the file.</exception>
         public void Flush() => FlushAsync().GetAwaiter().GetResult();
 
         /// <inheritdoc />

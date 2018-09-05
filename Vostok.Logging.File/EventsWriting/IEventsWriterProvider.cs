@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
@@ -12,6 +13,6 @@ namespace Vostok.Logging.File.EventsWriting
         /// <para>May wait for a cooldown provided by <see cref="ICooldownController"/> before trying to open a writer.</para>
         /// </summary>
         [ItemCanBeNull]
-        Task<IEventsWriter> ObtainWriterAsync();
+        Task<IEventsWriter> ObtainWriterAsync(CancellationToken cancellation);
     }
 }
