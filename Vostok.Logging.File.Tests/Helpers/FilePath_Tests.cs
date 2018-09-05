@@ -26,15 +26,26 @@ namespace Vostok.Logging.File.Tests.Helpers
         }
 
         [Test]
-        public void Should_normalize_paths()
+        public void Should_compute_hash_codes_using_OS_specific_comparer()
         {
-            new FilePath("log").Equals(new FilePath("logs/../log")).Should().BeTrue();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                new FilePath("log").GetHashCode().Equals(new FilePath("log").GetHashCode()).Should().BeTrue();
+                new FilePath("log").GetHashCode().Equals(new FilePath("LOG").GetHashCode()).Should().BeTrue();
+                new FilePath("xxx").GetHashCode().Equals(new FilePath("log").GetHashCode()).Should().BeFalse();
+            }
+            else
+            {
+                new FilePath("log").GetHashCode().Equals(new FilePath("log").GetHashCode()).Should().BeTrue();
+                new FilePath("log").GetHashCode().Equals(new FilePath("LOG").GetHashCode()).Should().BeFalse();
+                new FilePath("xxx").GetHashCode().Equals(new FilePath("log").GetHashCode()).Should().BeFalse();
+            }
         }
 
         [Test]
-        public void GetHashCode_should_return_hash_of_lowercase_normalized_path()
+        public void Should_normalize_paths()
         {
-            new FilePath("log").GetHashCode().Should().Be(new FilePath("log").NormalizedPath.ToLowerInvariant().GetHashCode());
+            new FilePath("log").Equals(new FilePath("logs/../log")).Should().BeTrue();
         }
 
         [Test]

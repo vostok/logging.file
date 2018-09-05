@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -6,23 +7,22 @@ namespace Vostok.Logging.File.Helpers
 {
     internal class FilePath : IEquatable<FilePath>
     {
-        private static readonly StringComparison PathComparison = ChoosePathComparison();
+        private static readonly IEqualityComparer<string> PathComparer = ChoosePathComparer();
 
         private readonly int hash;
 
         public FilePath(string rawPath)
         {
-            NormalizedPath = Path.GetFullPath(rawPath);
-            (PathWithoutExtension, Extension) = SeparateExtension(NormalizedPath);
-            hash = NormalizedPath.ToLowerInvariant().GetHashCode();
+            (PathWithoutExtension, Extension) = SeparateExtension(NormalizedPath = Path.GetFullPath(rawPath));
+
+            hash = PathComparer.GetHashCode(NormalizedPath);
         }
 
         private FilePath(string pathWithoutExtension, string extension)
         {
-            NormalizedPath = pathWithoutExtension + extension;
-            PathWithoutExtension = pathWithoutExtension;
-            Extension = extension;
-            hash = NormalizedPath.ToLowerInvariant().GetHashCode();
+            NormalizedPath = (PathWithoutExtension = pathWithoutExtension) + (Extension = extension);
+
+            hash = PathComparer.GetHashCode(NormalizedPath);
         }
 
         public string NormalizedPath { get; }
@@ -60,7 +60,8 @@ namespace Vostok.Logging.File.Helpers
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
-            return string.Equals(NormalizedPath, other.NormalizedPath, PathComparison);
+
+            return PathComparer.Equals(NormalizedPath, other.NormalizedPath);
         }
 
         public override bool Equals(object obj)
@@ -74,8 +75,8 @@ namespace Vostok.Logging.File.Helpers
 
         public override int GetHashCode() => hash;
 
-        private static StringComparison ChoosePathComparison() =>
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        private static IEqualityComparer<string> ChoosePathComparer() =>
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
         #endregion
     }
