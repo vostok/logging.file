@@ -22,6 +22,8 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
 
             suffixFormatter = Substitute.For<IFileSuffixFormatter<int>>();
             suffixFormatter.TryParseSuffix("1").Returns(1);
+            suffixFormatter.TryParseSuffix("2").Returns(2);
+            suffixFormatter.TryParseSuffix("3").Returns(3);
         }
 
         [Test]
@@ -37,6 +39,15 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
             fileSystem.GetFilesByPrefix("logs/log.txt").Returns(new FilePath[] {"logs/log1.txt", "logs/log~.txt"});
 
             RollingStrategyHelper.DiscoverExistingFiles("logs/log.txt", fileSystem, suffixFormatter).Should().HaveCount(1);
+        }
+
+        [Test]
+        public void Should_return_files_in_correct_order()
+        {
+            fileSystem.GetFilesByPrefix("logs/log.txt").Returns(new FilePath[] { "logs/log3.txt", "logs/log1.txt", "logs/log2.txt" });
+
+            RollingStrategyHelper.DiscoverExistingFiles("logs/log.txt", fileSystem, suffixFormatter).Select(e => e.path)
+                .Should().Equal("logs/log1.txt", "logs/log2.txt", "logs/log3.txt");
         }
     }
 }

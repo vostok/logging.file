@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.EventsWriting;
 
 namespace Vostok.Logging.File.Helpers
 {
@@ -15,6 +15,6 @@ namespace Vostok.Logging.File.Helpers
 
         bool TryRemoveFile(FilePath file);
 
-        IEventsWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize);
+        TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize);
     }
 }
