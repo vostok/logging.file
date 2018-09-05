@@ -9,22 +9,22 @@ namespace Vostok.Logging.File.Configuration
     public enum RollingPeriod
     {
         /// <summary>
-        /// Change file every day.
+        /// Change to a new file every day.
         /// </summary>
         Day,
 
         /// <summary>
-        /// Change file every hour.
+        /// Change to a new file every hour.
         /// </summary>
         Hour,
 
         /// <summary>
-        /// Change file every minute.
+        /// Change to a new file every minute.
         /// </summary>
         Minute,
 
         /// <summary>
-        /// Change file every second.
+        /// Change to a new file every second.
         /// </summary>
         Second
     }

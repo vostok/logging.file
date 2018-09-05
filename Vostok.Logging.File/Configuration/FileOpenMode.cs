@@ -14,7 +14,7 @@ namespace Vostok.Logging.File.Configuration
         Append,
 
         /// <summary>
-        /// Truncate existing file.
+        /// Re-create existing file from scratch.
         /// </summary>
         Rewrite
     }
