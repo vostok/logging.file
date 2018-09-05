@@ -186,21 +186,11 @@ namespace Vostok.Logging.File.Tests.Muxers
                 .Throws<Exception>();
 
             muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
-
-            new Action(() => singleFileWorker.Received().WritePendingEventsAsync(
-                    Arg.Any<IEventsWriterProvider>(),
-                    Arg.Is<ConcurrentBoundedQueue<LogEventInfo>>(q => q.Count == 1),
-                    Arg.Any<LogEventInfo[]>(),
-                    Arg.Any<AtomicLong>(),
-                    Arg.Any<AtomicLong>(),
-                    Arg.Any<CancellationToken>()))
-                .ShouldPassIn(1.Seconds());
-
             muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
 
-            new Action(() => singleFileWorker.Received().WritePendingEventsAsync(
+            new Action(() => singleFileWorker.Received(2).WritePendingEventsAsync(
                     Arg.Any<IEventsWriterProvider>(),
-                    Arg.Is<ConcurrentBoundedQueue<LogEventInfo>>(q => q.Count == 2),
+                    Arg.Any<ConcurrentBoundedQueue<LogEventInfo>>(),
                     Arg.Any<LogEventInfo[]>(),
                     Arg.Any<AtomicLong>(),
                     Arg.Any<AtomicLong>(),
