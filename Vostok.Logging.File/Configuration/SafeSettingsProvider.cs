@@ -18,7 +18,12 @@ namespace Vostok.Logging.File.Configuration
         {
             try
             {
-                return cachedSettings = settingsProvider();
+                var actualSettings = settingsProvider();
+
+                if (ReferenceEquals(actualSettings, cachedSettings))
+                    return actualSettings;
+
+                return cachedSettings = SettingsValidator.ValidateSettings(actualSettings);
             }
             catch (Exception exception)
             {
