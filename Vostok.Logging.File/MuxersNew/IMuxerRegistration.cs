@@ -6,6 +6,6 @@ namespace Vostok.Logging.File.MuxersNew
 {
     internal interface IMuxerRegistration : IDisposable
     {
-        [NotNull] FilePath File { get; }
+        bool IsValid(FilePath file);
     }
 }

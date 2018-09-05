@@ -31,6 +31,7 @@ namespace Vostok.Logging.File
 
         private readonly SafeSettingsProvider settingsProvider;
         private readonly AtomicLong eventsLost;
+
         private volatile IMuxerRegistration muxerRegistration;
 
         private Tuple<FileLogSettings, FilePath> fileCache;
@@ -106,13 +107,22 @@ namespace Vostok.Logging.File
             if (@event == null)
                 return;
 
-            var settings = settingsProvider.Get();
-            var file = ObtainActualFile(settings);
+            while (true)
+            {
+                var settings = settingsProvider.Get();
+                var file = ObtainActualFile(settings);
 
-            ObtainMuxerRegistration(ObtainActualFile(settings), settings);
+                var registration = ObtainMuxerRegistration(file, settings);
 
-            if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandle))
-                eventsLost.Increment();
+                if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandle))
+                {
+                    eventsLost.Increment();
+                    break;
+                }
+
+                if (registration.IsValid(file))
+                    break;
+            }
         }
 
         /// <inheritdoc />
@@ -151,11 +161,6 @@ namespace Vostok.Logging.File
             GC.SuppressFinalize(this);
         }
 
-        private static bool IsValidRegistration(IMuxerRegistration registration, FilePath file)
-        {
-            return Equals(file, registration?.File);
-        }
-
         private FilePath ObtainActualFile(FileLogSettings settings)
         {
             var currentCache = fileCache;
@@ -170,19 +175,21 @@ namespace Vostok.Logging.File
             return newCache.Item2;
         }
 
-        private void ObtainMuxerRegistration(FilePath file, FileLogSettings settings)
+        private IMuxerRegistration ObtainMuxerRegistration(FilePath file, FileLogSettings settings)
         {
-            if (IsValidRegistration(muxerRegistration, file))
-                return;
+            var currentRegistration = muxerRegistration;
+
+            if (currentRegistration.IsValid(file))
+                return currentRegistration;
 
             lock (muxerRegistrationLock)
             {
-                if (IsValidRegistration(muxerRegistration, file))
-                    return;
+                if (muxerRegistration.IsValid(file))
+                    return muxerRegistration;
 
-                muxerRegistration.Dispose();
+                muxerRegistration?.Dispose();
                 muxerRegistration = null;
-                muxerRegistration = muxer.Register(file, settings, muxerHandle);
+                return muxerRegistration = muxer.Register(file, settings, muxerHandle);
             }
         }
     }

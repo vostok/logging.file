@@ -99,7 +99,7 @@ namespace Vostok.Logging.File.MuxersNew
                 this.participant = participant;
             }
 
-            public FilePath File => file;
+            public bool IsValid(FilePath against) => participant != null && Equals(file, against);
 
             public void Dispose()
             {
