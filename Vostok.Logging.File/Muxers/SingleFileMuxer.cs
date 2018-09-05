@@ -137,9 +137,6 @@ namespace Vostok.Logging.File.Muxers
             if (workerTask == null)
                 return true;
 
-            if (await writerProvider.ObtainWriterAsync().ConfigureAwait(false) == null)
-                return false;
-
             var waiter = new Waiter();
 
             lock (flushWaiters)
