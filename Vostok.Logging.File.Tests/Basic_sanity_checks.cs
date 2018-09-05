@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -85,18 +86,23 @@ namespace Vostok.Logging.File.Tests
                     i => Task.Run(
                         () =>
                         {
+                            var logs = new List<FileLog>();
+
                             latch.Signal();
                             latch.Wait();
                             for (int x = 0; x < 100; x++)
-                                new FileLog(new FileLogSettings { FilePath = logName }).Info("Hey from {writer:'writer '#00}!", i);
+                            {
+                                var log = new FileLog(new FileLogSettings { FilePath = logName });
+                                log.Info("Hey from {writer:'writer '#00}!", i);
+                                logs.Add(log);
+                            }
 
+                            foreach (var log in logs)
+                                log.Dispose();
                         })).ToArray();
 
                 latch.Wait();
                 Task.WaitAll(writers);
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
 
                 System.IO.File.Exists(logName).Should().BeTrue();
 

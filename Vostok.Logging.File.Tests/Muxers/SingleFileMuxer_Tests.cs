@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using Vostok.Commons.Collections;
 using Vostok.Commons.Testing;
@@ -62,24 +63,22 @@ namespace Vostok.Logging.File.Tests.Muxers
         }
 
         [Test]
-        public void TryAdd_should_return_true_if_event_was_added_successfully()
+        public void TryAdd_should_return_true_if_event_was_added_successfully([Values] bool fromOwner)
         {
-            muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
+            muxer.TryAdd(CreateEventInfo(), fromOwner).Should().BeTrue();
         }
 
         [Test]
-        public void TryAdd_should_return_false_if_event_was_not_added()
+        public void TryAdd_should_return_false_if_event_was_not_added([Values] bool fromOwner)
         {
             muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings {EventsQueueCapacity = 0});
 
-            muxer.TryAdd(CreateEventInfo(), true).Should().BeFalse();
+            muxer.TryAdd(CreateEventInfo(), fromOwner).Should().BeFalse();
         }
 
         [Test]
         public void Should_eventually_write_added_events()
         {
-            var e = CreateEventInfo();
-
             muxer.TryAdd(CreateEventInfo(), true);
 
             new Action(() => singleFileWorker.Received().WritePendingEventsAsync(
@@ -95,9 +94,26 @@ namespace Vostok.Logging.File.Tests.Muxers
         [Test]
         public void Flush_should_wait_until_current_events_are_written()
         {
+            var iterationBlocker = new TaskCompletionSource<bool>();
+            singleFileWorker.WritePendingEventsAsync(
+                    Arg.Any<IEventsWriterProvider>(),
+                    Arg.Any<ConcurrentBoundedQueue<LogEventInfo>>(),
+                    Arg.Any<LogEventInfo[]>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<CancellationToken>())
+                .Returns(iterationBlocker.Task);
             muxer.TryAdd(CreateEventInfo(), true);
-            muxer.FlushAsync().Wait();
 
+            var flushTask = muxer.FlushAsync();
+
+            flushTask.Wait(50);
+            flushTask.IsCompleted.Should().BeFalse();
+
+            Task.Run(() => iterationBlocker.TrySetResult(true));
+            flushTask.Wait(100);
+            flushTask.IsCompleted.Should().BeTrue();
+            
             singleFileWorker.Received().WritePendingEventsAsync(
                 Arg.Any<IEventsWriterProvider>(),
                 Arg.Is<ConcurrentBoundedQueue<LogEventInfo>>(q => q.Count == 1),
@@ -122,6 +138,30 @@ namespace Vostok.Logging.File.Tests.Muxers
         }
 
         [Test]
+        public void Dispose_should_wait_until_worker_stops()
+        {
+            var iterationBlocker = new TaskCompletionSource<bool>();
+            singleFileWorker.WritePendingEventsAsync(
+                    Arg.Any<IEventsWriterProvider>(),
+                    Arg.Any<ConcurrentBoundedQueue<LogEventInfo>>(),
+                    Arg.Any<LogEventInfo[]>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<CancellationToken>())
+                .Returns(iterationBlocker.Task);
+            muxer.TryAdd(CreateEventInfo(), true);
+
+            var disposeTask = Task.Run(() => muxer.Dispose());
+
+            disposeTask.Wait(50);
+            disposeTask.IsCompleted.Should().BeFalse();
+
+            iterationBlocker.TrySetResult(true);
+            disposeTask.Wait(100);
+            disposeTask.IsCompleted.Should().BeTrue();
+        }
+
+        [Test]
         public void Should_update_settings_only_from_owner()
         {
             var initialBufferSize = new FileLogSettings().OutputBufferSize;
@@ -131,6 +171,43 @@ namespace Vostok.Logging.File.Tests.Muxers
 
             muxer.TryAdd(CreateEventInfo(new FileLogSettings {OutputBufferSize = 10}), true);
             settingsInsideMuxer().OutputBufferSize.Should().Be(10);
+        }
+
+        [Test]
+        public void Should_not_break_if_worker_throws_exception()
+        {
+            singleFileWorker.WritePendingEventsAsync(
+                    Arg.Any<IEventsWriterProvider>(),
+                    Arg.Any<ConcurrentBoundedQueue<LogEventInfo>>(),
+                    Arg.Any<LogEventInfo[]>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<CancellationToken>())
+                .Throws<Exception>();
+
+            muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
+
+            new Action(() => singleFileWorker.Received().WritePendingEventsAsync(
+                    Arg.Any<IEventsWriterProvider>(),
+                    Arg.Is<ConcurrentBoundedQueue<LogEventInfo>>(q => q.Count == 1),
+                    Arg.Any<LogEventInfo[]>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<CancellationToken>()))
+                .ShouldPassIn(1.Seconds());
+
+            muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
+
+            new Action(() => singleFileWorker.Received().WritePendingEventsAsync(
+                    Arg.Any<IEventsWriterProvider>(),
+                    Arg.Is<ConcurrentBoundedQueue<LogEventInfo>>(q => q.Count == 2),
+                    Arg.Any<LogEventInfo[]>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<CancellationToken>()))
+                .ShouldPassIn(1.Seconds());
+
+            Console.WriteLine(); // (krait): to flush console output
         }
 
         private static LogEventInfo CreateEventInfo(FileLogSettings settings = null)

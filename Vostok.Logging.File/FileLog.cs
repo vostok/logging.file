@@ -88,9 +88,6 @@ namespace Vostok.Logging.File
             eventsLost = new AtomicLong(0);
         }
 
-        /// <inheritdoc />
-        //~FileLog() => Dispose();
-
         /// <summary>
         /// The total number of events dropped by all <see cref="FileLog"/> instances in process due to event queue overflows.
         /// </summary>
@@ -170,8 +167,6 @@ namespace Vostok.Logging.File
             {
                 muxerRegistration?.Dispose();
             }
-
-            GC.SuppressFinalize(this);
         }
 
         private FilePath ObtainActualFile(FileLogSettings settings)
