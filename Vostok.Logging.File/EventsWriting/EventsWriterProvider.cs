@@ -51,14 +51,13 @@ namespace Vostok.Logging.File.EventsWriting
                 {
                     var rollingStrategy = rollingStrategyProvider.ObtainStrategy();
 
-                    var currentFile = rollingStrategy.GetCurrentFile(basePath.NormalizedPath);
-
+                    var currentFile = rollingStrategy.GetCurrentFile(basePath);
                     if (currentFile != cache.file || ShouldReopenWriter(cache.settings, settings) || cache.writer == null)
                     {
                         cache.writer?.Dispose();
                         cache.writer = null;
                         cache = (currentFile, settings, eventsWriterFactory.CreateWriter(currentFile, settings));
-                        garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath.NormalizedPath).ToArray());
+                        garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath).ToArray());
                     }
                 }
                 finally

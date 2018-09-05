@@ -22,7 +22,7 @@ namespace Vostok.Logging.File.Rolling
                 return;
 
             foreach (var file in allFiles.Take(allFiles.Length - filesToKeep))
-                fileSystem.TryRemoveFile(file.NormalizedPath);
+                fileSystem.TryRemoveFile(file);
         }
     }
 }

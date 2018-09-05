@@ -14,7 +14,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
 
         public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath)
         {
-            if (fileSystem.Exists(basePath.NormalizedPath))
+            if (fileSystem.Exists(basePath))
                 yield return basePath;
         }
 

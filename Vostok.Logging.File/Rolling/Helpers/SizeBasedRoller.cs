@@ -20,7 +20,7 @@ namespace Vostok.Logging.File.Rolling.Helpers
             {
                 var maxFileSize = maxFileSizeProvider();
 
-                if (fileSystem.GetFileSize(currentFilePath.NormalizedPath) >= maxFileSize)
+                if (fileSystem.GetFileSize(currentFilePath) >= maxFileSize)
                     return true;
             }
 
