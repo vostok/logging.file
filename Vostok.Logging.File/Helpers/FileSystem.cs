@@ -9,7 +9,8 @@ namespace Vostok.Logging.File.Helpers
 {
     internal class FileSystem : IFileSystem
     {
-        public IEnumerable<FilePath> GetFilesByPrefix(FilePath path) => GetFilesByPrefix(path.PathWithoutExtension).Select(f => (FilePath)f);
+        public IEnumerable<FilePath> GetFilesByPrefix(FilePath path) =>
+            GetFilesByPrefix(path.PathWithoutExtension).Select(f => (FilePath) f);
 
         public long GetFileSize(FilePath file)
         {
