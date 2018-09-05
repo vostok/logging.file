@@ -9,13 +9,14 @@ namespace Vostok.Logging.File.EventsWriting
     internal class EventsWriterProviderFactory : IEventsWriterProviderFactory
     {
         private static readonly FileSystem FileSystem = new FileSystem();
+        private static readonly RollingStrategyFactory RollingStrategyFactory = new RollingStrategyFactory();
 
         public IEventsWriterProvider CreateProvider(FilePath filePath, Func<FileLogSettings> settingsProvider)
         {
             return new EventsWriterProvider(
                 filePath,
-                new RollingStrategyProvider(filePath, new RollingStrategyFactory(), settingsProvider),
-                new EventsWriterFactory(FileSystem), 
+                new EventsWriterFactory(FileSystem),
+                new RollingStrategyProvider(filePath, RollingStrategyFactory, settingsProvider),
                 new RollingGarbageCollector(FileSystem, () => settingsProvider().RollingStrategy.MaxFiles),
                 new CooldownController(),
                 settingsProvider);

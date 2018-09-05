@@ -46,7 +46,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
             cooldownController.IsCool.Returns(true);
             cooldownController.WaitForCooldownAsync().Returns(Task.CompletedTask);
 
-            provider = new EventsWriterProvider("log", strategyProvider, eventsWriterFactory, garbageCollector, cooldownController, () => settings);
+            provider = new EventsWriterProvider("log", eventsWriterFactory, strategyProvider, garbageCollector, cooldownController, () => settings);
 
             settings = new FileLogSettings();
         }

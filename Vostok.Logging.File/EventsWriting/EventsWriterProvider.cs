@@ -11,11 +11,11 @@ namespace Vostok.Logging.File.EventsWriting
     internal class EventsWriterProvider : IEventsWriterProvider
     {
         private readonly FilePath basePath;
-        private readonly IRollingStrategyProvider rollingStrategyProvider;
         private readonly IEventsWriterFactory eventsWriterFactory;
+        private readonly IRollingStrategyProvider rollingStrategyProvider;
         private readonly IRollingGarbageCollector garbageCollector;
-        private readonly Func<FileLogSettings> settingsProvider;
         private readonly ICooldownController cooldownController;
+        private readonly Func<FileLogSettings> settingsProvider;
         private readonly object sync = new object();
 
         private (FilePath file, FileLogSettings settings, IEventsWriter writer) cache;
@@ -23,8 +23,8 @@ namespace Vostok.Logging.File.EventsWriting
 
         public EventsWriterProvider(
             FilePath basePath,
-            IRollingStrategyProvider rollingStrategyProvider,
             IEventsWriterFactory eventsWriterFactory,
+            IRollingStrategyProvider rollingStrategyProvider,
             IRollingGarbageCollector garbageCollector,
             ICooldownController cooldownController,
             Func<FileLogSettings> settingsProvider)
