@@ -85,7 +85,8 @@ namespace Vostok.Logging.File.MuxersNew
 
         public bool TryAdd(LogEventInfo info, bool fromOwner)
         {
-            UpdateSettingsIfNeeded(info, fromOwner);
+            if (fromOwner)
+                settings = info.Settings;
 
             InitializeIfNeeded();
 
@@ -137,17 +138,6 @@ namespace Vostok.Logging.File.MuxersNew
             flushSignal.Set();
 
             return await waiter.Task.ConfigureAwait(false);
-        }
-
-        private void UpdateSettingsIfNeeded(LogEventInfo info, bool fromOwner)
-        {
-            if (!fromOwner)
-                return;
-
-            if (info.Settings.FilePath != settings.FilePath)
-                throw new InvalidOperationException($"Detected an attempt to use an instance of '{GetType().Name}' with '{settings.FilePath}' file path to log an event to another file ('{info.Settings.FilePath}').");
-
-            settings = info.Settings;
         }
 
         private void InitializeIfNeeded()

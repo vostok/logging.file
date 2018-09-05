@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using FluentAssertions;
 using NUnit.Framework;
@@ -62,7 +63,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
             {
                 var file = folder.GetFileName("log");
                 using (System.IO.File.Create(file))
-                    fileSystem.TryRemoveFile(file).Should().BeFalse();
+                    fileSystem.TryRemoveFile(file).Should().Be(!RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
             }
         }
     }

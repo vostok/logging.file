@@ -6,7 +6,6 @@ using Vostok.Logging.Formatting;
 
 namespace Vostok.Logging.File.Configuration
 {
-    // TODO(krait): document warm settings
     /// <summary>
     /// Settings of a file log instance.
     /// </summary>
@@ -14,7 +13,7 @@ namespace Vostok.Logging.File.Configuration
     public class FileLogSettings
     {
         /// <summary>
-        /// Path to log file. If a <see cref="RollingStrategy"/> is specified, a suffix may be added to this path.
+        /// Path to log file. If a <see cref="RollingStrategy"/> is specified, a suffix may be added to this path. The path is relative to current working directory (<see cref="Environment.CurrentDirectory"/>).
         /// </summary>
         [NotNull]
         public string FilePath { get; set; } = "logs/log";

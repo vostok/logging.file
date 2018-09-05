@@ -6,6 +6,7 @@ using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
+using Vostok.Logging.File.Helpers;
 
 namespace Vostok.Logging.File.MuxersNew
 {
@@ -38,9 +39,11 @@ namespace Vostok.Logging.File.MuxersNew
                 {
                     writer.WriteEvents(buffer, eventsDrained);
                 }
-                catch
+                catch (Exception error)
                 {
                     eventsLostCurrently.Add(eventsDrained);
+
+                    SafeConsole.ReportError("Failure in writing log events to a file:", error);
 
                     return false;
                 }

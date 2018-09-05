@@ -43,9 +43,23 @@ namespace Vostok.Logging.File
         {
         }
 
-        // TODO(krait): clarify which settings can be updated
         /// <summary>
-        /// Create a new console log with the given settings provider.
+        /// <para>Create a new console log with the given settings provider.</para>
+        /// <para>There are some subtleties about updating <see cref="FileLog"/> settings. There are three types of settings:</para>
+        /// <list type="bullet">
+        /// <item><description>
+        /// <para>Settings that cannot be changed after the first event was logged through this <see cref="FileLog"/> instance:</para>
+        /// <para><see cref="FileLogSettings.EventsQueueCapacity"/>, <see cref="FileLogSettings.EventsBufferCapacity"/></para>
+        /// </description></item>
+        /// <item><description>
+        /// <para>Settings that will cause re-opening of log file when changed:</para>
+        /// <para><see cref="FileLogSettings.FileOpenMode"/>, <see cref="FileLogSettings.Encoding"/>, <see cref="FileLogSettings.OutputBufferSize"/>, <see cref="FileLogSettings.RollingStrategy"/></para>
+        /// <para>These settings are set on per-file level (rather than per-instance). Only the first <see cref="FileLog"/> to log something to a file will be allowed to modify settings for that file.</para>
+        /// </description></item>
+        /// <item><description>
+        /// <para>All other settings can be changed any time and come into effect immediately.</para>
+        /// </description></item>
+        /// </list>
         /// </summary>
         public FileLog(Func<FileLogSettings> settingsProvider)
             : this(DefaultMuxerProvider, settingsProvider)
