@@ -241,6 +241,10 @@ namespace Vostok.Logging.File.MuxersNew
             {
                 SafeConsole.ReportError($"An error occured while finishing background worker for file '{settings.FilePath}':", error);
             }
+            finally
+            {
+                workerTask = null;
+            }
         }
     }
 }
