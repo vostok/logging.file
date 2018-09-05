@@ -79,7 +79,7 @@ namespace Vostok.Logging.File
         }
 
         /// <inheritdoc />
-        ~FileLog() => Dispose();
+        //~FileLog() => Dispose();
 
         /// <summary>
         /// The total number of events dropped by all <see cref="FileLog"/> instances in process due to events queue overflow.
@@ -179,12 +179,12 @@ namespace Vostok.Logging.File
         {
             var currentRegistration = muxerRegistration;
 
-            if (currentRegistration.IsValid(file))
+            if (currentRegistration != null && currentRegistration.IsValid(file))
                 return currentRegistration;
 
             lock (muxerRegistrationLock)
             {
-                if (muxerRegistration.IsValid(file))
+                if (muxerRegistration != null && muxerRegistration.IsValid(file))
                     return muxerRegistration;
 
                 muxerRegistration?.Dispose();

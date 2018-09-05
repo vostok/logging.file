@@ -236,16 +236,6 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         }
 
         [Test]
-        public void ObtainWriterAsync_should_throw_after_dispose()
-        {
-            ObtainWriter();
-
-            provider.Dispose();
-
-            new Action(() => ObtainWriter()).Should().Throw<ObjectDisposedException>();
-        }
-
-        [Test]
         public void Dispose_should_dispose_writer()
         {
             ObtainWriter();
