@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NSubstitute;
 using NUnit.Framework;
+using Vostok.Commons.Collections;
+using Vostok.Commons.Testing;
+using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.EventsWriting;
@@ -18,9 +23,8 @@ namespace Vostok.Logging.File.Tests.Muxers
         private IEventsWriterProvider eventsWriterProvider;
         private IEventsWriterProviderFactory writerProviderFactory;
         private SingleFileMuxer muxer;
-        private object owner;
-        private LogEventInfo[] tempBuffer;
         private Func<FileLogSettings> settingsInsideMuxer;
+        private ISingleFileWorker singleFileWorker;
 
         [SetUp]
         public void TestSetup()
@@ -33,80 +37,74 @@ namespace Vostok.Logging.File.Tests.Muxers
             writerProviderFactory = Substitute.For<IEventsWriterProviderFactory>();
             writerProviderFactory.CreateProvider(Arg.Any<FilePath>(), Arg.Do<Func<FileLogSettings>>(x => settingsInsideMuxer = x)).Returns(eventsWriterProvider);
 
-            owner = new object();
-            tempBuffer = new LogEventInfo[1];
+            singleFileWorker = Substitute.For<ISingleFileWorker>();
+            singleFileWorker.WritePendingEventsAsync(
+                    Arg.Any<IEventsWriterProvider>(),
+                    Arg.Any<ConcurrentBoundedQueue<LogEventInfo>>(),
+                    Arg.Any<LogEventInfo[]>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(true));
 
-            muxer = new SingleFileMuxer(owner, "log", new FileLogSettings(), writerProviderFactory);
+            muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings());
         }
 
         [Test]
         public void EventsLost_should_be_incremented_after_losing_an_event()
         {
-            muxer = new SingleFileMuxer(owner, "log", new FileLogSettings {EventsQueueCapacity = 0}, writerProviderFactory);
+            muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings {EventsQueueCapacity = 0});
 
-            muxer.TryAdd(CreateEventInfo(), owner);
-            muxer.TryAdd(CreateEventInfo(), owner);
+            muxer.TryAdd(CreateEventInfo(), true);
+            muxer.TryAdd(CreateEventInfo(), true);
 
             muxer.EventsLost.Should().Be(2);
         }
 
         [Test]
-        public void TryLog_should_return_true_if_event_was_added_successfully()
+        public void TryAdd_should_return_true_if_event_was_added_successfully()
         {
-            muxer.TryAdd(CreateEventInfo(), owner).Should().BeTrue();
+            muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
         }
 
         [Test]
-        public void TryLog_should_return_false_if_event_was_not_added()
+        public void TryAdd_should_return_false_if_event_was_not_added()
         {
-            muxer = new SingleFileMuxer(owner, "log", new FileLogSettings { EventsQueueCapacity = 0 }, writerProviderFactory);
+            muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings {EventsQueueCapacity = 0});
 
-            muxer.TryAdd(CreateEventInfo(), owner).Should().BeFalse();
+            muxer.TryAdd(CreateEventInfo(), true).Should().BeFalse();
         }
 
         [Test]
-        public void Should_write_added_events()
+        public void Should_eventually_write_added_events()
         {
             var e = CreateEventInfo();
 
-            muxer.TryAdd(e, owner);
+            muxer.TryAdd(CreateEventInfo(), true);
 
-            muxer.WriteEvents(tempBuffer);
-
-            eventsWriter.Received().WriteEvents(
-                Arg.Is<LogEventInfo[]>(events =>
-                    events.Length == 1 && ReferenceEquals(events[0], e)), 1);
+            new Action(() => singleFileWorker.Received().WritePendingEventsAsync(
+                    Arg.Any<IEventsWriterProvider>(),
+                    Arg.Is<ConcurrentBoundedQueue<LogEventInfo>>(q => q.Count == 1),
+                    Arg.Any<LogEventInfo[]>(), 
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<AtomicLong>(),
+                    Arg.Any<CancellationToken>()))
+                .ShouldPassIn(1.Seconds());
         }
 
         [Test]
         public void Flush_should_wait_until_current_events_are_written()
         {
-            muxer.TryAdd(CreateEventInfo(), owner);
+            muxer.TryAdd(CreateEventInfo(), true);
+            muxer.FlushAsync().Wait();
 
-            var task = muxer.FlushAsync();
-            task.IsCompleted.Should().BeFalse();
-
-            muxer.WriteEvents(tempBuffer);
-
-            task.IsCompleted.Should().BeTrue();
-        }
-
-        [Test]
-        public void TryAdd_should_throw_after_dispose()
-        {
-            muxer.Dispose();
-
-            new Action(() => muxer.TryAdd(CreateEventInfo(), owner)).Should().Throw<ObjectDisposedException>();
-        }
-
-        [Test]
-        public void RemoveReference_should_return_whether_reference_was_the_last()
-        {
-            muxer.AddReference();
-            muxer.AddReference();
-
-            muxer.RemoveReference().Should().BeFalse();
-            muxer.RemoveReference().Should().BeTrue();
+            singleFileWorker.Received().WritePendingEventsAsync(
+                Arg.Any<IEventsWriterProvider>(),
+                Arg.Is<ConcurrentBoundedQueue<LogEventInfo>>(q => q.Count == 1),
+                Arg.Any<LogEventInfo[]>(), 
+                Arg.Any<AtomicLong>(),
+                Arg.Any<AtomicLong>(),
+                Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -128,10 +126,10 @@ namespace Vostok.Logging.File.Tests.Muxers
         {
             var initialBufferSize = new FileLogSettings().OutputBufferSize;
 
-            muxer.TryAdd(CreateEventInfo(new FileLogSettings { OutputBufferSize = 10 }), new object());
+            muxer.TryAdd(CreateEventInfo(new FileLogSettings {OutputBufferSize = 10}), false);
             settingsInsideMuxer().OutputBufferSize.Should().Be(initialBufferSize);
 
-            muxer.TryAdd(CreateEventInfo(new FileLogSettings { OutputBufferSize = 10 }), owner);
+            muxer.TryAdd(CreateEventInfo(new FileLogSettings {OutputBufferSize = 10}), true);
             settingsInsideMuxer().OutputBufferSize.Should().Be(10);
         }
 

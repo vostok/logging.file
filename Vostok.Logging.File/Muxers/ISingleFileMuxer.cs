@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Vostok.Logging.File.Muxers
 {
@@ -7,16 +8,8 @@ namespace Vostok.Logging.File.Muxers
     {
         long EventsLost { get; }
 
-        void AddReference();
+        bool TryAdd([NotNull] LogEventInfo info, bool fromOwner);
 
         Task FlushAsync();
-
-        bool RemoveReference();
-
-        bool TryAdd(LogEventInfo info, object instigator);
-
-        Task TryWaitForNewItemsAsync(TimeSpan timeout);
-
-        void WriteEvents(LogEventInfo[] temporaryBuffer);
     }
 }

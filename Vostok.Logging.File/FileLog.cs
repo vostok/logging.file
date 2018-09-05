@@ -8,7 +8,7 @@ using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Wrappers;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
-using Vostok.Logging.File.MuxersNew;
+using Vostok.Logging.File.Muxers;
 
 namespace Vostok.Logging.File
 {
@@ -23,7 +23,7 @@ namespace Vostok.Logging.File
     [PublicAPI]
     public class FileLog : ILog, IDisposable
     {
-        private static readonly MultiFileMuxer DefaultMuxer = new MultiFileMuxer(new SingleFileMuxerFactoryNew());
+        private static readonly MultiFileMuxer DefaultMuxer = new MultiFileMuxer(new SingleFileMuxerFactory());
 
         private readonly IMultiFileMuxer muxer;
         private readonly object muxerHandle;

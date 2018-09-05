@@ -5,7 +5,7 @@ using Vostok.Commons.Collections;
 using Vostok.Commons.Threading;
 using Vostok.Logging.File.EventsWriting;
 
-namespace Vostok.Logging.File.MuxersNew
+namespace Vostok.Logging.File.Muxers
 {
     internal interface ISingleFileWorker
     {

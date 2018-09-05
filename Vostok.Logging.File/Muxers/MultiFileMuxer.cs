@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
 
-namespace Vostok.Logging.File.MuxersNew
+namespace Vostok.Logging.File.Muxers
 {
     internal class MultiFileMuxer : IMultiFileMuxer
     {
-        private readonly ISingleFileMuxerFactoryNew factory;
+        private readonly ISingleFileMuxerFactory factory;
         private readonly ConcurrentDictionary<FilePath, FileState> states;
 
-        public MultiFileMuxer(ISingleFileMuxerFactoryNew factory)
+        public MultiFileMuxer(ISingleFileMuxerFactory factory)
         {
             this.factory = factory;
 
@@ -55,20 +55,20 @@ namespace Vostok.Logging.File.MuxersNew
 
         private class FileState
         {
-            public readonly ISingleFileMuxerNew Muxer;
+            public readonly ISingleFileMuxer Muxer;
 
             public readonly object Owner;
 
             public readonly int References;
 
-            private FileState(ISingleFileMuxerNew muxer, object owner, int references)
+            private FileState(ISingleFileMuxer muxer, object owner, int references)
             {
                 Muxer = muxer;
                 Owner = owner;
                 References = references;
             }
 
-            public static FileState CreateInitial(ISingleFileMuxerNew muxer, object owner)
+            public static FileState CreateInitial(ISingleFileMuxer muxer, object owner)
             {
                 return new FileState(muxer, owner, 1);
             }

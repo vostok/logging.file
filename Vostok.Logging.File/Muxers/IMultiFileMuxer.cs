@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
 
-namespace Vostok.Logging.File.MuxersNew
+namespace Vostok.Logging.File.Muxers
 {
     internal interface IMultiFileMuxer
     {
