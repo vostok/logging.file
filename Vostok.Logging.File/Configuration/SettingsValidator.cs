@@ -34,16 +34,11 @@ namespace Vostok.Logging.File.Configuration
             if (settings.EventsQueueCapacity <= 0)
                 throw new ArgumentOutOfRangeException(nameof(settings.EventsQueueCapacity));
 
+            if (settings.EventsBufferCapacity <= 0)
+                throw new ArgumentOutOfRangeException(nameof(settings.EventsBufferCapacity));
+
             if (settings.RollingUpdateCooldown <= TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException(nameof(settings.RollingUpdateCooldown));
-
-            return settings;
-        }
-
-        public static FileLogGlobalSettings ValidateGlobalSettings(FileLogGlobalSettings settings)
-        {
-            if (settings.EventsTemporaryBufferCapacity <= 0)
-                throw new ArgumentOutOfRangeException(nameof(settings.EventsTemporaryBufferCapacity));
 
             return settings;
         }

@@ -9,23 +9,6 @@ namespace Vostok.Logging.File.Tests.Configuration
     internal class SettingsValidator_Tests
     {
         [Test]
-        public void ValidateGlobalSettings_should_allow_default_settings()
-        {
-            new Action(() => SettingsValidator.ValidateGlobalSettings(new FileLogGlobalSettings()))
-                .Should().NotThrow();
-        }
-
-        [Test]
-        public void ValidateGlobalSettings_should_not_allow_non_positive_EventsTemporaryBufferCapacity()
-        {
-            new Action(() => SettingsValidator.ValidateGlobalSettings(new FileLogGlobalSettings {EventsTemporaryBufferCapacity = -1}))
-                .Should().Throw<ArgumentOutOfRangeException>();
-
-            new Action(() => SettingsValidator.ValidateGlobalSettings(new FileLogGlobalSettings {EventsTemporaryBufferCapacity = 0}))
-                .Should().Throw<ArgumentOutOfRangeException>();
-        }
-
-        [Test]
         public void ValidateSettings_should_allow_default_settings()
         {
             new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings()))
@@ -127,6 +110,16 @@ namespace Vostok.Logging.File.Tests.Configuration
                 .Should().Throw<ArgumentOutOfRangeException>();
 
             new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { EventsQueueCapacity = 0 }))
+                .Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        [Test]
+        public void ValidateSettings_should_not_allow_non_positive_EventsBufferCapacity()
+        {
+            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { EventsBufferCapacity = -1 }))
+                .Should().Throw<ArgumentOutOfRangeException>();
+
+            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { EventsBufferCapacity = 0 }))
                 .Should().Throw<ArgumentOutOfRangeException>();
         }
 

@@ -9,22 +9,18 @@ namespace Vostok.Logging.File.Muxers
         private readonly ISingleFileMuxerFactory singleFileMuxerFactory;
         private readonly Lazy<FileLogMuxer> muxer;
 
-        private FileLogGlobalSettings muxerSettings = new FileLogGlobalSettings();
-
         public FileLogMuxerProvider(ISingleFileMuxerFactory singleFileMuxerFactory)
         {
             this.singleFileMuxerFactory = singleFileMuxerFactory;
             muxer = new Lazy<FileLogMuxer>(
-                () => CreateMuxer(muxerSettings),
+                () => CreateMuxer(),
                 LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        public void UpdateSettings(FileLogGlobalSettings newSettings) =>
-            muxerSettings = SettingsValidator.ValidateGlobalSettings(newSettings);
-
         public IFileLogMuxer ObtainMuxer() => muxer.Value;
 
-        private FileLogMuxer CreateMuxer(FileLogGlobalSettings settings) =>
-            new FileLogMuxer(settings.EventsTemporaryBufferCapacity, singleFileMuxerFactory);
+        // TODO(iloktionov): this is a band-aid compilation fix.
+        private FileLogMuxer CreateMuxer() =>
+            new FileLogMuxer(new FileLogSettings().EventsBufferCapacity, singleFileMuxerFactory);
     }
 }
