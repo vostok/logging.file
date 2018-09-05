@@ -7,9 +7,8 @@ using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Wrappers;
 using Vostok.Logging.File.Configuration;
-using Vostok.Logging.File.EventsWriting;
 using Vostok.Logging.File.Helpers;
-using Vostok.Logging.File.Muxers;
+using Vostok.Logging.File.MuxersNew;
 
 namespace Vostok.Logging.File
 {
@@ -24,16 +23,17 @@ namespace Vostok.Logging.File
     [PublicAPI]
     public class FileLog : ILog, IDisposable
     {
-        private static readonly FileLogMuxerProvider DefaultMuxerProvider = new FileLogMuxerProvider(new SingleFileMuxerFactory(new EventsWriterProviderFactory()));
+        private static readonly MultiFileMuxer DefaultMuxer = new MultiFileMuxer(new SingleFileMuxerFactoryNew());
+
+        private readonly IMultiFileMuxer muxer;
+        private readonly object muxerHandle;
+        private readonly object muxerRegistrationLock;
 
         private readonly SafeSettingsProvider settingsProvider;
-        private readonly IFileLogMuxerProvider muxerProvider;
-        private readonly object handle = new object();
-        private readonly FilePath filePath;
+        private readonly AtomicLong eventsLost;
+        private volatile IMuxerRegistration muxerRegistration;
 
-        private AtomicBoolean wasUsed = new AtomicBoolean(false);
-        private volatile bool isDisposed;
-        private long eventsLost;
+        private Tuple<FileLogSettings, FilePath> fileCache;
 
         /// <summary>
         /// Create a new console log with the given settings.
@@ -62,15 +62,19 @@ namespace Vostok.Logging.File
         /// </list>
         /// </summary>
         public FileLog(Func<FileLogSettings> settingsProvider)
-            : this(DefaultMuxerProvider, settingsProvider)
+            : this(DefaultMuxer, settingsProvider)
         {
         }
 
-        internal FileLog(IFileLogMuxerProvider muxerProvider, Func<FileLogSettings> settingsProvider)
+        internal FileLog(IMultiFileMuxer muxer, Func<FileLogSettings> settingsProvider)
         {
-            this.muxerProvider = muxerProvider;
             this.settingsProvider = new SafeSettingsProvider(() => SettingsValidator.ValidateSettings(settingsProvider()));
-            filePath = settingsProvider().FilePath;
+            this.settingsProvider.Get();
+            this.muxer = muxer;
+
+            muxerHandle = new object();
+            muxerRegistrationLock = new object();
+            eventsLost = new AtomicLong(0);
         }
 
         /// <inheritdoc />
@@ -79,12 +83,12 @@ namespace Vostok.Logging.File
         /// <summary>
         /// The total number of events dropped by all <see cref="FileLog"/> instances in process due to events queue overflow.
         /// </summary>
-        public static long TotalEventsLost => DefaultMuxerProvider.ObtainMuxer().EventsLost;
+        public static long TotalEventsLost => DefaultMuxer.EventsLost;
 
         /// <summary>
         /// Waits until all currently buffered log events are actually written to their log files.
         /// </summary>
-        public static Task FlushAllAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync();
+        public static Task FlushAllAsync() => DefaultMuxer.FlushAsync();
 
         /// <summary>
         /// Waits until all currently buffered log events are actually written to their log files.
@@ -94,23 +98,26 @@ namespace Vostok.Logging.File
         /// <summary>
         /// The number of events dropped by this <see cref="FileLog"/> instance due to events queue overflow.
         /// </summary>
-        public long EventsLost => Interlocked.Read(ref eventsLost);
+        public long EventsLost => eventsLost;
 
         /// <inheritdoc />
         public void Log(LogEvent @event)
         {
-            if (isDisposed)
-                throw new ObjectDisposedException(GetType().Name);
-
             if (@event == null)
                 return;
 
-            if (!muxerProvider.ObtainMuxer().TryLog(@event, filePath, settingsProvider.Get(), handle, wasUsed.TrySetTrue()))
-                Interlocked.Increment(ref eventsLost);
+            var settings = settingsProvider.Get();
+            var file = ObtainActualFile(settings);
+
+            ObtainMuxerRegistration(ObtainActualFile(settings), settings);
+
+            if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandle))
+                eventsLost.Increment();
         }
 
         /// <inheritdoc />
-        public bool IsEnabledFor(LogLevel level) => settingsProvider.Get().EnabledLogLevels.Contains(level);
+        public bool IsEnabledFor(LogLevel level) =>
+            settingsProvider.Get().EnabledLogLevels.Contains(level);
 
         /// <summary>
         /// Returns a log based on this <see cref="FileLog"/> instance that puts given <paramref name="context" /> string into <see cref="F:Vostok.Logging.Abstractions.WellKnownProperties.SourceContext" /> property of all logged events.
@@ -126,7 +133,7 @@ namespace Vostok.Logging.File
         /// <summary>
         /// Waits until all log events buffered for current log file are actually written.
         /// </summary>
-        public Task FlushAsync() => DefaultMuxerProvider.ObtainMuxer().FlushAsync(filePath);
+        public Task FlushAsync() => muxer.FlushAsync(ObtainActualFile(settingsProvider.Get()));
 
         /// <summary>
         /// Waits until all log events buffered for current log file are actually written.
@@ -136,10 +143,47 @@ namespace Vostok.Logging.File
         /// <inheritdoc />
         public void Dispose()
         {
-            isDisposed = true;
-            if (wasUsed)
-                DefaultMuxerProvider.ObtainMuxer().RemoveLogReference(filePath);
+            lock (muxerRegistrationLock)
+            {
+                muxerRegistration?.Dispose();
+            }
+
             GC.SuppressFinalize(this);
+        }
+
+        private static bool IsValidRegistration(IMuxerRegistration registration, FilePath file)
+        {
+            return Equals(file, registration?.File);
+        }
+
+        private FilePath ObtainActualFile(FileLogSettings settings)
+        {
+            var currentCache = fileCache;
+
+            if (ReferenceEquals(settings, currentCache?.Item1))
+                return currentCache?.Item2;
+
+            var newCache = Tuple.Create(settings, new FilePath(settings.FilePath));
+
+            Interlocked.CompareExchange(ref fileCache, newCache, currentCache);
+
+            return newCache.Item2;
+        }
+
+        private void ObtainMuxerRegistration(FilePath file, FileLogSettings settings)
+        {
+            if (IsValidRegistration(muxerRegistration, file))
+                return;
+
+            lock (muxerRegistrationLock)
+            {
+                if (IsValidRegistration(muxerRegistration, file))
+                    return;
+
+                muxerRegistration.Dispose();
+                muxerRegistration = null;
+                muxerRegistration = muxer.Register(file, settings, muxerHandle);
+            }
         }
     }
 }

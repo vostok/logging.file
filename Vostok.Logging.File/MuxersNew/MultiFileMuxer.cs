@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -33,7 +32,7 @@ namespace Vostok.Logging.File.MuxersNew
         public Task FlushAsync() =>
             Task.WhenAll(states.Select(pair => pair.Value.Muxer.FlushAsync()));
 
-        public IDisposable Register(FilePath file, FileLogSettings settings, object initiator)
+        public IMuxerRegistration Register(FilePath file, FileLogSettings settings, object initiator)
         {
             while (true)
             {
@@ -51,7 +50,7 @@ namespace Vostok.Logging.File.MuxersNew
                 }
             }
 
-            return new FileRegistration(states, file, initiator);
+            return new MuxerRegistration(states, file, initiator);
         }
 
         private class FileState
@@ -87,18 +86,20 @@ namespace Vostok.Logging.File.MuxersNew
             }
         }
 
-        private class FileRegistration : IDisposable
+        private class MuxerRegistration : IMuxerRegistration
         {
             private readonly ConcurrentDictionary<FilePath, FileState> states;
             private readonly FilePath file;
             private object participant;
 
-            public FileRegistration(ConcurrentDictionary<FilePath, FileState> states, FilePath file, object participant)
+            public MuxerRegistration(ConcurrentDictionary<FilePath, FileState> states, FilePath file, object participant)
             {
                 this.states = states;
                 this.file = file;
                 this.participant = participant;
             }
+
+            public FilePath File => file;
 
             public void Dispose()
             {
