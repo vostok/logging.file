@@ -15,6 +15,6 @@ namespace Vostok.Logging.File.Muxers
             [NotNull] LogEventInfo[] buffer,
             [NotNull] AtomicLong eventsLostCurrently,
             [NotNull] AtomicLong eventsLostSinceLastIteration,
-            CancellationToken cancellationToken);
+            CancellationToken cancellation);
     }
 }

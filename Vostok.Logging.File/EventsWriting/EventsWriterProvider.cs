@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
@@ -38,7 +39,7 @@ namespace Vostok.Logging.File.EventsWriting
             this.cooldownController = cooldownController;
         }
 
-        public async Task<IEventsWriter> ObtainWriterAsync()
+        public async Task<IEventsWriter> ObtainWriterAsync(CancellationToken cancellation)
         {
             if (cache.writer == null)
                 await cooldownController.WaitForCooldownAsync().ConfigureAwait(false);
@@ -62,7 +63,7 @@ namespace Vostok.Logging.File.EventsWriting
                 }
                 finally
                 {
-                    cooldownController.IncurCooldown(settings.RollingUpdateCooldown);
+                    cooldownController.IncurCooldown(settings.RollingUpdateCooldown, cancellation);
                 }
             }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
@@ -135,7 +136,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
 
             ObtainWriter();
 
-            cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown);
+            cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown, Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -143,7 +144,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             ObtainWriter();
 
-            cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown);
+            cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown, Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -174,7 +175,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
             eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>()).Returns(null as IEventsWriter);
             ObtainWriter();
 
-            var task = provider.ObtainWriterAsync();
+            var task = provider.ObtainWriterAsync(CancellationToken.None);
 
             task.Wait(50);
             task.IsCompleted.Should().BeTrue();
@@ -187,7 +188,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
             ObtainWriter();
             cooldownController.WaitForCooldownAsync().Returns(Task.Delay(1000));
 
-            var task = provider.ObtainWriterAsync();
+            var task = provider.ObtainWriterAsync(CancellationToken.None);
 
             task.Wait(50);
             task.IsCompleted.Should().BeTrue();
@@ -200,7 +201,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
             ObtainWriter();
             cooldownController.WaitForCooldownAsync().Returns(Task.Delay(200));
 
-            var task = provider.ObtainWriterAsync();
+            var task = provider.ObtainWriterAsync(CancellationToken.None);
             task.Wait(50);
             task.IsCompleted.Should().BeFalse();
 
@@ -224,14 +225,14 @@ namespace Vostok.Logging.File.Tests.EventsWriting
                     strategy.GetCurrentFile(Arg.Any<FilePath>());
                     eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>());
                     garbageCollector.RemoveStaleFiles(Arg.Any<FilePath[]>());
-                    cooldownController.IncurCooldown(Arg.Any<TimeSpan>());
+                    cooldownController.IncurCooldown(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
 
                     strategyProvider.ObtainStrategy();
                     strategy.GetCurrentFile(Arg.Any<FilePath>());
                     eventsWriter.Dispose();
                     eventsWriterFactory.CreateWriter(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>());
                     garbageCollector.RemoveStaleFiles(Arg.Any<FilePath[]>());
-                    cooldownController.IncurCooldown(Arg.Any<TimeSpan>());
+                    cooldownController.IncurCooldown(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
                 });
         }
 
@@ -257,7 +258,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
 
         private IEventsWriter ObtainWriter()
         {
-            return provider.ObtainWriterAsync().GetAwaiter().GetResult();
+            return provider.ObtainWriterAsync(CancellationToken.None).GetAwaiter().GetResult();
         }
     }
 }

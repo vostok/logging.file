@@ -18,10 +18,9 @@ namespace Vostok.Logging.File.Muxers
             LogEventInfo[] buffer,
             AtomicLong eventsLostCurrently,
             AtomicLong eventsLostSinceLastIteration,
-            CancellationToken cancellationToken)
+            CancellationToken cancellation)
         {
-            // TODO(iloktionov): pass cancellation token to ObtainWriterAsync()
-            var writer = await writerProvider.ObtainWriterAsync().ConfigureAwait(false);
+            var writer = await writerProvider.ObtainWriterAsync(cancellation).ConfigureAwait(false);
             if (writer == null)
                 return false;
 

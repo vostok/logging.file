@@ -32,7 +32,7 @@ namespace Vostok.Logging.File.Tests.Muxers
             eventsWriter = Substitute.For<IEventsWriter>();
 
             eventsWriterProvider = Substitute.For<IEventsWriterProvider>();
-            eventsWriterProvider.ObtainWriterAsync().Returns(Task.FromResult(eventsWriter));
+            eventsWriterProvider.ObtainWriterAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(eventsWriter));
 
             writerProviderFactory = Substitute.For<IEventsWriterProviderFactory>();
             writerProviderFactory.CreateProvider(Arg.Any<FilePath>(), Arg.Do<Func<FileLogSettings>>(x => settingsInsideMuxer = x)).Returns(eventsWriterProvider);
