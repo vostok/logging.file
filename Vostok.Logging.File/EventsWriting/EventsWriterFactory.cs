@@ -10,7 +10,13 @@ namespace Vostok.Logging.File.EventsWriting
         public EventsWriterFactory(IFileSystem fileSystem) =>
             this.fileSystem = fileSystem;
 
-        public IEventsWriter CreateWriter(FilePath currentFile, FileLogSettings settings) =>
-            new EventsWriter(fileSystem.OpenFile(currentFile, settings.FileOpenMode, settings.Encoding, settings.OutputBufferSize));
+        public IEventsWriter TryCreateWriter(FilePath currentFile, FileLogSettings settings)
+        {
+            var fileWriter = fileSystem.OpenFile(currentFile, settings.FileOpenMode, settings.Encoding, settings.OutputBufferSize);
+            if (fileWriter == null)
+                return null;
+
+            return new EventsWriter(fileWriter);
+        }
     }
 }
