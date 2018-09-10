@@ -262,5 +262,25 @@ namespace Vostok.Logging.File.Tests
                 Console.WriteLine(System.IO.File.ReadAllText(files.Last().NormalizedPath));
             }
         }
+
+        [Test]
+        public void Should_create_directories_leading_to_log_file_path_if_needed()
+        {
+            using (var folder = new TemporaryFolder())
+            {
+                var logName = Path.Combine(folder.Name, "dir1", "dir2", "log");
+
+                using (var log = new FileLog(new FileLogSettings { FilePath = logName }))
+                {
+                    log.Info("Hello, world!");
+                    log.Info("Hello, world!");
+                    log.Info("Hello, world!");
+                }
+
+                System.IO.File.Exists(logName).Should().BeTrue();
+
+                Console.WriteLine(System.IO.File.ReadAllText(logName));
+            }
+        }
     }
 }

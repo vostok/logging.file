@@ -46,6 +46,10 @@ namespace Vostok.Logging.File.Helpers
         {
             try
             {
+                var directory = Path.GetDirectoryName(file.NormalizedPath);
+                if (directory != null && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
                 var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
                 var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete, 1);
 

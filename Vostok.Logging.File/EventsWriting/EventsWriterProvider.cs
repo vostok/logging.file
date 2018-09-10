@@ -57,7 +57,7 @@ namespace Vostok.Logging.File.EventsWriting
                     {
                         cache.writer?.Dispose();
                         cache.writer = null;
-                        cache = (currentFile, settings, eventsWriterFactory.CreateWriter(currentFile, settings));
+                        cache = (currentFile, settings, eventsWriterFactory.TryCreateWriter(currentFile, settings));
                         garbageCollector.RemoveStaleFiles(rollingStrategy.DiscoverExistingFiles(basePath).ToArray());
                     }
                 }
