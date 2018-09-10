@@ -136,7 +136,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
 
             ObtainWriter();
 
-            cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown, Arg.Any<CancellationToken>());
+            cooldownController.Received().IncurCooldown(settings.FileSettingsUpdateCooldown, Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -144,7 +144,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         {
             ObtainWriter();
 
-            cooldownController.Received().IncurCooldown(settings.RollingUpdateCooldown, Arg.Any<CancellationToken>());
+            cooldownController.Received().IncurCooldown(settings.FileSettingsUpdateCooldown, Arg.Any<CancellationToken>());
         }
 
         [Test]

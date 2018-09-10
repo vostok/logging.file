@@ -27,7 +27,7 @@ namespace Vostok.Logging.File.Muxers
     ///     <item><description><see cref="FileLogSettings.FileOpenMode"/></description></item>
     ///     <item><description><see cref="FileLogSettings.OutputBufferSize"/></description></item>
     ///     <item><description><see cref="FileLogSettings.RollingStrategy"/></description></item>
-    ///     <item><description><see cref="FileLogSettings.RollingUpdateCooldown"/></description></item>
+    ///     <item><description><see cref="FileLogSettings.FileSettingsUpdateCooldown"/></description></item>
     /// </list>
     /// </summary>
     internal class SingleFileMuxer : ISingleFileMuxer

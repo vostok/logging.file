@@ -52,7 +52,7 @@ namespace Vostok.Logging.File.Tests
                             MaxSize = 1024,
                             MaxFiles = 3
                         },
-                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
@@ -126,7 +126,7 @@ namespace Vostok.Logging.File.Tests
                             Type = RollingStrategyType.BySize,
                             MaxSize = 1024
                         },
-                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
@@ -164,7 +164,7 @@ namespace Vostok.Logging.File.Tests
                             Type = RollingStrategyType.BySize,
                             MaxSize = 1024
                         },
-                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
@@ -202,7 +202,7 @@ namespace Vostok.Logging.File.Tests
                             Type = RollingStrategyType.ByTime,
                             Period = RollingPeriod.Second
                         },
-                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
@@ -241,7 +241,7 @@ namespace Vostok.Logging.File.Tests
                             Period = RollingPeriod.Second,
                             MaxSize = 300
                         },
-                        RollingUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                        FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(10)
                     }))
                 {
                     for (int i = 0; i < 100; i++)
