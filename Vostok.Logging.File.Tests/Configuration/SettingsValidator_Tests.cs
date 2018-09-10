@@ -126,10 +126,10 @@ namespace Vostok.Logging.File.Tests.Configuration
         [Test]
         public void ValidateSettings_should_not_allow_non_positive_TargetFileUpdateCooldown()
         {
-            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { RollingUpdateCooldown = TimeSpan.FromSeconds(-1) }))
+            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { FileSettingsUpdateCooldown = TimeSpan.FromSeconds(-1) }))
                 .Should().Throw<ArgumentOutOfRangeException>();
 
-            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { RollingUpdateCooldown = TimeSpan.Zero }))
+            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { FileSettingsUpdateCooldown = TimeSpan.Zero }))
                 .Should().Throw<ArgumentOutOfRangeException>();
         }
     }

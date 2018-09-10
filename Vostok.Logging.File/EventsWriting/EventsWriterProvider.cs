@@ -63,7 +63,7 @@ namespace Vostok.Logging.File.EventsWriting
                 }
                 finally
                 {
-                    cooldownController.IncurCooldown(settings.RollingUpdateCooldown, cancellation);
+                    cooldownController.IncurCooldown(settings.FileSettingsUpdateCooldown, cancellation);
                 }
             }
 
