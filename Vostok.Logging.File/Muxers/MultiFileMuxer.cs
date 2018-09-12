@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Commons.Collections;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
 
@@ -118,8 +119,7 @@ namespace Vostok.Logging.File.Muxers
                     }
                     else
                     {
-                        var statesCollection = (ICollection<KeyValuePair<FilePath, FileState>>)states;
-                        if (statesCollection.Remove(new KeyValuePair<FilePath, FileState>(file, currentState)))
+                        if (states.Remove(file, currentState))
                         {
                             currentState.Muxer.Dispose();
                             return;
