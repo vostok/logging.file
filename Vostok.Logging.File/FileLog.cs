@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Vostok.Commons.Collections;
 using Vostok.Commons.Threading;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Wrappers;
@@ -35,10 +35,9 @@ namespace Vostok.Logging.File
 
         private readonly SafeSettingsProvider settingsProvider;
         private readonly AtomicLong eventsLost;
+        private readonly CachingTransform<FileLogSettings, FilePath> filePathProvider;
 
         private volatile IMuxerRegistration muxerRegistration;
-
-        private Tuple<FileLogSettings, FilePath> fileCache;
 
         /// <summary>
         /// Create a new <see cref="FileLog"/> with given static settings.
@@ -86,6 +85,9 @@ namespace Vostok.Logging.File
             muxerHandle = new object();
             muxerRegistrationLock = new object();
             eventsLost = new AtomicLong(0);
+
+            filePathProvider = new CachingTransform<FileLogSettings, FilePath>(
+                settings => new FilePath(settings.FilePath), preventParallelProcessing: false);
         }
 
         /// <summary>
@@ -119,7 +121,7 @@ namespace Vostok.Logging.File
             while (true)
             {
                 var settings = settingsProvider.Get();
-                var file = ObtainActualFile(settings);
+                var file = filePathProvider.Get(settings);
                 var registration = ObtainMuxerRegistration(file, settings);
 
                 if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandle))
@@ -152,7 +154,7 @@ namespace Vostok.Logging.File
         /// Waits asynchronously until all log events buffered for current log file are actually written.
         /// </summary>
         /// <exception cref="FileLogException">Unable to flush events to the file.</exception>
-        public Task FlushAsync() => muxer.FlushAsync(ObtainActualFile(settingsProvider.Get()));
+        public Task FlushAsync() => muxer.FlushAsync(filePathProvider.Get(settingsProvider.Get()));
 
         /// <summary>
         /// Waits until all log events buffered for current log file are actually written.
@@ -168,20 +170,6 @@ namespace Vostok.Logging.File
                 muxerRegistration?.Dispose();
                 muxerRegistration = null;
             }
-        }
-
-        private FilePath ObtainActualFile(FileLogSettings settings)
-        {
-            var currentCache = fileCache;
-
-            if (ReferenceEquals(settings, currentCache?.Item1))
-                return currentCache?.Item2;
-
-            var newCache = Tuple.Create(settings, new FilePath(settings.FilePath));
-
-            Interlocked.CompareExchange(ref fileCache, newCache, currentCache);
-
-            return newCache.Item2;
         }
 
         private IMuxerRegistration ObtainMuxerRegistration(FilePath file, FileLogSettings settings)

@@ -27,6 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\ByReferenceEqualityComparer.cs" Link="Commons\ByReferenceEqualityComparer.cs" />
+    <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\CachingTransform.cs" Link="Commons\CachingTransform.cs" />
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\ConcurrentBoundedQueue.cs" Link="Commons\ConcurrentBoundedQueue.cs" />
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\ConcurrentDictionaryExtensions.cs" Link="Commons\ConcurrentDictionaryExtensions.cs" />
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AsyncManualResetEvent.cs" Link="Commons\AsyncManualResetEvent.cs" />
