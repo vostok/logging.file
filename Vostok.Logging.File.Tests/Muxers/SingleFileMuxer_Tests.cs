@@ -176,6 +176,7 @@ namespace Vostok.Logging.File.Tests.Muxers
         [Test]
         public void Should_not_break_if_worker_throws_exception()
         {
+            var receivedCalls = 0;
             singleFileWorker.WritePendingEventsAsync(
                     Arg.Any<IEventsWriterProvider>(),
                     Arg.Any<ConcurrentBoundedQueue<LogEventInfo>>(),
@@ -183,18 +184,12 @@ namespace Vostok.Logging.File.Tests.Muxers
                     Arg.Any<AtomicLong>(),
                     Arg.Any<AtomicLong>(),
                     Arg.Any<CancellationToken>())
-                .Throws<Exception>();
+                .Throws<Exception>().AndDoes(_ => receivedCalls++);
 
             muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
             muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
 
-            new Action(() => singleFileWorker.Received(2).WritePendingEventsAsync(
-                    Arg.Any<IEventsWriterProvider>(),
-                    Arg.Any<ConcurrentBoundedQueue<LogEventInfo>>(),
-                    Arg.Any<LogEventInfo[]>(),
-                    Arg.Any<AtomicLong>(),
-                    Arg.Any<AtomicLong>(),
-                    Arg.Any<CancellationToken>()))
+            new Action(() => receivedCalls.Should().BeGreaterThan(1))
                 .ShouldPassIn(5.Seconds());
 
             Console.WriteLine(); // (krait): to flush console output
