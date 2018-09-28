@@ -20,11 +20,14 @@ namespace Vostok.Logging.File.Muxers
             AtomicLong eventsLostSinceLastIteration,
             CancellationToken cancellation)
         {
+            
+            var eventsToDrain = queue.Count;
+            if (eventsToDrain == 0)
+                return true;
+            
             var writer = await writerProvider.ObtainWriterAsync(cancellation).ConfigureAwait(false);
             if (writer == null)
                 return false;
-
-            var eventsToDrain = queue.Count;
 
             while (eventsToDrain > 0)
             {
