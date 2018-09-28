@@ -46,12 +46,7 @@ namespace Vostok.Logging.File.Tests.Functional
 
         protected static void ShouldContainMessages(FilePath fileName, IEnumerable<string> messages)
         {
-            var text = System.IO.File.ReadAllText(fileName.NormalizedPath);
-
-            foreach (var message in messages)
-            {
-                text.Should().Contain(message);
-            }
+            System.IO.File.ReadAllText(fileName.NormalizedPath).Should().ContainAll(messages);
         }
         
         protected static void ShouldContainMessage(FilePath fileName, string message)
