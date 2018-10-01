@@ -106,10 +106,11 @@ namespace Vostok.Logging.File.Tests.Functional
             ShouldContainMessage(files.Last(), FormatMessage(29));
         }
 
-        [Test]
-        public void Should_roll_by_size_and_time() // CR(krait): extension cases?
+        [TestCase("")]
+        [TestCase(".txt")]
+        public void Should_roll_by_size_and_time(string extension)
         {
-            var logName = Folder.GetFileName("log");
+            var logName = Folder.GetFileName("log" + extension);
             
             var rollingStrategyOptions = new RollingStrategyOptions
             {
@@ -125,7 +126,8 @@ namespace Vostok.Logging.File.Tests.Functional
             {
                 WriteMessagesWithTimeout(log, GenerateMessages(0, 100));
                 
-                Thread.Sleep(2.Seconds()); // CR(krait): let's flush it
+                log.Flush();
+                
                 firstWriteFiles = GetFilesByPrefixOrdered(logName, rollingStrategyOptions);
                 firstWriteFiles.Length.Should().BeGreaterThan(1);
                 
@@ -178,31 +180,12 @@ namespace Vostok.Logging.File.Tests.Functional
 
         private static FilePath[] GetFilesByPrefixOrdered(FilePath prefix, RollingStrategyOptions rollingStrategyOptions)
         {
-            // CR(krait): why not new RollingStrategyFactory().CreateStrategy()
-            // CR(krait): return new RollingStrategyFactory().CreateStrategy(prefix, rollingStrategyOptions.Type, () => new FileLogSettings()).DiscoverExistingFiles(prefix).ToArray();
-            var sizeBasedSuffixFormatter = new SizeBasedSuffixFormatter();
-            var timeBasedSuffixFormatter = new TimeBasedSuffixFormatter(() => rollingStrategyOptions.Period);
-            switch (rollingStrategyOptions.Type)
-            {
-                case RollingStrategyType.None:
-                    return new FileSystem().GetFilesByPrefix(prefix).ToArray();
-                case RollingStrategyType.BySize:
-                    return GetFilesByPrefixOrdered(prefix, sizeBasedSuffixFormatter);
-                case RollingStrategyType.ByTime:
-                    return GetFilesByPrefixOrdered(prefix, timeBasedSuffixFormatter);
-                case RollingStrategyType.Hybrid:
-                    return GetFilesByPrefixOrdered(prefix, new HybridSuffixFormatter(timeBasedSuffixFormatter, sizeBasedSuffixFormatter));
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(rollingStrategyOptions));
-            }
-        }
-
-        private static FilePath[] GetFilesByPrefixOrdered<TSuffix>(FilePath prefix, IFileSuffixFormatter<TSuffix> fileSuffixFormatter)
-            where TSuffix: struct
-        {
-            return RollingStrategyHelper
-                .DiscoverExistingFiles(prefix, new FileSystem(), fileSuffixFormatter)
-                .Select(pair => pair.path)
+            return new RollingStrategyFactory()
+                .CreateStrategy(prefix, rollingStrategyOptions.Type, () => new FileLogSettings
+                {
+                    RollingStrategy = rollingStrategyOptions
+                })
+                .DiscoverExistingFiles(prefix)
                 .ToArray();
         }
     }
