@@ -130,8 +130,8 @@ namespace Vostok.Logging.File.Tests.Functional
 
             System.IO.File.Exists(logName).Should().BeTrue();
             ShouldContainMessage(logName, FormatMessage(0));
-            
-            using (var log = new FileLog(new FileLogSettings { FilePath = logName, FileOpenMode = FileOpenMode.Rewrite }))
+
+            using (var log = new FileLog(new FileLogSettings {FilePath = logName, FileOpenMode = FileOpenMode.Rewrite}))
             {
                 log.Info(FormatMessage(1));
             }
