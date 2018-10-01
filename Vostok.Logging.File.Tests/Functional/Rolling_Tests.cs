@@ -107,7 +107,7 @@ namespace Vostok.Logging.File.Tests.Functional
         }
 
         [Test]
-        public void Should_roll_by_size_and_time()
+        public void Should_roll_by_size_and_time() // CR(krait): extension cases?
         {
             var logName = Folder.GetFileName("log");
             
@@ -125,8 +125,7 @@ namespace Vostok.Logging.File.Tests.Functional
             {
                 WriteMessagesWithTimeout(log, GenerateMessages(0, 100));
                 
-                Thread.Sleep(2.Seconds());
-                
+                Thread.Sleep(2.Seconds()); // CR(krait): let's flush it
                 firstWriteFiles = GetFilesByPrefixOrdered(logName, rollingStrategyOptions);
                 firstWriteFiles.Length.Should().BeGreaterThan(1);
                 
@@ -179,6 +178,8 @@ namespace Vostok.Logging.File.Tests.Functional
 
         private static FilePath[] GetFilesByPrefixOrdered(FilePath prefix, RollingStrategyOptions rollingStrategyOptions)
         {
+            // CR(krait): why not new RollingStrategyFactory().CreateStrategy()
+            // CR(krait): return new RollingStrategyFactory().CreateStrategy(prefix, rollingStrategyOptions.Type, () => new FileLogSettings()).DiscoverExistingFiles(prefix).ToArray();
             var sizeBasedSuffixFormatter = new SizeBasedSuffixFormatter();
             var timeBasedSuffixFormatter = new TimeBasedSuffixFormatter(() => rollingStrategyOptions.Period);
             switch (rollingStrategyOptions.Type)
