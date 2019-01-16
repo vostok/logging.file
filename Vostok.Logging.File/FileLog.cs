@@ -165,6 +165,16 @@ namespace Vostok.Logging.File
         /// <inheritdoc />
         public void Dispose()
         {
+            if (muxerRegistration != null)
+                try
+                {
+                    Flush();
+                }
+                catch (Exception error)
+                {
+                    SafeConsole.ReportError($"Failed to flush FileLog on Dispose() call for file '{settingsProvider.Get().FilePath}'.", error);
+                }
+
             lock (muxerRegistrationLock)
             {
                 muxerRegistration?.Dispose();
