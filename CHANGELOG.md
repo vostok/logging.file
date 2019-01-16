@@ -1,3 +1,8 @@
+## 0.1.3 (16.01.2019)
+
+* FileLog.Dispose() now also performs a Flush() call if anything has been written by this log instance.
+
+
 ## 0.1.2 (01.10.2018):
 
 ### Bugfixes
