@@ -15,8 +15,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Title>Vostok file logging library</Title>
-    <Description>File logging library for microservice toolkit http://vostok.tools/</Description>
+    <Title>Vostok.Logging.File</Title>
+    <Description>An implementation of ILog that writes log events to local files.</Description>
   </PropertyGroup>
 
   <PropertyGroup>
