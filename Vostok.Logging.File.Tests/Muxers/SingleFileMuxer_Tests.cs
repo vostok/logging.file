@@ -88,7 +88,7 @@ namespace Vostok.Logging.File.Tests.Muxers
                     Arg.Any<AtomicLong>(),
                     Arg.Any<AtomicLong>(),
                     Arg.Any<CancellationToken>()))
-                .ShouldPassIn(5.Seconds());
+                .ShouldPassIn(10.Seconds());
         }
 
         [Test]
@@ -111,7 +111,7 @@ namespace Vostok.Logging.File.Tests.Muxers
             flushTask.IsCompleted.Should().BeFalse();
 
             Task.Run(() => iterationBlocker.TrySetResult(true));
-            flushTask.Wait(5000);
+            flushTask.Wait(10.Seconds());
             flushTask.IsCompleted.Should().BeTrue();
             
             singleFileWorker.Received().WritePendingEventsAsync(
@@ -157,7 +157,7 @@ namespace Vostok.Logging.File.Tests.Muxers
             disposeTask.IsCompleted.Should().BeFalse();
 
             iterationBlocker.TrySetResult(true);
-            disposeTask.Wait(5000);
+            disposeTask.Wait(10.Seconds());
             disposeTask.IsCompleted.Should().BeTrue();
         }
 

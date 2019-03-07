@@ -5,6 +5,7 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
+using Vostok.Logging.Abstractions.Values;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
 using Vostok.Logging.File.Muxers;
@@ -41,7 +42,7 @@ namespace Vostok.Logging.File.Tests
         [Test]
         public void Should_validate_settings()
         {
-            var settings = new FileLogSettings()
+            settings = new FileLogSettings()
             {
                 OutputTemplate = null
             };
@@ -52,8 +53,10 @@ namespace Vostok.Logging.File.Tests
         [Test]
         public void Should_be_enabled_for_configured_levels([Values] LogLevel level)
         {
-            var settings = new FileLogSettings();
-            settings.EnabledLogLevels = new[] { LogLevel.Error, LogLevel.Fatal };
+            settings = new FileLogSettings
+            {
+                EnabledLogLevels = new[] {LogLevel.Error, LogLevel.Fatal}
+            };
 
             new FileLog(settings).IsEnabledFor(level).Should().Be(settings.EnabledLogLevels.Contains(level));
         }
@@ -150,11 +153,11 @@ namespace Vostok.Logging.File.Tests
         {
             log.ForContext("ctx").Info("Test.");
 
-            capturedEvents.Should().ContainSingle(e => (string)e.Properties[WellKnownProperties.SourceContext] == "ctx");
+            capturedEvents.Should().ContainSingle(e => e.Properties[WellKnownProperties.SourceContext].Equals(new SourceContextValue("ctx")));
         }
 
         [Test]
-        public void ForContext_should_replace_SourceContext_property()
+        public void ForContext_should_accumulate_SourceContext_property()
         {
             log
                 .ForContext("ctx")
@@ -162,7 +165,8 @@ namespace Vostok.Logging.File.Tests
                 .ForContext("ctx3")
                 .Info("Test.");
 
-            capturedEvents.Should().ContainSingle(e => (string)e.Properties[WellKnownProperties.SourceContext] == "ctx3");
+            capturedEvents.Should()
+                .ContainSingle(e => e.Properties[WellKnownProperties.SourceContext].Equals(new SourceContextValue(new [] {"ctx", "ctx2", "ctx3"})));
         }
     }
 }

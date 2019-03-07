@@ -28,7 +28,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void IsCool_should_return_false_before_cooldown_expiration()
         {
-            controller.IncurCooldown(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+            controller.IncurCooldown(5.Seconds(), CancellationToken.None);
 
             controller.IsCool.Should().BeFalse();
         }
@@ -36,10 +36,10 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void IsCool_should_return_true_after_cooldown_expiration()
         {
-            controller.IncurCooldown(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+            controller.IncurCooldown(100.Milliseconds(), CancellationToken.None);
 
             new Action(() => controller.IsCool.Should().BeTrue())
-                .ShouldPassIn(1.Seconds());
+                .ShouldPassIn(10.Seconds());
         }
 
         [Test]
@@ -51,29 +51,29 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         [Test]
         public void WaitForCooldownAsync_should_wait_for_cooldown()
         {
-            controller.IncurCooldown(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+            controller.IncurCooldown(100.Milliseconds(), CancellationToken.None);
 
             var task = controller.WaitForCooldownAsync();
             task.IsCompleted.Should().BeFalse();
 
-            task.Wait(1000);
+            task.Wait(10.Seconds());
             task.IsCompleted.Should().BeTrue();
         }
 
         [Test]
         public void Should_be_reusable()
         {
-            controller.IncurCooldown(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+            controller.IncurCooldown(100.Milliseconds(), CancellationToken.None);
 
             controller.IsCool.Should().BeFalse();
             new Action(() => controller.IsCool.Should().BeTrue())
-                .ShouldPassIn(1.Seconds());
+                .ShouldPassIn(10.Seconds());
 
-            controller.IncurCooldown(TimeSpan.FromMilliseconds(100), CancellationToken.None);
+            controller.IncurCooldown(100.Milliseconds(), CancellationToken.None);
 
             controller.IsCool.Should().BeFalse();
             new Action(() => controller.IsCool.Should().BeTrue())
-                .ShouldPassIn(1.Seconds());
+                .ShouldPassIn(10.Seconds());
         }
 
         [Test]

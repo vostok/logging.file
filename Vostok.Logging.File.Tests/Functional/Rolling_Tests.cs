@@ -8,7 +8,6 @@ using NUnit.Framework;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
 using Vostok.Logging.File.Rolling.Strategies;
-using Vostok.Logging.File.Rolling.Suffixes;
 
 namespace Vostok.Logging.File.Tests.Functional
 {
@@ -64,7 +63,7 @@ namespace Vostok.Logging.File.Tests.Functional
             
             using (var log = CreateRollingFileLog(logName, rollingStrategyOptions))
             {
-                WriteMessagesWithTimeout(log, messages);
+                WriteMessagesWithTimeout(log, messages, 1);
             }
 
             var files = GetFilesByPrefixOrdered(logName, rollingStrategyOptions);
@@ -93,11 +92,11 @@ namespace Vostok.Logging.File.Tests.Functional
 
             using (var log = CreateRollingFileLog(logName, rollingStrategyOptions))
             {
-                WriteMessagesWithTimeout(log, GenerateMessages(0, 10));
+                WriteMessagesWithTimeout(log, GenerateMessages(0, 10), 1);
                 Thread.Sleep(1.5.Seconds());
-                WriteMessagesWithTimeout(log, GenerateMessages(10, 20));
+                WriteMessagesWithTimeout(log, GenerateMessages(10, 20), 1);
                 Thread.Sleep(1.5.Seconds());
-                WriteMessagesWithTimeout(log, GenerateMessages(20, 30));
+                WriteMessagesWithTimeout(log, GenerateMessages(20, 30), 1);
             }
 
             var files = GetFilesByPrefixOrdered(logName, rollingStrategyOptions);
@@ -124,7 +123,7 @@ namespace Vostok.Logging.File.Tests.Functional
             
             using (var log = CreateRollingFileLog(logName, rollingStrategyOptions))
             {
-                WriteMessagesWithTimeout(log, GenerateMessages(0, 100));
+                WriteMessagesWithTimeout(log, GenerateMessages(0, 100), 1);
                 
                 log.Flush();
                 
@@ -160,7 +159,7 @@ namespace Vostok.Logging.File.Tests.Functional
             {
                 WriteMessagesWithTimeout(log, GenerateMessages(0, 1));
                 
-                Thread.Sleep(3000);
+                Thread.Sleep(2.5.Seconds());
             }
             
             var files = GetFilesByPrefixOrdered(logName, rollingStrategyOptions);
@@ -174,7 +173,7 @@ namespace Vostok.Logging.File.Tests.Functional
                 {
                     FilePath = logName,
                     RollingStrategy = options,
-                    FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(10)
+                    FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(1)
                 });
         }
 

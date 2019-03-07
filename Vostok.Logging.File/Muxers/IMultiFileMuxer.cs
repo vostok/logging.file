@@ -7,8 +7,6 @@ namespace Vostok.Logging.File.Muxers
 {
     internal interface IMultiFileMuxer
     {
-        long EventsLost { get; }
-
         IMuxerRegistration Register(
             [NotNull] FilePath file,
             [NotNull] FileLogSettings settings,
@@ -20,7 +18,5 @@ namespace Vostok.Logging.File.Muxers
             [NotNull] object initiator);
 
         Task FlushAsync([NotNull] FilePath file);
-
-        Task FlushAsync();
     }
 }
