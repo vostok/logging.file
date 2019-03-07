@@ -26,6 +26,10 @@
     <RepositoryUrl>https://github.com/vostok/logging.file</RepositoryUrl>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\ByReferenceEqualityComparer.cs" Link="Commons\ByReferenceEqualityComparer.cs" />
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\CachingTransform.cs" Link="Commons\CachingTransform.cs" />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
@@ -103,7 +104,7 @@ namespace Vostok.Logging.File.Tests.Muxers
             flushTask.IsCompleted.Should().BeFalse();
 
             Task.Run(() => flushBlocker.TrySetResult(true));
-            flushTask.Wait(100);
+            flushTask.Wait(10.Seconds());
             flushTask.IsCompleted.Should().BeTrue();
         }
 
