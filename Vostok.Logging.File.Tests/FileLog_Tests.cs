@@ -31,8 +31,8 @@ namespace Vostok.Logging.File.Tests
             registration.IsValid("logs/log").Returns(true);
 
             muxer = Substitute.For<IMultiFileMuxer>();
-            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Do<LogEventInfo>(e => capturedEvents.Add(e.Event)), Arg.Any<object>()).Returns(true);
-            muxer.Register(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>(), Arg.Any<object>()).Returns(registration);
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Do<LogEventInfo>(e => capturedEvents.Add(e.Event)), Arg.Any<WeakReference>()).Returns(true);
+            muxer.Register(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>()).Returns(registration);
 
             settings = new FileLogSettings {FilePath = "logs/log", OutputTemplate = OutputTemplate.Parse("{Message}")};
 
@@ -69,8 +69,8 @@ namespace Vostok.Logging.File.Tests
             Received.InOrder(
                 () =>
                 {
-                    muxer.Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<object>());
-                    muxer.TryAdd("logs/log", Arg.Any<LogEventInfo>(), Arg.Any<object>());
+                    muxer.Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>());
+                    muxer.TryAdd("logs/log", Arg.Any<LogEventInfo>(), Arg.Any<WeakReference>());
                 });
         }
 
@@ -81,7 +81,7 @@ namespace Vostok.Logging.File.Tests
             log.Info("Test.");
             log.Info("Test.");
 
-            muxer.Received(1).Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<object>());
+            muxer.Received(1).Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>());
         }
 
         [Test]
@@ -114,8 +114,8 @@ namespace Vostok.Logging.File.Tests
             settings = new FileLogSettings {FilePath = "xxx"};
             log.Info("Test.");
 
-            muxer.Received(1).Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<object>());
-            muxer.Received(1).Register("xxx", Arg.Any<FileLogSettings>(), Arg.Any<object>());
+            muxer.Received(1).Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>());
+            muxer.Received(1).Register("xxx", Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>());
         }
 
         [Test]
@@ -132,7 +132,7 @@ namespace Vostok.Logging.File.Tests
         [Test]
         public void Should_increment_events_lost_on_losing_event()
         {
-            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<object>()).Returns(false);
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<WeakReference>()).Returns(false);
 
             log.Info("Test.");
             log.Info("Test.");

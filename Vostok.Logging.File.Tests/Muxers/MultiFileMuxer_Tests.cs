@@ -79,13 +79,15 @@ namespace Vostok.Logging.File.Tests.Muxers
         public void TryAdd_should_track_owner()
         {
             var owner = new object();
-            Register(owner: owner);
+            var ownerRef = new WeakReference(owner);
+
+            Register(owner: ownerRef);
 
             TryAddEvent();
             singleFileMuxer.Received().TryAdd(Arg.Any<LogEventInfo>(), false);
             singleFileMuxer.ClearReceivedCalls();
 
-            TryAddEvent(owner: owner);
+            TryAddEvent(owner: ownerRef);
             singleFileMuxer.Received().TryAdd(Arg.Any<LogEventInfo>(), true);
         }
 
@@ -150,14 +152,14 @@ namespace Vostok.Logging.File.Tests.Muxers
             return new LogEventInfo(new LogEvent(LogLevel.Info, DateTimeOffset.Now, "Hey!"), settings ?? new FileLogSettings());
         }
 
-        private bool TryAddEvent(LogEventInfo @event = null, object owner = null)
+        private bool TryAddEvent(LogEventInfo @event = null, WeakReference owner = null)
         {
-            return muxer.TryAdd("log", @event ?? CreateLogEvent(), owner ?? new object());
+            return muxer.TryAdd("log", @event ?? CreateLogEvent(), owner ?? new WeakReference(new object()));
         }
 
-        private IMuxerRegistration Register(FilePath path = null, FileLogSettings settings = null, object owner = null)
+        private IMuxerRegistration Register(FilePath path = null, FileLogSettings settings = null, WeakReference owner = null)
         {
-            return muxer.Register(path ?? "log", settings ?? new FileLogSettings(), owner ?? new object());
+            return muxer.Register(path ?? "log", settings ?? new FileLogSettings(), owner ?? new WeakReference(new object()));
         }
     }
 }

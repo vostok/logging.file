@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
+using Vostok.Commons.Testing;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.File.Configuration;
 
@@ -156,6 +159,36 @@ namespace Vostok.Logging.File.Tests.Functional
             System.IO.File.Exists(logName).Should().BeTrue();
 
             ShouldContainMessages(logName, messages);
+        }
+
+        [Test]
+        public void Should_eventually_close_file_after_initiator_log_has_been_garbage_collected_without_disposing()
+        {
+            var logName = Path.Combine(Folder.Name, Guid.NewGuid().ToString());
+
+            var log = new FileLog(new FileLogSettings { FilePath = logName });
+                
+            log.Info("I'll be leaked.");
+            log = null;
+
+            GC.Collect();
+
+            bool TryOpenHandle()
+            {
+                try
+                {
+                    new FileStream(logName, FileMode.Open, FileAccess.ReadWrite, FileShare.None).Close();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            Action assertion = () => TryOpenHandle().Should().BeTrue();
+
+            assertion.ShouldPassIn(20.Seconds());
         }
     }
 }
