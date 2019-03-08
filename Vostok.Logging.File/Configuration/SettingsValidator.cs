@@ -71,6 +71,9 @@ namespace Vostok.Logging.File.Configuration
             {
                 throw new ArgumentException("File path has incorrect format.", nameof(settings.FilePath), exception);
             }
+
+            if (string.IsNullOrEmpty(Path.GetFileName(settings.FilePath)) || Directory.Exists(settings.FilePath))
+                throw new ArgumentException($"Provided file path '{settings.FilePath}' points to a directory.");
         }
     }
 }
