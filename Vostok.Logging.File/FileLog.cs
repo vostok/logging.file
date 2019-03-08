@@ -27,17 +27,24 @@ namespace Vostok.Logging.File
     [PublicAPI]
     public class FileLog : ILog, IDisposable
     {
-        private static readonly MultiFileMuxer DefaultMuxer = new MultiFileMuxer(new SingleFileMuxerFactory());
+        private static readonly MultiFileMuxer DefaultMuxer;
 
         private readonly IMultiFileMuxer muxer;
-        private readonly object muxerHandle;
         private readonly object muxerRegistrationLock;
+        private readonly object muxerHandle;
+        private readonly WeakReference muxerHandleRef;
 
         private readonly SafeSettingsProvider settingsProvider;
         private readonly AtomicLong eventsLost;
         private readonly CachingTransform<FileLogSettings, FilePath> filePathProvider;
 
         private volatile IMuxerRegistration muxerRegistration;
+
+        static FileLog()
+        {
+            DefaultMuxer = new MultiFileMuxer(new SingleFileMuxerFactory());
+            DefaultMuxer.InitiateOrphanedRegistrationsCleanup(TimeSpan.FromSeconds(5));
+        }
 
         /// <summary>
         /// Create a new <see cref="FileLog"/> with given static settings.
@@ -83,6 +90,7 @@ namespace Vostok.Logging.File
             this.muxer = muxer;
 
             muxerHandle = new object();
+            muxerHandleRef = new WeakReference(muxerHandle);
             muxerRegistrationLock = new object();
             eventsLost = new AtomicLong(0);
 
@@ -124,7 +132,7 @@ namespace Vostok.Logging.File
                 var file = filePathProvider.Get(settings);
                 var registration = ObtainMuxerRegistration(file, settings);
 
-                if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandle))
+                if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandleRef))
                 {
                     eventsLost.Increment();
                     break;
@@ -139,9 +147,7 @@ namespace Vostok.Logging.File
         public bool IsEnabledFor(LogLevel level) =>
             settingsProvider.Get().EnabledLogLevels.Contains(level);
 
-        /// <summary>
-        /// Returns a log based on this <see cref="FileLog"/> instance that puts given <paramref name="context" /> string into <see cref="F:Vostok.Logging.Abstractions.WellKnownProperties.SourceContext" /> property of all logged events.
-        /// </summary>
+        /// <inheritdoc />
         public ILog ForContext(string context)
         {
             if (context == null)
@@ -196,7 +202,7 @@ namespace Vostok.Logging.File
                 muxerRegistration?.Dispose();
                 muxerRegistration = null;
 
-                return muxerRegistration = muxer.Register(file, settings, muxerHandle);
+                return muxerRegistration = muxer.Register(file, settings, muxerHandleRef);
             }
         }
     }
