@@ -26,6 +26,13 @@ namespace Vostok.Logging.File.Tests.Configuration
         }
 
         [Test]
+        public void ValidateSettings_should_not_allow_FilePath_pointing_to_a_directory()
+        {
+            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { FilePath = "logs\\" }))
+                .Should().Throw<ArgumentException>();
+        }
+
+        [Test]
         public void ValidateSettings_should_not_allow_null_OutputTemplate()
         {
             new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { OutputTemplate = null }))
