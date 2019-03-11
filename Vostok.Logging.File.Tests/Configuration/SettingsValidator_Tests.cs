@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Logging.File.Configuration;
@@ -28,7 +29,7 @@ namespace Vostok.Logging.File.Tests.Configuration
         [Test]
         public void ValidateSettings_should_not_allow_FilePath_pointing_to_a_directory()
         {
-            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { FilePath = "logs\\" }))
+            new Action(() => SettingsValidator.ValidateSettings(new FileLogSettings { FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs" + Path.DirectorySeparatorChar) }))
                 .Should().Throw<ArgumentException>();
         }
 
