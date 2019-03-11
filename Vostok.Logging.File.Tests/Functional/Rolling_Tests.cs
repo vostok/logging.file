@@ -63,7 +63,7 @@ namespace Vostok.Logging.File.Tests.Functional
             
             using (var log = CreateRollingFileLog(logName, rollingStrategyOptions))
             {
-                WriteMessagesWithTimeout(log, messages, 1);
+                WriteMessagesWithTimeout(log, messages, 10);
             }
 
             var files = GetFilesByPrefixOrdered(logName, rollingStrategyOptions);
