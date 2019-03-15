@@ -1,24 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <Import Project="..\..\vostok.devtools\library-common-props\Main-Project.props" />
   <Import Project="..\..\vostok.devtools\git-commit-to-assembly-title\Vostok.Tools.GitCommit2AssemblyTitle.props" />
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug;Release</Configurations>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
-
   <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
   </PropertyGroup>
-
   <PropertyGroup>
     <Title>Vostok.Logging.File</Title>
     <Description>An implementation of ILog that writes log events to local files.</Description>
   </PropertyGroup>
-
   <PropertyGroup>
     <PackageProjectUrl>https://github.com/vostok/logging.file</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/vostok/logging.file/blob/master/LICENSE</PackageLicenseUrl>
@@ -26,11 +21,9 @@
     <PackageReleaseNotes>https://github.com/vostok/logging.file/blob/master/CHANGELOG.md</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/vostok/logging.file</RepositoryUrl>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\ByReferenceEqualityComparer.cs" Link="Commons\ByReferenceEqualityComparer.cs" />
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\CachingTransform.cs" Link="Commons\CachingTransform.cs" />
@@ -39,7 +32,6 @@
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AsyncManualResetEvent.cs" Link="Commons\AsyncManualResetEvent.cs" />
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AtomicLong.cs" Link="Commons\AtomicLong.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Vostok.Logging.Abstractions">
       <HintPath>..\..\vostok.logging.abstractions\Vostok.Logging.Abstractions\bin\Release\netstandard2.0\Vostok.Logging.Abstractions.dll</HintPath>
@@ -48,5 +40,4 @@
       <HintPath>..\..\vostok.logging.formatting\Vostok.Logging.Formatting\bin\Release\netstandard2.0\Vostok.Logging.Formatting.dll</HintPath>
     </Reference>
   </ItemGroup>
-
 </Project>
