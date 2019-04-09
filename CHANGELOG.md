@@ -1,4 +1,4 @@
-## 1.0.1 (09.04.2019):
+## 1.0.2 (09.04.2019):
 
 * FileLog.Log now does not write events with disabled log levels.
 
