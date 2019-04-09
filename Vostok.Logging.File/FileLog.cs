@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -124,6 +124,9 @@ namespace Vostok.Logging.File
         public void Log(LogEvent @event)
         {
             if (@event == null)
+                return;
+
+            if (!IsEnabledFor(@event.Level))
                 return;
 
             while (true)

@@ -1,3 +1,8 @@
+## 1.0.1 (09.04.2019):
+
+* FileLog.Log now does not write events with disabled log levels.
+
+
 ## 1.0.0 (11.03.2019):
 
 * Breaking change: ForContext() is now hierarchical.
