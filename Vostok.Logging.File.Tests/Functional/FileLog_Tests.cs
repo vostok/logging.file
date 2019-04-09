@@ -90,9 +90,9 @@ namespace Vostok.Logging.File.Tests.Functional
                 EnabledLogLevels = new []{LogLevel.Error, LogLevel.Fatal}
             }))
             {
-                log.Fatal("Fatal");
-                log.Error("Error");
-                log.Info("Info");
+                log.Log(LogEvent(LogLevel.Fatal, "Fatal"));
+                log.Log(LogEvent(LogLevel.Error, "Error"));
+                log.Log(LogEvent(LogLevel.Info, "Info"));
             }
 
             System.IO.File.Exists(logName).Should().BeTrue();
@@ -190,5 +190,8 @@ namespace Vostok.Logging.File.Tests.Functional
 
             assertion.ShouldPassIn(20.Seconds());
         }
+        
+        private LogEvent LogEvent(LogLevel level, string message)
+            => new LogEvent(level, DateTimeOffset.Now, message);
     }
 }
