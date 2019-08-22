@@ -78,7 +78,7 @@ namespace Vostok.Logging.File.Muxers
             flushWaiters = new List<Waiter>();
 
             workerInitLock = new object();
-            workerCancellationWaiter = new Waiter();
+            workerCancellationWaiter = new Waiter(TaskCreationOptions.RunContinuationsAsynchronously);
             workerCancellation = new CancellationTokenSource();
             workerCancellation.Token.Register(() => workerCancellationWaiter.TrySetResult(true));
         }
@@ -137,7 +137,7 @@ namespace Vostok.Logging.File.Muxers
             if (workerTask == null)
                 return true;
 
-            var waiter = new Waiter();
+            var waiter = new Waiter(TaskCreationOptions.RunContinuationsAsynchronously);
 
             lock (flushWaiters)
                 flushWaiters.Add(waiter);
