@@ -51,7 +51,7 @@ namespace Vostok.Logging.File.Helpers
                     Directory.CreateDirectory(directory);
 
                 var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
-                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete, 1);
+                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.ReadWrite, 1);
 
                 return new StreamWriter(stream, encoding, bufferSize, false);
             }
