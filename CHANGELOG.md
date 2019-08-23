@@ -1,3 +1,8 @@
+## 1.0.3 (23.08.2019):
+
+Fixed https://github.com/vostok/logging.file/issues/9
+
+
 ## 1.0.2 (09.04.2019):
 
 * FileLog.Log now does not write events with disabled log levels.
