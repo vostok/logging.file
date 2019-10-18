@@ -1,3 +1,7 @@
+## 1.0.4 (18.10.2019):
+
+* Fixed lowerCamelCase `WellKnownProperties`.
+
 ## 1.0.3 (23.08.2019):
 
 Fixed https://github.com/vostok/logging.file/issues/9
