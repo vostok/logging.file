@@ -11,13 +11,13 @@ namespace Vostok.Logging.File.Rolling.Strategies
     {
         public const string SuffixPlaceholder = "{RollingSuffix}";
 
-        private static readonly char[] PrefixDashTrimMarkers = {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '.'};
+        private static readonly char[] SuffixDashEliminators = {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '.', '-'};
 
         public static FilePath AddSuffix(FilePath basePath, string suffix, bool keepPlaceholder)
         {
             var placeholderIndex = FindPlaceholderIndex(basePath.NormalizedPath);
-            if (placeholderIndex > 0 && !PrefixDashTrimMarkers.Contains(basePath.NormalizedPath[placeholderIndex - 1]) ||
-                placeholderIndex < 0 && !PrefixDashTrimMarkers.Contains(basePath.PathWithoutExtension.Last()))
+            if (placeholderIndex > 0 && !SuffixDashEliminators.Contains(basePath.NormalizedPath[placeholderIndex - 1]) ||
+                placeholderIndex < 0 && !SuffixDashEliminators.Contains(basePath.PathWithoutExtension.Last()))
                 suffix = '-' + suffix;
 
             if (placeholderIndex < 0)
