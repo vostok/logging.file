@@ -2,14 +2,9 @@
 {
     internal class SizeBasedSuffixFormatter : IFileSuffixFormatter<int>
     {
-        public string FormatSuffix(int part) => "-" + part;
+        public string FormatSuffix(int part) => part.ToString();
 
         public int? TryParseSuffix(string suffix)
-        {
-            if (suffix.Length < 2 || suffix[0] != '-')
-                return null;
-
-            return int.TryParse(suffix.Substring(1), out var part) ? part : null as int?;
-        }
+            => int.TryParse(suffix, out var part) && part >= 0 ? part : null as int?;
     }
 }

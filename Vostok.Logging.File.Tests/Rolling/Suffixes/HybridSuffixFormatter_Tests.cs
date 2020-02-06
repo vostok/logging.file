@@ -32,7 +32,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
         public void TryParseSuffix_should_split_suffix_before_last_dash()
         {
             timeSuffixFormatter.TryParseSuffix("1-2-3-4").Returns(default(DateTime));
-            sizeSuffixFormatter.TryParseSuffix("-5").Returns(5);
+            sizeSuffixFormatter.TryParseSuffix("5").Returns(5);
 
             suffixFormatter.TryParseSuffix("1-2-3-4-5").Should().Be((default(DateTime), 5));
         }

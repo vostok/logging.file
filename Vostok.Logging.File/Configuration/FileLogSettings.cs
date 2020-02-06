@@ -16,12 +16,15 @@ namespace Vostok.Logging.File.Configuration
     {
         /// <summary>
         /// <para>Path to the log file. If a <see cref="RollingStrategy"/> is specified, this path serves as base path and gets combined with suffixes.</para>
+        /// <para>By default, rolling-based suffixes are added to the end of the name, just before the file extension.</para>
+        /// <para>However, suffix position can be customized by inserting a <c>{RollingSuffix}</c> placeholder anywhere in the file path.</para>
         /// <para>Here are some examples of how rolling may transform file paths:</para>
         /// <list type="bullet">
         ///     <item><description><see cref="RollingStrategyType.None"/>: <c>log</c> --> <c>log</c></description></item>
         ///     <item><description><see cref="RollingStrategyType.BySize"/>: <c>log</c> --> <c>log-2</c></description></item>
         ///     <item><description><see cref="RollingStrategyType.ByTime"/>: <c>log</c> --> <c>log-2018-09-05</c></description></item>
         ///     <item><description><see cref="RollingStrategyType.Hybrid"/>: <c>log</c> --> <c>log-2018-09-05-2</c></description></item>
+        ///     <item><description><see cref="RollingStrategyType.Hybrid"/>: <c>logs/log{RollingSuffix}.errors.txt</c> --> <c>logs/log-2018-09-05-2.errors.txt</c></description></item>
         /// </list>
         /// <para>The path is relative to current working directory (<see cref="Environment.CurrentDirectory"/>).</para>
         /// <para>Dynamic reconfiguration is supported for this parameter: <see cref="FileLog"/> will switch to a new file on change.</para>

@@ -13,8 +13,9 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
     {
         private HybridRollingStrategy strategy;
         private IFileSystem fileSystem;
-        private IRollingStrategy timeStrategy;
         private IRollingStrategy sizeStrategy;
+        private IFileSuffixFormatter<DateTime> timeSuffixFormatter;
+        private IFileSuffixFormatter<(DateTime, int)> hybridSuffixFormatter;
 
         [SetUp]
         public void TestSetup()
@@ -22,14 +23,15 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
             fileSystem = Substitute.For<IFileSystem>();
             fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log3", "logs/log1", "logs/log2" });
 
-            timeStrategy = Substitute.For<IRollingStrategy>();
             sizeStrategy = Substitute.For<IRollingStrategy>();
 
-            var suffixFormatter = Substitute.For<IFileSuffixFormatter<(DateTime, int)>>();
-            suffixFormatter.TryParseSuffix(Arg.Any<string>())
+            timeSuffixFormatter = Substitute.For<IFileSuffixFormatter<DateTime>>();
+            hybridSuffixFormatter = Substitute.For<IFileSuffixFormatter<(DateTime, int)>>();
+            
+            hybridSuffixFormatter.TryParseSuffix(Arg.Any<string>())
                 .Returns(callInfo => callInfo.Arg<string>().Split('#').Transform(p => p.Length == 2 && DateTime.TryParse(p[0], out var v) && int.TryParse(p[1], out var w) ? (v, w) : null as (DateTime, int)?));
 
-            strategy = new HybridRollingStrategy(fileSystem, timeStrategy, sizeStrategy, suffixFormatter);
+            strategy = new HybridRollingStrategy(fileSystem, sizeStrategy, () => DateTime.Now, timeSuffixFormatter, hybridSuffixFormatter);
         }
 
         [Test]
@@ -60,26 +62,26 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         public void GetCurrentFile_should_return_base_path_plus_current_part_inside_current_date_suffix()
         {
             sizeStrategy.GetCurrentFile(Arg.Any<FilePath>()).Returns(callInfo => callInfo.Arg<FilePath>() + "#1");
-            sizeStrategy.GetCurrentFile("logs/log2018-08-27").Returns("logs/log2018-08-27#2");
+            sizeStrategy.GetCurrentFile("logs/log-2018-08-27").Returns("logs/log-2018-08-27#2");
 
-            timeStrategy.GetCurrentFile(Arg.Any<FilePath>()).Returns(callInfo => callInfo.Arg<FilePath>() + "2018-08-25");
-            strategy.GetCurrentFile("logs/log").Should().Be((FilePath)"logs/log2018-08-25#1");
+            timeSuffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns("2018-08-25");
+            strategy.GetCurrentFile("logs/log").Should().Be((FilePath)"logs/log-2018-08-25#1");
 
-            timeStrategy.GetCurrentFile(Arg.Any<FilePath>()).Returns(callInfo => callInfo.Arg<FilePath>() + "2018-08-27");
-            strategy.GetCurrentFile("logs/log").Should().Be((FilePath)"logs/log2018-08-27#2");
+            timeSuffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns("2018-08-27");
+            strategy.GetCurrentFile("logs/log").Should().Be((FilePath)"logs/log-2018-08-27#2");
         }
-
+        
         [Test]
         public void GetCurrentFile_should_support_file_extensions()
         {
-            sizeStrategy.GetCurrentFile("logs/log2018-08-25.txt").Returns("logs/log2018-08-25#1.txt");
-            sizeStrategy.GetCurrentFile("logs/log2018-08-27.txt").Returns("logs/log2018-08-27#2.txt");
+            sizeStrategy.GetCurrentFile("logs/log-2018-08-25.txt").Returns("logs/log-2018-08-25#1.txt");
+            sizeStrategy.GetCurrentFile("logs/log-2018-08-27.txt").Returns("logs/log-2018-08-27#2.txt");
 
-            timeStrategy.GetCurrentFile("logs/log.txt").Returns("logs/log2018-08-25.txt");
-            strategy.GetCurrentFile("logs/log.txt").Should().Be((FilePath)"logs/log2018-08-25#1.txt");
+            timeSuffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns("2018-08-25");
+            strategy.GetCurrentFile("logs/log.txt").Should().Be((FilePath)"logs/log-2018-08-25#1.txt");
 
-            timeStrategy.GetCurrentFile("logs/log.txt").Returns("logs/log2018-08-27.txt");
-            strategy.GetCurrentFile("logs/log.txt").Should().Be((FilePath)"logs/log2018-08-27#2.txt");
+            timeSuffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns("2018-08-27");
+            strategy.GetCurrentFile("logs/log.txt").Should().Be((FilePath)"logs/log-2018-08-27#2.txt");
         }
     }
 }

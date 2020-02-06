@@ -22,8 +22,8 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
             fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] {"logs/log3", "logs/log1", "logs/log2"});
 
             var suffixFormatter = Substitute.For<IFileSuffixFormatter<DateTime>>();
-            suffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns(callInfo => callInfo.Arg<DateTime>().ToString("-yyyy-MM-dd"));
-            suffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(callInfo => DateTime.TryParse(callInfo.Arg<string>().Substring(1), out var dt) ? dt : null as DateTime?);
+            suffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns(callInfo => callInfo.Arg<DateTime>().ToString("yyyy-MM-dd"));
+            suffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(callInfo => DateTime.TryParse(callInfo.Arg<string>(), out var dt) ? dt : null as DateTime?);
 
             strategy = new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => now);
         }
@@ -31,7 +31,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         [Test]
         public void DiscoverExistingFiles_should_ignore_files_without_correct_suffix()
         {
-            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log-2018-08-25", "logs/log2", "logs/log3" });
+            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log-2018-08-25", "logs/log-2", "logs/log3" });
 
             strategy.DiscoverExistingFiles("logs/log").Should().Equal("logs/log-2018-08-25");
         }

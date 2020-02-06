@@ -35,7 +35,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
                     part++;
             }
 
-            return basePath + suffixFormatter.FormatSuffix(part);
+            return RollingStrategyHelper.AddSuffix(basePath, suffixFormatter.FormatSuffix(part), false);
         }
     }
 }

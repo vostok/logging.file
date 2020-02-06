@@ -43,13 +43,12 @@ namespace Vostok.Logging.File.Rolling.Strategies
 
         private static IRollingStrategy CreateHybridStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem)
         {
-            var timeSuffixFormatter = new TimeBasedSuffixFormatter(() => settingsProvider().RollingStrategy.Period);
             var sizeSuffixFormatter = new SizeBasedSuffixFormatter();
-            var timeStrategy = CreateTimeBasedStrategy(settingsProvider, fileSystem, timeSuffixFormatter);
+            var timeSuffixFormatter = new TimeBasedSuffixFormatter(() => settingsProvider().RollingStrategy.Period);
+            var hybridSuffixFormatter = new HybridSuffixFormatter(timeSuffixFormatter, sizeSuffixFormatter);
             var sizeStrategy = CreateSizeBasedStrategy(settingsProvider, fileSystem, sizeSuffixFormatter);
-            var suffixFormatter = new HybridSuffixFormatter(timeSuffixFormatter, sizeSuffixFormatter);
 
-            return new HybridRollingStrategy(fileSystem, timeStrategy, sizeStrategy, suffixFormatter);
+            return new HybridRollingStrategy(fileSystem, sizeStrategy, () => DateTime.Now, timeSuffixFormatter, hybridSuffixFormatter);
         }
     }
 }

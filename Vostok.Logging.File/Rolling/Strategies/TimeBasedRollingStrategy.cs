@@ -22,6 +22,6 @@ namespace Vostok.Logging.File.Rolling.Strategies
         public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath) =>
             RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter).Select(file => file.path);
 
-        public FilePath GetCurrentFile(FilePath basePath) => basePath + suffixFormatter.FormatSuffix(timeProvider());
+        public FilePath GetCurrentFile(FilePath basePath) => RollingStrategyHelper.AddSuffix(basePath, suffixFormatter.FormatSuffix(timeProvider()), false);
     }
 }
