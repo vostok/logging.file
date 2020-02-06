@@ -19,11 +19,11 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         public void TestSetup()
         {
             fileSystem = Substitute.For<IFileSystem>();
-            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log3", "logs/log1", "logs/log2" });
+            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log-3", "logs/log-1", "logs/log-2" });
 
             var suffixFormatter = Substitute.For<IFileSuffixFormatter<int>>();
-            suffixFormatter.FormatSuffix(Arg.Any<int>()).Returns(callInfo => "-" + callInfo.Arg<int>());
-            suffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(callInfo => int.TryParse(callInfo.Arg<string>().Substring(1), out var p) ? p : null as int?);
+            suffixFormatter.FormatSuffix(Arg.Any<int>()).Returns(callInfo => callInfo.Arg<int>().ToString());
+            suffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(callInfo => int.TryParse(callInfo.Arg<string>(), out var p) ? p : null as int?);
 
             roller = Substitute.For<ISizeBasedRoller>();
 
@@ -33,7 +33,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         [Test]
         public void DiscoverExistingFiles_should_ignore_files_without_correct_suffix()
         {
-            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log-1", "logs/log2", "logs/log3" });
+            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log-1", "logs/logtwo", "logs/logthree" });
 
             strategy.DiscoverExistingFiles("logs/log").Should().Equal("logs/log-1");
         }
@@ -41,7 +41,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         [Test]
         public void DiscoverExistingFiles_should_order_files_by_part_suffix()
         {
-            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log-3", "logs/log-2", "logs/log-1", "logs/log3" });
+            fileSystem.GetFilesByPrefix("logs/log").Returns(new FilePath[] { "logs/log-3", "logs/log-2", "logs/log-1", "logs/logwhatever" });
 
             strategy.DiscoverExistingFiles("logs/log").Should().Equal("logs/log-1", "logs/log-2", "logs/log-3");
         }
@@ -57,7 +57,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         [Test]
         public void GetCurrentFile_should_return_base_path_plus_current_part_suffix()
         {
-            strategy.GetCurrentFile("logs/log").Should().Be((FilePath)"logs/log-1");
+            strategy.GetCurrentFile("logs/log").Should().Be((FilePath)"logs/log-3");
         }
 
         [Test]
