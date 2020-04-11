@@ -79,7 +79,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         {
             var path = RollingStrategyHelper.AddSuffix(new FilePath(basePath), suffix, false).NormalizedPath;
 
-            path = path.Remove(0, Environment.CurrentDirectory.Length);
+            path = path.Remove(0, AppDomain.CurrentDomain.BaseDirectory.Length);
             path = path.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
             path.Should().Be(expected);

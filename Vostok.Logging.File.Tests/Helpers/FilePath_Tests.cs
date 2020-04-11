@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Logging.File.Helpers;
@@ -84,6 +86,24 @@ namespace Vostok.Logging.File.Tests.Helpers
         public void Extension_should_be_empty_string_if_there_is_no_extension(string basePath)
         {
             new FilePath(basePath).Extension.Should().BeEmpty();
+        }
+
+        [Test]
+        public void NormalizedPath_should_preserve_absolute_paths()
+        {
+            var path = typeof(FilePath).Assembly.Location;
+
+            new FilePath(path).NormalizedPath.Should().Be(path);
+        }
+
+        [Test]
+        public void NormalizePath_should_expand_relative_paths_from_appdomain_base_directory()
+        {
+            var path = "logs/log";
+
+            var expectedPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path));
+
+            new FilePath(path).NormalizedPath.Should().Be(expectedPath);
         }
     }
 }

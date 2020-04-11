@@ -13,7 +13,7 @@ namespace Vostok.Logging.File.Helpers
 
         public FilePath(string rawPath)
         {
-            (PathWithoutExtension, Extension) = SeparateExtension(NormalizedPath = Path.GetFullPath(rawPath));
+            (PathWithoutExtension, Extension) = SeparateExtension(NormalizedPath = NormalizePath(rawPath));
 
             hash = PathComparer.GetHashCode(NormalizedPath);
         }
@@ -47,6 +47,9 @@ namespace Vostok.Logging.File.Helpers
 
             return (path.Substring(0, path.Length - extension.Length), extension);
         }
+
+        private static string NormalizePath(string path)
+            => Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path));
 
         #region Equality
 
