@@ -1,3 +1,7 @@
+## 1.0.6 (11.04.2020):
+
+Now using `AppDomain.CurrentDomain.BaseDirectory` as the base to resolve relative paths.
+
 ## 1.0.5 (06.02.2020):
 
 Implemented https://github.com/vostok/logging.file/issues/11
