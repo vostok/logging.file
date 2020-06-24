@@ -1,3 +1,7 @@
+## 1.0.7 (25.06.2020):
+
+Slight performance improvements.
+
 ## 1.0.6 (11.04.2020):
 
 Now using `AppDomain.CurrentDomain.BaseDirectory` as the base to resolve relative paths.
