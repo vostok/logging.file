@@ -11,20 +11,22 @@ namespace Vostok.Logging.File.Rolling.Strategies
         private readonly ISizeBasedRoller sizeBasedRoller;
         private readonly IFileSystem fileSystem;
         private readonly IFileSuffixFormatter<int> suffixFormatter;
+        private readonly char suffixEliminator;
 
-        public SizeBasedRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<int> suffixFormatter, ISizeBasedRoller sizeBasedRoller)
+        public SizeBasedRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<int> suffixFormatter, ISizeBasedRoller sizeBasedRoller, char suffixEliminator = '-')
         {
             this.sizeBasedRoller = sizeBasedRoller;
             this.fileSystem = fileSystem;
             this.suffixFormatter = suffixFormatter;
+            this.suffixEliminator = suffixEliminator;
         }
 
         public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath) =>
-            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter).Select(file => file.path);
+            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, suffixEliminator).Select(file => file.path);
 
         public FilePath GetCurrentFile(FilePath basePath)
         {
-            var filesWithSuffix = RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter);
+            var filesWithSuffix = RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, suffixEliminator);
 
             var part = 1;
             var lastFile = filesWithSuffix.LastOrDefault();
@@ -35,7 +37,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
                     part++;
             }
 
-            return RollingStrategyHelper.AddSuffix(basePath, suffixFormatter.FormatSuffix(part), false);
+            return RollingStrategyHelper.AddSuffix(basePath, suffixFormatter.FormatSuffix(part), false, suffixEliminator);
         }
     }
 }

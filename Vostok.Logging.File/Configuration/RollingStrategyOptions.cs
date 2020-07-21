@@ -27,5 +27,10 @@ namespace Vostok.Logging.File.Configuration
         /// Maximal size of one part of log file, in bytes. Affects only <see cref="RollingStrategyType.BySize"/> and <see cref="RollingStrategyType.Hybrid"/> strategies.
         /// </summary>
         public long MaxSize { get; set; } = 1024 * 1024 * 1024;
+
+        /// <summary>
+        /// Eliminator between base path and rolling suffix. Not affects <see cref="RollingStrategyType.None"/> strategy.
+        /// </summary>
+        public char Eliminator { get; set; } = '-';
     }
 }

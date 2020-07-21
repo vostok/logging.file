@@ -75,9 +75,12 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         [TestCase("log{RollingSuffix}.txt.json", "suffix", "log-suffix.txt.json")]
         [TestCase("{RollingSuffix}.txt.json", "suffix", "suffix.txt.json")]
         [TestCase("log.{RollingSuffix}.txt.json", "suffix", "log.suffix.txt.json")]
-        public void AddSuffix_should_correctly_insert_the_suffix(string basePath, string suffix, string expected)
+        [TestCase("log", "suffix", "log_suffix", '_')]
+        [TestCase("log.txt", "suffix", "log_suffix.txt", '_')]
+        [TestCase("log{RollingSuffix}.txt.json", "suffix", "log_suffix.txt.json", '_')]
+        public void AddSuffix_should_correctly_insert_the_suffix(string basePath, string suffix, string expected, char suffixEliminator = '-')
         {
-            var path = RollingStrategyHelper.AddSuffix(new FilePath(basePath), suffix, false).NormalizedPath;
+            var path = RollingStrategyHelper.AddSuffix(new FilePath(basePath), suffix, false, suffixEliminator).NormalizedPath;
 
             path = path.Remove(0, AppDomain.CurrentDomain.BaseDirectory.Length);
             path = path.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
