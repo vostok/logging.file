@@ -6,18 +6,20 @@ namespace Vostok.Logging.File.Rolling.Suffixes
     {
         private readonly IFileSuffixFormatter<DateTime> timeSuffixFormatter;
         private readonly IFileSuffixFormatter<int> sizeSuffixFormatter;
+        private readonly char suffixEliminator;
 
-        public HybridSuffixFormatter(IFileSuffixFormatter<DateTime> timeSuffixFormatter, IFileSuffixFormatter<int> sizeSuffixFormatter)
+        public HybridSuffixFormatter(IFileSuffixFormatter<DateTime> timeSuffixFormatter, IFileSuffixFormatter<int> sizeSuffixFormatter, char suffixEliminator = '-')
         {
             this.timeSuffixFormatter = timeSuffixFormatter;
             this.sizeSuffixFormatter = sizeSuffixFormatter;
+            this.suffixEliminator = suffixEliminator;
         }
 
         public string FormatSuffix((DateTime, int) part) => throw new NotSupportedException();
 
         public (DateTime, int)? TryParseSuffix(string suffix)
         {
-            var lastDashIndex = suffix.LastIndexOf('-');
+            var lastDashIndex = suffix.LastIndexOf(suffixEliminator);
             if (lastDashIndex < 0 || lastDashIndex == suffix.Length - 1)
                 return null;
 

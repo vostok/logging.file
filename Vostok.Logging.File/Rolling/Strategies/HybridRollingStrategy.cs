@@ -13,27 +13,30 @@ namespace Vostok.Logging.File.Rolling.Strategies
         private readonly Func<DateTime> timeProvider;
         private readonly IFileSuffixFormatter<DateTime> timeSuffixFormatter;
         private readonly IFileSuffixFormatter<(DateTime, int)> hybridSuffixFormatter;
+        private readonly char suffixEliminator;
 
         public HybridRollingStrategy(
             IFileSystem fileSystem, 
             IRollingStrategy sizeRollingStrategy, 
             Func<DateTime> timeProvider, 
             IFileSuffixFormatter<DateTime> timeSuffixFormatter, 
-            IFileSuffixFormatter<(DateTime, int)> hybridSuffixFormatter)
+            IFileSuffixFormatter<(DateTime, int)> hybridSuffixFormatter,
+            char suffixEliminator = '-')
         {
             this.fileSystem = fileSystem;
             this.sizeRollingStrategy = sizeRollingStrategy;
             this.timeProvider = timeProvider;
             this.timeSuffixFormatter = timeSuffixFormatter;
             this.hybridSuffixFormatter = hybridSuffixFormatter;
+            this.suffixEliminator = suffixEliminator;
         }
 
         public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath) =>
-            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, hybridSuffixFormatter).Select(file => file.path);
+            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, hybridSuffixFormatter, suffixEliminator).Select(file => file.path);
 
         public FilePath GetCurrentFile(FilePath basePath)
         {
-            var timeBasedPrefix = RollingStrategyHelper.AddSuffix(basePath, timeSuffixFormatter.FormatSuffix(timeProvider()), true);
+            var timeBasedPrefix = RollingStrategyHelper.AddSuffix(basePath, timeSuffixFormatter.FormatSuffix(timeProvider()), true, suffixEliminator);
 
             return sizeRollingStrategy.GetCurrentFile(timeBasedPrefix);
         }

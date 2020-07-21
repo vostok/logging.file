@@ -11,17 +11,19 @@ namespace Vostok.Logging.File.Rolling.Strategies
         private readonly IFileSuffixFormatter<DateTime> suffixFormatter;
         private readonly Func<DateTime> timeProvider;
         private readonly IFileSystem fileSystem;
+        private readonly char suffixEliminator;
 
-        public TimeBasedRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<DateTime> suffixFormatter, Func<DateTime> timeProvider)
+        public TimeBasedRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<DateTime> suffixFormatter, Func<DateTime> timeProvider, char suffixEliminator = '-')
         {
             this.suffixFormatter = suffixFormatter;
             this.timeProvider = timeProvider;
             this.fileSystem = fileSystem;
+            this.suffixEliminator = suffixEliminator;
         }
 
         public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath) =>
-            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter).Select(file => file.path);
+            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, suffixEliminator).Select(file => file.path);
 
-        public FilePath GetCurrentFile(FilePath basePath) => RollingStrategyHelper.AddSuffix(basePath, suffixFormatter.FormatSuffix(timeProvider()), false);
+        public FilePath GetCurrentFile(FilePath basePath) => RollingStrategyHelper.AddSuffix(basePath, suffixFormatter.FormatSuffix(timeProvider()), false, suffixEliminator);
     }
 }

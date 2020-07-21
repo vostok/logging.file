@@ -13,12 +13,12 @@ namespace Vostok.Logging.File.Rolling.Strategies
 
         private static readonly char[] SuffixDashEliminators = {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '.', '-'};
 
-        public static FilePath AddSuffix(FilePath basePath, string suffix, bool keepPlaceholder)
+        public static FilePath AddSuffix(FilePath basePath, string suffix, bool keepPlaceholder, char suffixEliminator = '-')
         {
             var placeholderIndex = FindPlaceholderIndex(basePath.NormalizedPath);
-            if (placeholderIndex > 0 && !SuffixDashEliminators.Contains(basePath.NormalizedPath[placeholderIndex - 1]) ||
-                placeholderIndex < 0 && !SuffixDashEliminators.Contains(basePath.PathWithoutExtension.Last()))
-                suffix = '-' + suffix;
+            var symbolBeforeInsert = placeholderIndex > 0 ? basePath.NormalizedPath[placeholderIndex - 1] : basePath.PathWithoutExtension.Last();
+            if (placeholderIndex != 0 && !SuffixDashEliminators.Contains(symbolBeforeInsert) && symbolBeforeInsert != suffixEliminator)
+                suffix = suffixEliminator + suffix;
 
             if (placeholderIndex < 0)
                 return basePath + suffix;
@@ -29,12 +29,12 @@ namespace Vostok.Logging.File.Rolling.Strategies
         /// <summary>
         /// Returns files in order oldest to newest (ordered by parsed suffix).
         /// </summary>
-        public static IEnumerable<(FilePath path, TSuffix? suffix)> DiscoverExistingFiles<TSuffix>(FilePath basePath, IFileSystem fileSystem, IFileSuffixFormatter<TSuffix> suffixFormatter)
+        public static IEnumerable<(FilePath path, TSuffix? suffix)> DiscoverExistingFiles<TSuffix>(FilePath basePath, IFileSystem fileSystem, IFileSuffixFormatter<TSuffix> suffixFormatter, char suffixEliminator = '-')
             where TSuffix : struct
         {
             var allFiles = fileSystem.GetFilesByPrefix(GetPrefixForDiscovery(basePath));
 
-            var filesWithSuffix = allFiles.Select(path => (path, suffix: suffixFormatter.TryParseSuffix(ExtractSuffixValue(path, basePath))));
+            var filesWithSuffix = allFiles.Select(path => (path, suffix: suffixFormatter.TryParseSuffix(ExtractSuffixValue(path, basePath, suffixEliminator))));
 
             return filesWithSuffix.Where(file => file.suffix != null).OrderBy(file => file.suffix);
         }
@@ -48,16 +48,16 @@ namespace Vostok.Logging.File.Rolling.Strategies
             return new FilePath(basePath.NormalizedPath.Substring(0, placeholderIndex));
         }
 
-        private static string ExtractSuffixValue(FilePath path, FilePath basePath)
+        private static string ExtractSuffixValue(FilePath path, FilePath basePath, char suffixEliminator = '-')
         {
             var placeholderIndex = FindPlaceholderIndex(basePath.PathWithoutExtension);
             if (placeholderIndex < 0)
-                return path.PathWithoutExtension.Substring(basePath.PathWithoutExtension.Length).TrimStart('-');
+                return path.PathWithoutExtension.Substring(basePath.PathWithoutExtension.Length).TrimStart(suffixEliminator);
 
             var basePathTrailerLength = basePath.PathWithoutExtension.Length - placeholderIndex - SuffixPlaceholder.Length;
             var pathSuffixLength = path.PathWithoutExtension.Length - placeholderIndex - basePathTrailerLength;
             if (pathSuffixLength > 0 && placeholderIndex + pathSuffixLength <= path.PathWithoutExtension.Length)
-                return path.PathWithoutExtension.Substring(placeholderIndex, pathSuffixLength).TrimStart('-');
+                return path.PathWithoutExtension.Substring(placeholderIndex, pathSuffixLength).TrimStart(suffixEliminator);
 
             return string.Empty;
         }
