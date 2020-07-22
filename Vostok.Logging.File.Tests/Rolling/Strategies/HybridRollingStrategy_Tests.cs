@@ -31,7 +31,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
             hybridSuffixFormatter.TryParseSuffix(Arg.Any<string>())
                 .Returns(callInfo => callInfo.Arg<string>().Split('#').Transform(p => p.Length == 2 && DateTime.TryParse(p[0], out var v) && int.TryParse(p[1], out var w) ? (v, w) : null as (DateTime, int)?));
 
-            strategy = new HybridRollingStrategy(fileSystem, sizeStrategy, () => DateTime.Now, timeSuffixFormatter, hybridSuffixFormatter);
+            strategy = new HybridRollingStrategy(fileSystem, sizeStrategy, () => DateTime.Now, timeSuffixFormatter, hybridSuffixFormatter, () => '-');
         }
 
         [Test]
