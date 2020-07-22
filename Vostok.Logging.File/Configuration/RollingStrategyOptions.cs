@@ -29,8 +29,10 @@ namespace Vostok.Logging.File.Configuration
         public long MaxSize { get; set; } = 1024 * 1024 * 1024;
 
         /// <summary>
-        /// Eliminator between base path and rolling suffix. Not affects <see cref="RollingStrategyType.None"/> strategy.
+        /// Separator between base path and rolling suffix. Does not affect <see cref="RollingStrategyType.None"/> strategy.
+        /// Symbol before suffix is equal to symbol before {RollingSuffix} placeholder, or equal to last symbol of base path, if {RollingSuffix} placeholder is missing.
+        /// If symbol before suffix is equal to Separator, or dot, or directory separator char, then Separator will not be added before suffix.
         /// </summary>
-        public char Eliminator { get; set; } = '-';
+        public char SuffixSeparator { get; set; } = '-';
     }
 }

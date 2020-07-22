@@ -19,7 +19,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Suffixes
             timeSuffixFormatter = Substitute.For<IFileSuffixFormatter<DateTime>>();
             sizeSuffixFormatter = Substitute.For<IFileSuffixFormatter<int>>();
 
-            suffixFormatter = new HybridSuffixFormatter(timeSuffixFormatter, sizeSuffixFormatter);
+            suffixFormatter = new HybridSuffixFormatter(timeSuffixFormatter, sizeSuffixFormatter, () => '-');
         }
 
         [Test]
