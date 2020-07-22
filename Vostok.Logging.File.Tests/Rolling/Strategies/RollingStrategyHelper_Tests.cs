@@ -15,6 +15,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
     {
         private IFileSuffixFormatter<int> suffixFormatter;
         private IFileSystem fileSystem;
+        private char suffixSeparator;
 
         [SetUp]
         public void TestSetup()
@@ -24,12 +25,14 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
 
             suffixFormatter = Substitute.For<IFileSuffixFormatter<int>>();
             suffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(info => int.TryParse(info.Arg<string>(), out var value) ? value : null as int?);
+
+            suffixSeparator = '-';
         }
 
         [Test]
         public void Should_parse_suffix_using_provided_formatter()
         {
-            RollingStrategyHelper.DiscoverExistingFiles("logs/log.txt", fileSystem, suffixFormatter)
+            RollingStrategyHelper.DiscoverExistingFiles("logs/log.txt", fileSystem, suffixFormatter, suffixSeparator)
                 .Single().suffix.Should().Be(1);
         }
 
@@ -38,7 +41,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         {
             fileSystem.GetFilesByPrefix("logs/log.txt").Returns(new FilePath[] {"logs/log1.txt", "logs/log~.txt"});
 
-            RollingStrategyHelper.DiscoverExistingFiles("logs/log.txt", fileSystem, suffixFormatter).Should().HaveCount(1);
+            RollingStrategyHelper.DiscoverExistingFiles("logs/log.txt", fileSystem, suffixFormatter, suffixSeparator).Should().HaveCount(1);
         }
 
         [Test]
@@ -46,7 +49,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         {
             fileSystem.GetFilesByPrefix("logs/log.txt").Returns(new FilePath[] { "logs/log3.txt", "logs/log1.txt", "logs/log2.txt" });
 
-            RollingStrategyHelper.DiscoverExistingFiles("logs/log.txt", fileSystem, suffixFormatter).Select(e => e.path)
+            RollingStrategyHelper.DiscoverExistingFiles("logs/log.txt", fileSystem, suffixFormatter, suffixSeparator).Select(e => e.path)
                 .Should().Equal("logs/log1.txt", "logs/log2.txt", "logs/log3.txt");
         }
 
@@ -62,10 +65,10 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
                 "logs/log2file.txt"
             });
 
-            RollingStrategyHelper.DiscoverExistingFiles("logs/log{RollingSuffix}file.txt", fileSystem, suffixFormatter).Select(e => e.path)
+            RollingStrategyHelper.DiscoverExistingFiles("logs/log{RollingSuffix}file.txt", fileSystem, suffixFormatter, suffixSeparator).Select(e => e.path)
                 .Should().Equal("logs/log1file.txt", "logs/log2file.txt", "logs/log3file.txt", "logs/log513file.txt");
 
-            RollingStrategyHelper.DiscoverExistingFiles("logs/log{RollingSuffix}file.txt", fileSystem, suffixFormatter).Select(e => e.suffix)
+            RollingStrategyHelper.DiscoverExistingFiles("logs/log{RollingSuffix}file.txt", fileSystem, suffixFormatter, suffixSeparator).Select(e => e.suffix)
                 .Should().Equal(1, 2, 3, 513);
         }
 
@@ -75,9 +78,12 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
         [TestCase("log{RollingSuffix}.txt.json", "suffix", "log-suffix.txt.json")]
         [TestCase("{RollingSuffix}.txt.json", "suffix", "suffix.txt.json")]
         [TestCase("log.{RollingSuffix}.txt.json", "suffix", "log.suffix.txt.json")]
-        public void AddSuffix_should_correctly_insert_the_suffix(string basePath, string suffix, string expected)
+        [TestCase("log", "suffix", "log_suffix", '_')]
+        [TestCase("log.txt", "suffix", "log_suffix.txt", '_')]
+        [TestCase("log{RollingSuffix}.txt.json", "suffix", "log_suffix.txt.json", '_')]
+        public void AddSuffix_should_correctly_insert_the_suffix(string basePath, string suffix, string expected, char suffixSeparator = '-')
         {
-            var path = RollingStrategyHelper.AddSuffix(new FilePath(basePath), suffix, false).NormalizedPath;
+            var path = RollingStrategyHelper.AddSuffix(new FilePath(basePath), suffix, false, suffixSeparator).NormalizedPath;
 
             path = path.Remove(0, AppDomain.CurrentDomain.BaseDirectory.Length);
             path = path.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);

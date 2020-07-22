@@ -27,7 +27,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
 
             roller = Substitute.For<ISizeBasedRoller>();
 
-            strategy = new SizeBasedRollingStrategy(fileSystem, suffixFormatter, roller);
+            strategy = new SizeBasedRollingStrategy(fileSystem, suffixFormatter, roller, () => '-');
         }
 
         [Test]

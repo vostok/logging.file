@@ -27,5 +27,12 @@ namespace Vostok.Logging.File.Configuration
         /// Maximal size of one part of log file, in bytes. Affects only <see cref="RollingStrategyType.BySize"/> and <see cref="RollingStrategyType.Hybrid"/> strategies.
         /// </summary>
         public long MaxSize { get; set; } = 1024 * 1024 * 1024;
+
+        /// <summary>
+        /// Separator between base path and rolling suffix. Does not affect <see cref="RollingStrategyType.None"/> strategy.
+        /// Symbol before suffix is equal to symbol before {RollingSuffix} placeholder, or equal to last symbol of base path, if {RollingSuffix} placeholder is missing.
+        /// If symbol before suffix is equal to Separator, or dot, or directory separator char, then Separator will not be added before suffix.
+        /// </summary>
+        public char SuffixSeparator { get; set; } = '-';
     }
 }
