@@ -29,9 +29,9 @@ namespace Vostok.Logging.File.Configuration
         public long MaxSize { get; set; } = 1024 * 1024 * 1024;
 
         /// <summary>
-        /// Separator between base path and rolling suffix. Does not affect <see cref="RollingStrategyType.None"/> strategy.
-        /// Symbol before suffix is equal to symbol before {RollingSuffix} placeholder, or equal to last symbol of base path, if {RollingSuffix} placeholder is missing.
-        /// If symbol before suffix is equal to Separator, or dot, or directory separator char, then Separator will not be added before suffix.
+        /// <para>Separator between base path and rolling suffix.</para>
+        /// <para>Does not affect <see cref="RollingStrategyType.None"/> strategy.</para>
+        /// <para>If <c>{RollingSuffix}</c> placeholder is explicitly used in log file path, this separator is inserted before it (unless the placeholder is explicitly preceded by a dot, slash or dash).</para>
         /// </summary>
         public char SuffixSeparator { get; set; } = '-';
     }
