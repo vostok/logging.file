@@ -1,3 +1,7 @@
+## 1.0.8 (22.07.2020):
+
+Customizable separator between base log file path and rolling strategy suffix.
+
 ## 1.0.7 (25.06.2020):
 
 Slight performance improvements.
