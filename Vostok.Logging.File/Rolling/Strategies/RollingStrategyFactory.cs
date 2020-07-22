@@ -31,24 +31,24 @@ namespace Vostok.Logging.File.Rolling.Strategies
         {
             suffixFormatter = suffixFormatter ?? new TimeBasedSuffixFormatter(() => settingsProvider().RollingStrategy.Period);
 
-            return new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => DateTime.Now, settingsProvider().RollingStrategy.Eliminator);
+            return new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => DateTime.Now, () => settingsProvider().RollingStrategy.SuffixSeparator);
         }
 
         private static IRollingStrategy CreateSizeBasedStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem, SizeBasedSuffixFormatter suffixFormatter = null)
         {
             suffixFormatter = suffixFormatter ?? new SizeBasedSuffixFormatter();
 
-            return new SizeBasedRollingStrategy(fileSystem, suffixFormatter, new SizeBasedRoller(fileSystem, () => settingsProvider().RollingStrategy.MaxSize), settingsProvider().RollingStrategy.Eliminator);
+            return new SizeBasedRollingStrategy(fileSystem, suffixFormatter, new SizeBasedRoller(fileSystem, () => settingsProvider().RollingStrategy.MaxSize), () => settingsProvider().RollingStrategy.SuffixSeparator);
         }
 
         private static IRollingStrategy CreateHybridStrategy(Func<FileLogSettings> settingsProvider, IFileSystem fileSystem)
         {
             var sizeSuffixFormatter = new SizeBasedSuffixFormatter();
             var timeSuffixFormatter = new TimeBasedSuffixFormatter(() => settingsProvider().RollingStrategy.Period);
-            var hybridSuffixFormatter = new HybridSuffixFormatter(timeSuffixFormatter, sizeSuffixFormatter, settingsProvider().RollingStrategy.Eliminator);
+            var hybridSuffixFormatter = new HybridSuffixFormatter(timeSuffixFormatter, sizeSuffixFormatter, () => settingsProvider().RollingStrategy.SuffixSeparator);
             var sizeStrategy = CreateSizeBasedStrategy(settingsProvider, fileSystem, sizeSuffixFormatter);
 
-            return new HybridRollingStrategy(fileSystem, sizeStrategy, () => DateTime.Now, timeSuffixFormatter, hybridSuffixFormatter, settingsProvider().RollingStrategy.Eliminator);
+            return new HybridRollingStrategy(fileSystem, sizeStrategy, () => DateTime.Now, timeSuffixFormatter, hybridSuffixFormatter, () => settingsProvider().RollingStrategy.SuffixSeparator);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Vostok.Logging.File.Helpers;
 using Vostok.Logging.File.Rolling.Helpers;
@@ -11,22 +12,22 @@ namespace Vostok.Logging.File.Rolling.Strategies
         private readonly ISizeBasedRoller sizeBasedRoller;
         private readonly IFileSystem fileSystem;
         private readonly IFileSuffixFormatter<int> suffixFormatter;
-        private readonly char suffixEliminator;
+        private readonly Func<char> suffixSeparatorProvider;
 
-        public SizeBasedRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<int> suffixFormatter, ISizeBasedRoller sizeBasedRoller, char suffixEliminator = '-')
+        public SizeBasedRollingStrategy(IFileSystem fileSystem, IFileSuffixFormatter<int> suffixFormatter, ISizeBasedRoller sizeBasedRoller, Func<char> suffixSeparatorProvider)
         {
             this.sizeBasedRoller = sizeBasedRoller;
             this.fileSystem = fileSystem;
             this.suffixFormatter = suffixFormatter;
-            this.suffixEliminator = suffixEliminator;
+            this.suffixSeparatorProvider = suffixSeparatorProvider;
         }
 
         public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath) =>
-            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, suffixEliminator).Select(file => file.path);
+            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, suffixSeparatorProvider()).Select(file => file.path);
 
         public FilePath GetCurrentFile(FilePath basePath)
         {
-            var filesWithSuffix = RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, suffixEliminator);
+            var filesWithSuffix = RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, suffixFormatter, suffixSeparatorProvider());
 
             var part = 1;
             var lastFile = filesWithSuffix.LastOrDefault();
@@ -37,7 +38,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
                     part++;
             }
 
-            return RollingStrategyHelper.AddSuffix(basePath, suffixFormatter.FormatSuffix(part), false, suffixEliminator);
+            return RollingStrategyHelper.AddSuffix(basePath, suffixFormatter.FormatSuffix(part), false, suffixSeparatorProvider());
         }
     }
 }

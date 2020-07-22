@@ -25,7 +25,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Strategies
             suffixFormatter.FormatSuffix(Arg.Any<DateTime>()).Returns(callInfo => callInfo.Arg<DateTime>().ToString("yyyy-MM-dd"));
             suffixFormatter.TryParseSuffix(Arg.Any<string>()).Returns(callInfo => DateTime.TryParse(callInfo.Arg<string>(), out var dt) ? dt : null as DateTime?);
 
-            strategy = new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => now);
+            strategy = new TimeBasedRollingStrategy(fileSystem, suffixFormatter, () => now, () => '-');
         }
         
         [Test]

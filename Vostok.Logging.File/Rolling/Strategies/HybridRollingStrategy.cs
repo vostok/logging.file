@@ -13,7 +13,7 @@ namespace Vostok.Logging.File.Rolling.Strategies
         private readonly Func<DateTime> timeProvider;
         private readonly IFileSuffixFormatter<DateTime> timeSuffixFormatter;
         private readonly IFileSuffixFormatter<(DateTime, int)> hybridSuffixFormatter;
-        private readonly char suffixEliminator;
+        private readonly Func<char> suffixSeparatorProvider;
 
         public HybridRollingStrategy(
             IFileSystem fileSystem, 
@@ -21,22 +21,22 @@ namespace Vostok.Logging.File.Rolling.Strategies
             Func<DateTime> timeProvider, 
             IFileSuffixFormatter<DateTime> timeSuffixFormatter, 
             IFileSuffixFormatter<(DateTime, int)> hybridSuffixFormatter,
-            char suffixEliminator = '-')
+            Func<char> suffixSeparatorProvider)
         {
             this.fileSystem = fileSystem;
             this.sizeRollingStrategy = sizeRollingStrategy;
             this.timeProvider = timeProvider;
             this.timeSuffixFormatter = timeSuffixFormatter;
             this.hybridSuffixFormatter = hybridSuffixFormatter;
-            this.suffixEliminator = suffixEliminator;
+            this.suffixSeparatorProvider = suffixSeparatorProvider;
         }
 
         public IEnumerable<FilePath> DiscoverExistingFiles(FilePath basePath) =>
-            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, hybridSuffixFormatter, suffixEliminator).Select(file => file.path);
+            RollingStrategyHelper.DiscoverExistingFiles(basePath, fileSystem, hybridSuffixFormatter, suffixSeparatorProvider()).Select(file => file.path);
 
         public FilePath GetCurrentFile(FilePath basePath)
         {
-            var timeBasedPrefix = RollingStrategyHelper.AddSuffix(basePath, timeSuffixFormatter.FormatSuffix(timeProvider()), true, suffixEliminator);
+            var timeBasedPrefix = RollingStrategyHelper.AddSuffix(basePath, timeSuffixFormatter.FormatSuffix(timeProvider()), true, suffixSeparatorProvider());
 
             return sizeRollingStrategy.GetCurrentFile(timeBasedPrefix);
         }
