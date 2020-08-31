@@ -26,7 +26,7 @@ namespace Vostok.Logging.File.Configuration
         ///     <item><description><see cref="RollingStrategyType.Hybrid"/>: <c>log</c> --> <c>log-2018-09-05-2</c></description></item>
         ///     <item><description><see cref="RollingStrategyType.Hybrid"/>: <c>logs/log{RollingSuffix}.errors.txt</c> --> <c>logs/log-2018-09-05-2.errors.txt</c></description></item>
         /// </list>
-        /// <para>The path is relative to current working directory (<see cref="Environment.CurrentDirectory"/>).</para>
+        /// <para>Relative paths are interpreted with current app domain's <see cref="AppDomain.BaseDirectory"/> as base.</para>
         /// <para>Dynamic reconfiguration is supported for this parameter: <see cref="FileLog"/> will switch to a new file on change.</para>
         /// </summary>
         [NotNull]
