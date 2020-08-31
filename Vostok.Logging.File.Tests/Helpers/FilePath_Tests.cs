@@ -97,11 +97,11 @@ namespace Vostok.Logging.File.Tests.Helpers
         }
 
         [Test]
-        public void NormalizePath_should_expand_relative_paths_from_appdomain_base_directory()
+        public void NormalizePath_should_expand_relative_paths_from_environment_current_directory()
         {
             var path = "logs/log";
 
-            var expectedPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path));
+            var expectedPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
 
             new FilePath(path).NormalizedPath.Should().Be(expectedPath);
         }
