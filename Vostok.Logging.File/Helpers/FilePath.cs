@@ -49,7 +49,7 @@ namespace Vostok.Logging.File.Helpers
         }
 
         private static string NormalizePath(string path)
-            => Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path));
+            => Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
 
         #region Equality
 
