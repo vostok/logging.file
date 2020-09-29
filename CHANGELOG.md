@@ -1,3 +1,7 @@
+## 1.0.10 (29.09.2020):
+
+Optimized rendering of unstructured log events without actual templating in messages.
+
 ## 1.0.9 (29.09.2020):
 
 FileLog internals no longer retain references to LogEvents that have already been written.
