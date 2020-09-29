@@ -49,6 +49,10 @@ namespace Vostok.Logging.File.Muxers
 
                     break;
                 }
+                finally
+                {
+                    Array.Clear(buffer, 0, eventsDrained);
+                }
             }
 
             var lostEventsAfterWriting = eventsLostCurrently.Value;
