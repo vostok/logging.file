@@ -1,4 +1,4 @@
-## 1.0.10 (29.09.2020):
+## 1.0.11 (29.09.2020):
 
 Optimized rendering of unstructured log events without actual templating in messages.
 
