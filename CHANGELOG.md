@@ -1,3 +1,7 @@
+## 1.0.9 (29.09.2020):
+
+FileLog internals no longer retain references to LogEvents that have already been written.
+
 ## 1.0.8 (22.07.2020):
 
 Customizable separator between base log file path and rolling strategy suffix.

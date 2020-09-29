@@ -41,12 +41,24 @@ namespace Vostok.Logging.File.Tests.Muxers
         public void Should_write_drained_events()
         {
             var e = CreateLogEvent();
+            
             events.TryAdd(e);
 
             WriteEvents().Should().BeTrue();
 
             writer.Received(1).WriteEvents(buffer, 1);
-            buffer[0].Should().BeSameAs(e);
+        }
+
+        [Test]
+        public void Should_clear_intermidate_buffer_after_writing()
+        {
+            var e = CreateLogEvent();
+
+            events.TryAdd(e);
+
+            WriteEvents().Should().BeTrue();
+
+            buffer[0].Should().BeNull();
         }
 
         [Test]
