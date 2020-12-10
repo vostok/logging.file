@@ -42,7 +42,7 @@ namespace Vostok.Logging.File.Helpers
             return false;
         }
 
-        public TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize)
+        public TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, FileShare fileShare, Encoding encoding, int bufferSize)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace Vostok.Logging.File.Helpers
                     Directory.CreateDirectory(directory);
 
                 var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
-                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.ReadWrite, 1);
+                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, fileShare, 1);
 
                 return new StreamWriter(stream, encoding, bufferSize, false);
             }

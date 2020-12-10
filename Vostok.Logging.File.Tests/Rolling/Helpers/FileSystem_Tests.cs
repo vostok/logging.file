@@ -20,12 +20,12 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void OpenFile_should_use_shared_handles()
+        public void OpenFile_should_use_shared_handles_if_specified()
         {
             using (var folder = new TemporaryFolder())
             {
                 var file = folder.GetFileName("log");
-                using (var writer = fileSystem.OpenFile(file, FileOpenMode.Append, Encoding.UTF8, 4096))
+                using (var writer = fileSystem.OpenFile(file, FileOpenMode.Append, FileShare.ReadWrite, Encoding.UTF8, 4096))
                 {
                     writer.WriteLine("test");
                     writer.Flush();
@@ -40,7 +40,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         public void OpenFile_should_return_null_if_file_cannot_be_opened()
         {
             using (var folder = new TemporaryFolder())
-                fileSystem.OpenFile(folder.Name, FileOpenMode.Append, Encoding.UTF8, 4096).Should().BeNull();
+                fileSystem.OpenFile(folder.Name, FileOpenMode.Append, FileShare.Read, Encoding.UTF8, 4096).Should().BeNull();
         }
 
         [Test]

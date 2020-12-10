@@ -19,7 +19,7 @@ namespace Vostok.Logging.File.Tests.EventsWriting
         public void TestSetup()
         {
             fileSystem = Substitute.For<IFileSystem>();
-            fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<Encoding>(), Arg.Any<int>()).Returns(null as TextWriter);
+            fileSystem.OpenFile(Arg.Any<FilePath>(), Arg.Any<FileOpenMode>(), Arg.Any<FileShare>(), Arg.Any<Encoding>(), Arg.Any<int>()).Returns(null as TextWriter);
 
             factory = new EventsWriterFactory(fileSystem);
         }
