@@ -42,24 +42,38 @@ namespace Vostok.Logging.File.Helpers
             return false;
         }
 
+        public TextWriter TryOpenFile(FilePath file, FileOpenMode fileOpenMode, FileShare fileShare, bool supportMultipleProcesses, Encoding encoding, int bufferSize)
+        {
+            for (var i = 0; i < 5; i++)
+            {
+                if (i > 0 && !supportMultipleProcesses)
+                    break;
+
+                try
+                {
+                    var currentFile = i == 0 ? file : file + $"-{i}";
+                    var writer = OpenFile(currentFile, fileOpenMode, fileShare, encoding, bufferSize);
+                    return writer;
+                }
+                catch (Exception error)
+                {
+                    SafeConsole.ReportError($"Failed to open log file '{file}':", error);
+                }
+            }
+
+            return null;
+        }
+
         public TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, FileShare fileShare, Encoding encoding, int bufferSize)
         {
-            try
-            {
-                var directory = Path.GetDirectoryName(file.NormalizedPath);
-                if (directory != null && !Directory.Exists(directory))
-                    Directory.CreateDirectory(directory);
+            var directory = Path.GetDirectoryName(file.NormalizedPath);
+            if (directory != null && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
 
-                var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
-                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, fileShare, 1);
+            var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
+            var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, fileShare, 1);
 
-                return new StreamWriter(stream, encoding, bufferSize, false);
-            }
-            catch (Exception error)
-            {
-                SafeConsole.ReportError($"Failed to open log file '{file}':", error);
-                return null;
-            }
+            return new StreamWriter(stream, encoding, bufferSize, false);
         }
 
         private static IEnumerable<string> GetFilesByPrefix(string prefix)

@@ -60,6 +60,12 @@ namespace Vostok.Logging.File.Configuration
         public FileShare FileShare { get; set; } = FileShare.Read;
 
         /// <summary>
+        /// <para>Specifies whether one file log path can be used from multiple processes.</para>
+        /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
+        /// </summary>
+        public bool SupportMultipleProcesses { get; set; } = false;
+
+        /// <summary>
         /// <para>An optional rolling strategy (disabled by default).</para>
         /// <para>Dynamic reconfiguration is supported for this parameter: <see cref="FileLog"/> will react to its changes.</para>
         /// </summary>
