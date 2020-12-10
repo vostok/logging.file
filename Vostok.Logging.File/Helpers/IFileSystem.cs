@@ -17,6 +17,6 @@ namespace Vostok.Logging.File.Helpers
         bool TryRemoveFile(FilePath file);
 
         [CanBeNull]
-        TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize);
+        TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, FileShare fileShare, Encoding encoding, int bufferSize);
     }
 }
