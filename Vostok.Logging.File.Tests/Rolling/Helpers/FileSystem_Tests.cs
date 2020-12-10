@@ -52,7 +52,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void OpenFile_should_return_try_suffixes()
+        public void OpenFile_should_return_with_suffix_if_locked()
         {
             using (var folder = new TemporaryFolder())
             {
