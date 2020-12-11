@@ -19,7 +19,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void OpenFile_should_use_shared_handles_if_specified()
+        public void TryOpenFile_should_use_shared_handles_if_specified()
         {
             var settings = new FileLogSettings
             {
@@ -41,7 +41,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void OpenFile_should_return_null_if_locked()
+        public void TryOpenFile_should_return_null_if_locked()
         {
             var settings = new FileLogSettings
             {
@@ -61,7 +61,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void OpenFile_should_return_with_suffix_if_locked()
+        public void TryOpenFile_should_return_with_suffix_if_locked()
         {
             var settings = new FileLogSettings
             {
@@ -84,7 +84,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void OpenFile_should_return_null_if_file_cannot_be_opened()
+        public void TryOpenFile_should_return_null_if_file_cannot_be_opened()
         {
             using (var folder = new TemporaryFolder())
                 fileSystem.TryOpenFile(folder.Name, new FileLogSettings()).Should().BeNull();
