@@ -43,36 +43,39 @@ namespace Vostok.Logging.File.Helpers
 
         public TextWriter TryOpenFile(FilePath file, FileLogSettings settings)
         {
+            if (!settings.SupportMultipleProcesses)
+                return TryOpenFileOnce(file, settings);
+
             for (var i = 0; i < 5; i++)
             {
-                if (i > 0 && !settings.SupportMultipleProcesses)
-                    break;
-
-                try
-                {
-                    var currentFile = i == 0 ? file : file + $"{settings.RollingStrategy.SuffixSeparator}{i}";
-                    var writer = OpenFile(currentFile, settings);
+                var currentFile = i == 0 ? file : file + $"{settings.RollingStrategy.SuffixSeparator}{i}";
+                var writer = TryOpenFileOnce(currentFile, settings);
+                if (writer != null)
                     return writer;
-                }
-                catch (Exception error)
-                {
-                    SafeConsole.ReportError($"Failed to open log file '{file}':", error);
-                }
             }
 
             return null;
         }
 
-        private TextWriter OpenFile(FilePath file, FileLogSettings settings)
+        private static TextWriter TryOpenFileOnce(FilePath file, FileLogSettings settings)
         {
-            var directory = Path.GetDirectoryName(file.NormalizedPath);
-            if (directory != null && !Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
+            try
+            {
+                var directory = Path.GetDirectoryName(file.NormalizedPath);
+                if (directory != null && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
 
-            var fileMode = settings.FileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
-            var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
+                var fileMode = settings.FileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
+                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
 
-            return new StreamWriter(stream, settings.Encoding, settings.OutputBufferSize, false);
+                return new StreamWriter(stream, settings.Encoding, settings.OutputBufferSize, false);
+            }
+            catch (Exception error)
+            {
+                SafeConsole.ReportError($"Failed to open log file '{file}':", error);
+            }
+
+            return null;
         }
 
         private static IEnumerable<string> GetFilesByPrefix(string prefix)
