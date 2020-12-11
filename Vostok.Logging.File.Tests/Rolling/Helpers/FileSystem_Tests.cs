@@ -45,7 +45,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         {
             var settings = new FileLogSettings
             {
-                SupportMultipleProcesses = false
+                UseSeparateFileOnConflict = false
             };
 
             using (var folder = new TemporaryFolder())
@@ -65,7 +65,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         {
             var settings = new FileLogSettings
             {
-                SupportMultipleProcesses = true
+                UseSeparateFileOnConflict = true
             };
 
             using (var folder = new TemporaryFolder())
