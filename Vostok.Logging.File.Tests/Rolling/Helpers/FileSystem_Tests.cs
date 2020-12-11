@@ -61,7 +61,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void TryOpenFile_should_return_with_suffix_if_locked()
+        public void TryOpenFile_should_append_suffix_if_locked()
         {
             var settings = new FileLogSettings
             {
