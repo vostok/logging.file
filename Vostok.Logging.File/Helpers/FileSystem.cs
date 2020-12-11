@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Vostok.Logging.File.Configuration;
 
 namespace Vostok.Logging.File.Helpers
@@ -42,17 +41,17 @@ namespace Vostok.Logging.File.Helpers
             return false;
         }
 
-        public TextWriter TryOpenFile(FilePath file, FileOpenMode fileOpenMode, FileShare fileShare, bool supportMultipleProcesses, Encoding encoding, int bufferSize)
+        public TextWriter TryOpenFile(FilePath file, FileLogSettings settings)
         {
             for (var i = 0; i < 5; i++)
             {
-                if (i > 0 && !supportMultipleProcesses)
+                if (i > 0 && !settings.SupportMultipleProcesses)
                     break;
 
                 try
                 {
                     var currentFile = i == 0 ? file : file + $"-{i}";
-                    var writer = OpenFile(currentFile, fileOpenMode, fileShare, encoding, bufferSize);
+                    var writer = OpenFile(currentFile, settings);
                     return writer;
                 }
                 catch (Exception error)
@@ -64,16 +63,16 @@ namespace Vostok.Logging.File.Helpers
             return null;
         }
 
-        public TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, FileShare fileShare, Encoding encoding, int bufferSize)
+        private TextWriter OpenFile(FilePath file, FileLogSettings settings)
         {
             var directory = Path.GetDirectoryName(file.NormalizedPath);
             if (directory != null && !Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
-            var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, fileShare, 1);
+            var fileMode = settings.FileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
+            var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
 
-            return new StreamWriter(stream, encoding, bufferSize, false);
+            return new StreamWriter(stream, settings.Encoding, settings.OutputBufferSize, false);
         }
 
         private static IEnumerable<string> GetFilesByPrefix(string prefix)
