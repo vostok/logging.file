@@ -50,7 +50,7 @@ namespace Vostok.Logging.File.Helpers
 
                 try
                 {
-                    var currentFile = i == 0 ? file : file + $"-{i}";
+                    var currentFile = i == 0 ? file : file + $"{settings.RollingStrategy.SuffixSeparator}{i}";
                     var writer = OpenFile(currentFile, settings);
                     return writer;
                 }
