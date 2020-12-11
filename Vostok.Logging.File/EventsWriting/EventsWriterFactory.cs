@@ -12,7 +12,7 @@ namespace Vostok.Logging.File.EventsWriting
 
         public IEventsWriter TryCreateWriter(FilePath currentFile, FileLogSettings settings)
         {
-            var fileWriter = fileSystem.TryOpenFile(currentFile, settings.FileOpenMode, settings.FileShare, settings.SupportMultipleProcesses, settings.Encoding, settings.OutputBufferSize);
+            var fileWriter = fileSystem.TryOpenFile(currentFile, settings);
             if (fileWriter == null)
                 return null;
 
