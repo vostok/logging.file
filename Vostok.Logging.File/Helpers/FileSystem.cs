@@ -43,7 +43,7 @@ namespace Vostok.Logging.File.Helpers
 
         public TextWriter TryOpenFile(FilePath file, FileLogSettings settings)
         {
-            if (!settings.SupportMultipleProcesses)
+            if (!settings.UseSeparateFileOnConflict)
                 return TryOpenFileOnce(file, settings);
 
             for (var i = 0; i < 5; i++)
