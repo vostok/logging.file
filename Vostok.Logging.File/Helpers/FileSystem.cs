@@ -73,9 +73,8 @@ namespace Vostok.Logging.File.Helpers
             catch (Exception error)
             {
                 SafeConsole.ReportError($"Failed to open log file '{file}':", error);
+                return null;
             }
-
-            return null;
         }
 
         private static IEnumerable<string> GetFilesByPrefix(string prefix)
