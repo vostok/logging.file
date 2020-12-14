@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using JetBrains.Annotations;
 using Vostok.Logging.Abstractions;
@@ -51,6 +52,18 @@ namespace Vostok.Logging.File.Configuration
         /// <para>Dynamic reconfiguration is supported for this parameter: <see cref="FileLog"/> will reopen the file on change.</para>
         /// </summary>
         public FileOpenMode FileOpenMode { get; set; } = FileOpenMode.Append;
+
+        /// <summary>
+        /// <para>Specifies the way to share log file.</para>
+        /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
+        /// </summary>
+        public FileShare FileShare { get; set; } = FileShare.Read;
+
+        /// <summary>
+        /// <para>Specifies whether or not to try append number suffix if current log file is locked.</para>
+        /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
+        /// </summary>
+        public bool UseSeparateFileOnConflict { get; set; } = false;
 
         /// <summary>
         /// <para>An optional rolling strategy (disabled by default).</para>
