@@ -1,3 +1,9 @@
+## 1.0.12 (14.12.2020):
+
+- Default `FileShare` mode changed to `Read`
+- Added `UseSeparateFileOnConflict` setting
+
+
 ## 1.0.11 (29.09.2020):
 
 Optimized rendering of unstructured log events without actual templating in messages.
