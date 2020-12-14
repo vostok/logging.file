@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Vostok.Logging.File.Configuration;
 
 namespace Vostok.Logging.File.Helpers
@@ -42,7 +41,23 @@ namespace Vostok.Logging.File.Helpers
             return false;
         }
 
-        public TextWriter OpenFile(FilePath file, FileOpenMode fileOpenMode, Encoding encoding, int bufferSize)
+        public TextWriter TryOpenFile(FilePath file, FileLogSettings settings)
+        {
+            if (!settings.UseSeparateFileOnConflict)
+                return TryOpenFileOnce(file, settings);
+
+            for (var i = 0; i < 5; i++)
+            {
+                var currentFile = i == 0 ? file : file + $"{settings.RollingStrategy.SuffixSeparator}{i}";
+                var writer = TryOpenFileOnce(currentFile, settings);
+                if (writer != null)
+                    return writer;
+            }
+
+            return null;
+        }
+
+        private static TextWriter TryOpenFileOnce(FilePath file, FileLogSettings settings)
         {
             try
             {
@@ -50,10 +65,10 @@ namespace Vostok.Logging.File.Helpers
                 if (directory != null && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
-                var fileMode = fileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
-                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.ReadWrite, 1);
+                var fileMode = settings.FileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
+                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
 
-                return new StreamWriter(stream, encoding, bufferSize, false);
+                return new StreamWriter(stream, settings.Encoding, settings.OutputBufferSize, false);
             }
             catch (Exception error)
             {

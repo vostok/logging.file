@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Logging.File.Configuration;
@@ -20,12 +19,17 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void OpenFile_should_use_shared_handles()
+        public void TryOpenFile_should_use_shared_handles_if_specified()
         {
+            var settings = new FileLogSettings
+            {
+                FileShare = FileShare.ReadWrite
+            };
+
             using (var folder = new TemporaryFolder())
             {
                 var file = folder.GetFileName("log");
-                using (var writer = fileSystem.OpenFile(file, FileOpenMode.Append, Encoding.UTF8, 4096))
+                using (var writer = fileSystem.TryOpenFile(file, settings))
                 {
                     writer.WriteLine("test");
                     writer.Flush();
@@ -37,10 +41,53 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void OpenFile_should_return_null_if_file_cannot_be_opened()
+        public void TryOpenFile_should_return_null_if_locked()
+        {
+            var settings = new FileLogSettings
+            {
+                UseSeparateFileOnConflict = false
+            };
+
+            using (var folder = new TemporaryFolder())
+            {
+                var file = folder.GetFileName("log");
+                using (var writer1 = fileSystem.TryOpenFile(file, settings))
+                using (var writer2 = fileSystem.TryOpenFile(file, settings))
+                {
+                    writer1.Should().NotBeNull();
+                    writer2.Should().BeNull();
+                }
+            }
+        }
+
+        [Test]
+        public void TryOpenFile_should_append_suffix_if_locked()
+        {
+            var settings = new FileLogSettings
+            {
+                UseSeparateFileOnConflict = true
+            };
+
+            using (var folder = new TemporaryFolder())
+            {
+                var file = folder.GetFileName("log");
+                using (var writer1 = fileSystem.TryOpenFile(file, settings))
+                using (var writer2 = fileSystem.TryOpenFile(file, settings))
+                {
+                    writer1.WriteLine("test1");
+                    writer2.WriteLine("test2");
+                }
+
+                System.IO.File.ReadAllLines(file).Should().BeEquivalentTo("test1");
+                System.IO.File.ReadAllLines(file + "-1").Should().BeEquivalentTo("test2");
+            }
+        }
+
+        [Test]
+        public void TryOpenFile_should_return_null_if_file_cannot_be_opened()
         {
             using (var folder = new TemporaryFolder())
-                fileSystem.OpenFile(folder.Name, FileOpenMode.Append, Encoding.UTF8, 4096).Should().BeNull();
+                fileSystem.TryOpenFile(folder.Name, new FileLogSettings()).Should().BeNull();
         }
 
         [Test]
