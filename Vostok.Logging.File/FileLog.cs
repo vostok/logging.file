@@ -34,7 +34,7 @@ namespace Vostok.Logging.File
         private readonly object muxerHandle;
         private readonly WeakReference muxerHandleRef;
 
-        private readonly SafeSettingsProvider settingsProvider;
+        private readonly SafeSettingsCache settingsProvider;
         private readonly AtomicLong eventsLost;
         private readonly CachingTransform<FileLogSettings, FilePath> filePathProvider;
 
@@ -85,7 +85,7 @@ namespace Vostok.Logging.File
 
         internal FileLog(IMultiFileMuxer muxer, Func<FileLogSettings> settingsProvider)
         {
-            this.settingsProvider = new SafeSettingsProvider(settingsProvider);
+            this.settingsProvider = new SafeSettingsCache(settingsProvider);
             this.settingsProvider.Get();
             this.muxer = muxer;
 
