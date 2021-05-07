@@ -39,6 +39,7 @@ namespace Vostok.Logging.File
         private readonly CachingTransform<FileLogSettings, FilePath> filePathProvider;
 
         private volatile IMuxerRegistration muxerRegistration;
+        private volatile bool disposed;
 
         static FileLog()
         {
@@ -135,6 +136,9 @@ namespace Vostok.Logging.File
                 var file = filePathProvider.Get(settings);
                 var registration = ObtainMuxerRegistration(file, settings);
 
+                if (disposed)
+                    return;
+
                 if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandleRef))
                 {
                     eventsLost.Increment();
@@ -184,6 +188,8 @@ namespace Vostok.Logging.File
                     SafeConsole.ReportError($"Failed to flush FileLog on Dispose() call for file '{settingsProvider.Get().FilePath}'.", error);
                 }
 
+            disposed = true;
+
             lock (muxerRegistrationLock)
             {
                 muxerRegistration?.Dispose();
@@ -199,7 +205,7 @@ namespace Vostok.Logging.File
 
             lock (muxerRegistrationLock)
             {
-                if (muxerRegistration != null && muxerRegistration.IsValid(file))
+                if (muxerRegistration != null && muxerRegistration.IsValid(file) || disposed)
                     return muxerRegistration;
 
                 muxerRegistration?.Dispose();
