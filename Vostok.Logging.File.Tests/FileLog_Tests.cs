@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
@@ -94,24 +96,30 @@ namespace Vostok.Logging.File.Tests
         }
 
         [Test]
-        public void Should_dispose_registration_on_path_change()
+        public async Task Should_dispose_registration_on_path_change()
         {
             registration.IsValid("xxx").Returns(false, false, true);
             log.Info("Test.");
 
             settings = new FileLogSettings {FilePath = "xxx"};
+            
+            await Task.Delay(2.Seconds());
+
             log.Info("Test.");
 
             registration.Received().Dispose();
         }
 
         [Test]
-        public void Should_obtain_new_registration_on_path_change()
+        public async Task Should_obtain_new_registration_on_path_change()
         {
             registration.IsValid("xxx").Returns(false, false, true);
             log.Info("Test.");
 
             settings = new FileLogSettings {FilePath = "xxx"};
+
+            await Task.Delay(2.Seconds());
+            
             log.Info("Test.");
 
             muxer.Received(1).Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>());
@@ -119,14 +127,17 @@ namespace Vostok.Logging.File.Tests
         }
 
         [Test]
-        public void Should_flush_by_updated_file_path()
+        public async Task Should_flush_by_updated_file_path()
         {
             registration.IsValid("xxx").Returns(false, false, true);
             settings = new FileLogSettings {FilePath = "xxx"};
-            log.Info("Test.");
-            log.Flush();
+            
+            await Task.Delay(2.Seconds());
 
-            muxer.Received().FlushAsync("xxx");
+            log.Info("Test.");
+            await log.FlushAsync();
+
+            await muxer.Received().FlushAsync("xxx");
         }
 
         [Test]
