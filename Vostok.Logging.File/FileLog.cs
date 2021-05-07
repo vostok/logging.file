@@ -137,7 +137,7 @@ namespace Vostok.Logging.File
                 var registration = ObtainMuxerRegistration(file, settings);
 
                 if (disposed)
-                    return;
+                    break;
 
                 if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandleRef))
                 {
@@ -187,11 +187,10 @@ namespace Vostok.Logging.File
                 {
                     SafeConsole.ReportError($"Failed to flush FileLog on Dispose() call for file '{settingsProvider.Get().FilePath}'.", error);
                 }
-
-            disposed = true;
-
+            
             lock (muxerRegistrationLock)
             {
+                disposed = true;
                 muxerRegistration?.Dispose();
                 muxerRegistration = null;
             }
