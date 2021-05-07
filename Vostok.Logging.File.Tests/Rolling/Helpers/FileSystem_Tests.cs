@@ -47,7 +47,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
             {
                 UseSeparateFileOnConflict = false
             };
-            
+
             using (var folder = new TemporaryFolder())
             {
                 var file = folder.GetFileName("log");
@@ -67,7 +67,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
             {
                 UseSeparateFileOnConflict = true
             };
-            
+
             using (var folder = new TemporaryFolder())
             {
                 var file = folder.GetFileName("log");
