@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Logging.Abstractions;
@@ -36,7 +34,7 @@ namespace Vostok.Logging.File.Tests
             muxer.TryAdd(Arg.Any<FilePath>(), Arg.Do<LogEventInfo>(e => capturedEvents.Add(e.Event)), Arg.Any<WeakReference>()).Returns(true);
             muxer.Register(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>()).Returns(registration);
 
-            settings = new FileLogSettings {FilePath = "logs/log", OutputTemplate = OutputTemplate.Parse("{Message}")};
+            settings = new FileLogSettings {FilePath = "logs/log", OutputTemplate = OutputTemplate.Parse("{Message}"), EnableFileLogSettingsCache = false};
 
             log = new FileLog(muxer, () => settings);
         }
@@ -96,29 +94,25 @@ namespace Vostok.Logging.File.Tests
         }
 
         [Test]
-        public async Task Should_dispose_registration_on_path_change()
+        public void Should_dispose_registration_on_path_change()
         {
             registration.IsValid("xxx").Returns(false, false, true);
             log.Info("Test.");
 
             settings = new FileLogSettings {FilePath = "xxx"};
             
-            await Task.Delay(2.Seconds());
-
             log.Info("Test.");
 
             registration.Received().Dispose();
         }
 
         [Test]
-        public async Task Should_obtain_new_registration_on_path_change()
+        public void Should_obtain_new_registration_on_path_change()
         {
             registration.IsValid("xxx").Returns(false, false, true);
             log.Info("Test.");
 
             settings = new FileLogSettings {FilePath = "xxx"};
-
-            await Task.Delay(2.Seconds());
             
             log.Info("Test.");
 
@@ -127,17 +121,15 @@ namespace Vostok.Logging.File.Tests
         }
 
         [Test]
-        public async Task Should_flush_by_updated_file_path()
+        public void Should_flush_by_updated_file_path()
         {
             registration.IsValid("xxx").Returns(false, false, true);
             settings = new FileLogSettings {FilePath = "xxx"};
             
-            await Task.Delay(2.Seconds());
-
             log.Info("Test.");
-            await log.FlushAsync();
+            log.FlushAsync();
 
-            await muxer.Received().FlushAsync("xxx");
+            muxer.Received().FlushAsync("xxx");
         }
 
         [Test]
