@@ -107,6 +107,12 @@ namespace Vostok.Logging.File.Configuration
         public int EventsBufferCapacity { get; set; } = 10 * 1000;
 
         /// <summary>
+        /// <para>Enables internal <see cref="FileLogSettings"/> cache in order to reduce overhead of frequent provider calls.</para>
+        /// <para>Dynamic reconfiguration is not supported for this parameter: a snapshot will be taken on first usage attempt.</para>
+        /// </summary>
+        public bool EnableFileLogSettingsCache { get; set; } = true;
+
+        /// <summary>
         /// <para>Cooldown for enforcing file-related settings (name, rolling strategy, buffer size, etc.). This means that when conditions are met to switch to the next part of log file or reopen the file with another name/options due to change in settings, the switching may be delayed for up to <see cref="FileSettingsUpdateCooldown"/>.</para>
         /// <para>Dynamic reconfiguration is supported for this parameter: <see cref="FileLog"/> will react to its changes.</para>
         /// </summary>

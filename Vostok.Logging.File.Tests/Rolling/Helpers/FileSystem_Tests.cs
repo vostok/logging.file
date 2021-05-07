@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Logging.File.Configuration;
 using Vostok.Logging.File.Helpers;
@@ -41,12 +44,14 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void TryOpenFile_should_return_null_if_locked()
+        public async Task TryOpenFile_should_return_null_if_locked()
         {
             var settings = new FileLogSettings
             {
                 UseSeparateFileOnConflict = false
             };
+
+            await Task.Delay(2.Seconds());
 
             using (var folder = new TemporaryFolder())
             {
@@ -61,12 +66,15 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
-        public void TryOpenFile_should_append_suffix_if_locked()
+        [SuppressMessage("ReSharper", "MethodHasAsyncOverload")]
+        public async Task TryOpenFile_should_append_suffix_if_locked()
         {
             var settings = new FileLogSettings
             {
                 UseSeparateFileOnConflict = true
             };
+
+            await Task.Delay(2.Seconds());
 
             using (var folder = new TemporaryFolder())
             {
