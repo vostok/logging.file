@@ -100,7 +100,6 @@ namespace Vostok.Logging.File.Tests
             log.Info("Test.");
 
             settings = new FileLogSettings {FilePath = "xxx"};
-            
             log.Info("Test.");
 
             registration.Received().Dispose();
@@ -113,7 +112,6 @@ namespace Vostok.Logging.File.Tests
             log.Info("Test.");
 
             settings = new FileLogSettings {FilePath = "xxx"};
-            
             log.Info("Test.");
 
             muxer.Received(1).Register("logs/log", Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>());
@@ -125,9 +123,8 @@ namespace Vostok.Logging.File.Tests
         {
             registration.IsValid("xxx").Returns(false, false, true);
             settings = new FileLogSettings {FilePath = "xxx"};
-            
             log.Info("Test.");
-            log.FlushAsync();
+            log.Flush();
 
             muxer.Received().FlushAsync("xxx");
         }
