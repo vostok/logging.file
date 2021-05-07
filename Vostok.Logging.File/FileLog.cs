@@ -187,7 +187,7 @@ namespace Vostok.Logging.File
                 {
                     SafeConsole.ReportError($"Failed to flush FileLog on Dispose() call for file '{settingsProvider.Get().FilePath}'.", error);
                 }
-            
+
             lock (muxerRegistrationLock)
             {
                 disposed = true;
