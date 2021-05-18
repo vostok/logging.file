@@ -20,7 +20,7 @@ namespace Vostok.Logging.File.Configuration
         {
             this.provider = new SafeSettingsProvider(provider);
 
-            var settings = this.provider.Get();
+            var settings = Get();
 
             enabled = settings.EnableFileLogSettingsCache;
 
@@ -46,12 +46,12 @@ namespace Vostok.Logging.File.Configuration
             {
                 updateCacheTask = new Task(() => currentSettings = provider.Get());
 
-                var incurCooldown = updateCacheTask
+                updateCacheTask
                    .ContinueWith(_ => Task.Delay(ttl))
                    .Unwrap()
                    .ContinueWith(_ => updateCooldown = null);
 
-                incurCooldown.Start();
+                updateCacheTask.Start();
             }
 
             return updateCacheTask;
