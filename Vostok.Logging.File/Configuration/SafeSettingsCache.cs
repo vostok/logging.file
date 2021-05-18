@@ -13,6 +13,7 @@ namespace Vostok.Logging.File.Configuration
         private readonly bool enabled;
 
         private volatile object updateCooldown;
+        private volatile Task updateCacheTask = Task.CompletedTask;
         private volatile FileLogSettings currentSettings;
 
         public SafeSettingsCache(Func<FileLogSettings> provider)
@@ -32,15 +33,28 @@ namespace Vostok.Logging.File.Configuration
             if (!enabled)
                 return provider.Get();
 
+            RefreshCacheAsync();
+
+            return currentSettings;
+        }
+
+        public void RefreshCache() => RefreshCacheAsync().GetAwaiter().GetResult();
+
+        private Task RefreshCacheAsync()
+        {
             if (updateCooldown == null && Interlocked.CompareExchange(ref updateCooldown, CooldownGuard, null) == null)
             {
-                Task.Run(() => currentSettings = provider.Get())
+                updateCacheTask = new Task(() => currentSettings = provider.Get());
+
+                var incurCooldown = updateCacheTask
                    .ContinueWith(_ => Task.Delay(ttl))
                    .Unwrap()
                    .ContinueWith(_ => updateCooldown = null);
+
+                incurCooldown.Start();
             }
 
-            return currentSettings;
+            return updateCacheTask;
         }
     }
 }
