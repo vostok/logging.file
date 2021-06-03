@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Commons.Threading;
 
 namespace Vostok.Logging.File.Configuration
 {
@@ -14,6 +15,7 @@ namespace Vostok.Logging.File.Configuration
 
         private volatile object updateCooldown;
         private volatile Task updateCacheTask = Task.CompletedTask;
+        private volatile AtomicBoolean refreshing;
         private volatile FileLogSettings currentSettings;
 
         public SafeSettingsCache(Func<FileLogSettings> provider)
@@ -33,26 +35,42 @@ namespace Vostok.Logging.File.Configuration
             if (!enabled)
                 return provider.Get();
 
-            RefreshCacheAsync();
+            ScheduleRefresh();
 
             return currentSettings;
         }
 
-        public void RefreshCache() => RefreshCacheAsync().GetAwaiter().GetResult();
+        public void ForceRefresh()
+        {
+            SpinWait.SpinUntil(() => refreshing.TrySetTrue());
 
-        private Task RefreshCacheAsync()
+            try
+            {
+                currentSettings = provider.UnsafeGet();
+            }
+            finally
+            {
+                refreshing = false;
+            }
+        }
+
+        private void ScheduleRefresh()
         {
             if (updateCooldown == null && Interlocked.CompareExchange(ref updateCooldown, CooldownGuard, null) == null)
             {
-                updateCacheTask = Task.Run(() => currentSettings = provider.Get());
+                if (refreshing.TrySetTrue())
+                    updateCacheTask = Task.Run(
+                        () =>
+                        {
+                            currentSettings = provider.Get();
+                            refreshing = false;
+                        });
 
                 updateCacheTask
                    .ContinueWith(_ => Task.Delay(ttl))
                    .Unwrap()
                    .ContinueWith(_ => updateCooldown = null);
             }
-
-            return updateCacheTask;
         }
     }
 }
