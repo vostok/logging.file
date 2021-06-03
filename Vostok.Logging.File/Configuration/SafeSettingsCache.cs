@@ -44,14 +44,12 @@ namespace Vostok.Logging.File.Configuration
         {
             if (updateCooldown == null && Interlocked.CompareExchange(ref updateCooldown, CooldownGuard, null) == null)
             {
-                updateCacheTask = new Task(() => currentSettings = provider.Get());
+                updateCacheTask = Task.Run(() => currentSettings = provider.Get());
 
                 updateCacheTask
                    .ContinueWith(_ => Task.Delay(ttl))
                    .Unwrap()
                    .ContinueWith(_ => updateCooldown = null);
-
-                updateCacheTask.Start();
             }
 
             return updateCacheTask;
