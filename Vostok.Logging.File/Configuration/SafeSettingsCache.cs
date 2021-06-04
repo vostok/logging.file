@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.Commons.Threading;
 
 namespace Vostok.Logging.File.Configuration
 {
@@ -15,7 +14,6 @@ namespace Vostok.Logging.File.Configuration
 
         private volatile object updateCooldown;
         private volatile Task updateCacheTask = Task.CompletedTask;
-        private volatile AtomicBoolean refreshing;
         private volatile FileLogSettings currentSettings;
 
         public SafeSettingsCache(Func<FileLogSettings> provider)
@@ -40,31 +38,19 @@ namespace Vostok.Logging.File.Configuration
             return currentSettings;
         }
 
-        public void ForceRefresh()
-        {
-            SpinWait.SpinUntil(() => refreshing.TrySetTrue());
-
-            try
-            {
-                currentSettings = provider.UnsafeGet();
-            }
-            finally
-            {
-                refreshing = false;
-            }
-        }
+        public void ForceRefresh() => Interlocked.Exchange(ref currentSettings, provider.UnsafeGet());
 
         private void ScheduleRefresh()
         {
             if (updateCooldown == null && Interlocked.CompareExchange(ref updateCooldown, CooldownGuard, null) == null)
             {
-                if (refreshing.TrySetTrue())
-                    updateCacheTask = Task.Run(
-                        () =>
-                        {
-                            currentSettings = provider.Get();
-                            refreshing = false;
-                        });
+                updateCacheTask = Task.Run(
+                    () =>
+                    {
+                        var before = currentSettings;
+                        var newSettings = provider.Get();
+                        Interlocked.CompareExchange(ref currentSettings, newSettings, before);
+                    });
 
                 updateCacheTask
                    .ContinueWith(_ => Task.Delay(ttl))
