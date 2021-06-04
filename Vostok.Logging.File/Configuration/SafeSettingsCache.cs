@@ -47,9 +47,9 @@ namespace Vostok.Logging.File.Configuration
                 updateCacheTask = Task.Run(
                     () =>
                     {
-                        var before = currentSettings;
+                        var oldSettings = currentSettings;
                         var newSettings = provider.Get();
-                        Interlocked.CompareExchange(ref currentSettings, newSettings, before);
+                        Interlocked.CompareExchange(ref currentSettings, newSettings, oldSettings);
                     });
 
                 updateCacheTask
