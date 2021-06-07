@@ -65,20 +65,26 @@ namespace Vostok.Logging.File.Helpers
 
             FileStream CreateFileStream(FileMode fileMode) => new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
 
+            // NOTE: See https://docs.microsoft.com/en-us/dotnet/api/system.threading.mutex to understand naming.
+            string CreateMutexName() => $"Global\\{ReplaceSlashes(file.NormalizedPath)}-FileLogMutex";
+
+            // NOTE: See https://github.com/dotnet/runtime/issues/34126
             FileStream CreateFileStreamOnUnix(FileMode fileMode)
             {
-                using (var m = new Mutex(false, $"Global\\{ReplaceSlashes(file.NormalizedPath)}-FileLogMutex"))
+                using (var m = new Mutex(false, CreateMutexName()))
                 {
                     var hasMutex = false;
+
                     try
                     {
-                        if (m.WaitOne(2))
+                        if (m.WaitOne(10))
                         {
                             hasMutex = true;
-                            // NOTE: See https://github.com/dotnet/runtime/issues/34126
+
                             // In order to avoid multiple writers, we want to fall in case file is opened either for reading or writing.
-                            
-                            using (new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.None, 1)){}
+                            using (new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.None, 1))
+                            {
+                            }
 
                             return CreateFileStream(fileMode);
                         }
@@ -92,10 +98,9 @@ namespace Vostok.Logging.File.Helpers
                     }
                 }
 
-                throw new Exception("blabla");
+                throw new Exception("Unable to open file.");
             }
-            
-            
+
             try
             {
                 var directory = Path.GetDirectoryName(file.NormalizedPath);
@@ -104,10 +109,9 @@ namespace Vostok.Logging.File.Helpers
 
                 var fileMode = settings.FileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
 
-                var stream = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+                var stream = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? CreateFileStream(fileMode)
                     : CreateFileStreamOnUnix(fileMode);
-                
 
                 return new StreamWriter(stream, settings.Encoding, settings.OutputBufferSize, false);
             }
