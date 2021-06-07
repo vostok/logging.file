@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using Vostok.Logging.File.Configuration;
 
 namespace Vostok.Logging.File.Helpers
@@ -66,6 +68,14 @@ namespace Vostok.Logging.File.Helpers
                     Directory.CreateDirectory(directory);
 
                 var fileMode = settings.FileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
+                
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // NOTE: See https://github.com/dotnet/runtime/issues/34126
+                    // In order to avoid multiple writers, we want to fall in case file is opened either for reading or writing.
+                    using (new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.None, 1)){}
+                }
+                
                 var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
 
                 return new StreamWriter(stream, settings.Encoding, settings.OutputBufferSize, false);
