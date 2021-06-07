@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Vostok.Logging.File.Configuration;
 
 namespace Vostok.Logging.File.Helpers
@@ -60,6 +61,41 @@ namespace Vostok.Logging.File.Helpers
 
         private static TextWriter TryOpenFileOnce(FilePath file, FileLogSettings settings)
         {
+            string ReplaceSlashes(string value) => value.Replace('\\', '/').Replace('/', '_');
+
+            FileStream CreateFileStream(FileMode fileMode) => new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
+
+            FileStream CreateFileStreamOnUnix(FileMode fileMode)
+            {
+                using (var m = new Mutex(false, $"Global\\{ReplaceSlashes(file.NormalizedPath)}-FileLogMutex"))
+                {
+                    var hasMutex = false;
+                    try
+                    {
+                        if (m.WaitOne(2))
+                        {
+                            hasMutex = true;
+                            // NOTE: See https://github.com/dotnet/runtime/issues/34126
+                            // In order to avoid multiple writers, we want to fall in case file is opened either for reading or writing.
+                            
+                            using (new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.None, 1)){}
+
+                            return CreateFileStream(fileMode);
+                        }
+                    }
+                    finally
+                    {
+                        if (hasMutex)
+                        {
+                            m.ReleaseMutex();
+                        }
+                    }
+                }
+
+                throw new Exception("blabla");
+            }
+            
+            
             try
             {
                 var directory = Path.GetDirectoryName(file.NormalizedPath);
@@ -67,16 +103,11 @@ namespace Vostok.Logging.File.Helpers
                     Directory.CreateDirectory(directory);
 
                 var fileMode = settings.FileOpenMode == FileOpenMode.Append ? FileMode.Append : FileMode.Create;
+
+                var stream = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+                    ? CreateFileStream(fileMode)
+                    : CreateFileStreamOnUnix(fileMode);
                 
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // NOTE: See https://github.com/dotnet/runtime/issues/34126
-                    // In order to avoid multiple writers, we want to fall in case file is opened either for reading or writing.
-                    // There is a race condition currently and it's still possible that multiple processes may write to the same file.
-                    using (new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.None, 1)){}
-                }
-                
-                var stream = new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
 
                 return new StreamWriter(stream, settings.Encoding, settings.OutputBufferSize, false);
             }
