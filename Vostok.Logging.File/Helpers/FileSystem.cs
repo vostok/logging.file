@@ -63,8 +63,6 @@ namespace Vostok.Logging.File.Helpers
         {
             string ReplaceSlashes(string value) => value.Replace('\\', '/').Replace('/', '_');
 
-            FileStream CreateFileStream(FileMode fileMode) => new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
-
             // NOTE: See https://docs.microsoft.com/en-us/dotnet/api/system.threading.mutex to understand naming.
             string CreateMutexName() => $"Global\\{ReplaceSlashes(file.NormalizedPath)}-FileLogMutex";
 
@@ -100,6 +98,8 @@ namespace Vostok.Logging.File.Helpers
 
                 throw new Exception("Unable to open file.");
             }
+
+            FileStream CreateFileStream(FileMode fileMode) => new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, settings.FileShare, 1);
 
             try
             {
