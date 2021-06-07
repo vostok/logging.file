@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Vostok.Logging.File.Configuration;
 
 namespace Vostok.Logging.File.Helpers
@@ -73,6 +72,7 @@ namespace Vostok.Logging.File.Helpers
                 {
                     // NOTE: See https://github.com/dotnet/runtime/issues/34126
                     // In order to avoid multiple writers, we want to fall in case file is opened either for reading or writing.
+                    // There is a race condition currently and it's still possible that multiple processes may write to the same file.
                     using (new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.None, 1)){}
                 }
                 
