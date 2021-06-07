@@ -69,30 +69,24 @@ namespace Vostok.Logging.File.Helpers
             // NOTE: See https://github.com/dotnet/runtime/issues/34126
             FileStream CreateFileStreamOnUnix(FileMode fileMode)
             {
-                using (var m = new Mutex(false, CreateMutexName()))
+                using (var mutex = new Mutex(false, CreateMutexName()))
                 {
-                    var hasMutex = false;
-
+                    var acquiredLock = false;
                     try
                     {
-                        if (m.WaitOne(10))
+                        if (mutex.WaitOne(10))
                         {
-                            hasMutex = true;
+                            acquiredLock = true;
 
                             // In order to avoid multiple writers, we want to fall in case file is opened either for reading or writing.
-                            using (new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.None, 1))
-                            {
-                            }
-
+                            new FileStream(file.NormalizedPath, fileMode, FileAccess.Write, FileShare.None, 1).Close();
                             return CreateFileStream(fileMode);
                         }
                     }
                     finally
                     {
-                        if (hasMutex)
-                        {
-                            m.ReleaseMutex();
-                        }
+                        if (acquiredLock)
+                            mutex.ReleaseMutex();
                     }
                 }
 
