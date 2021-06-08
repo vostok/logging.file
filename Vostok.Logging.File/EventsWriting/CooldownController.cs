@@ -1,28 +1,25 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Signal = System.Threading.Tasks.TaskCompletionSource<bool>;
+using Signal = Vostok.Commons.Threading.AsyncManualResetEvent;
 
 namespace Vostok.Logging.File.EventsWriting
 {
     internal class CooldownController : ICooldownController
     {
-        private Signal endImmediately = new Signal();
+        private readonly Signal endImmediately = new Signal(false);
         private Task cooldownTask = Task.CompletedTask;
 
         public bool IsCool => cooldownTask.IsCompleted;
 
-        public Task WaitForCooldownAsync() => Task.WhenAny(cooldownTask, endImmediately.Task);
+        public Task WaitForCooldownAsync() => Task.WhenAny(cooldownTask, endImmediately);
 
         public void IncurCooldown(TimeSpan duration, CancellationToken cancellation)
         {
-            endImmediately = new Signal();
+            endImmediately.Reset();
             cooldownTask = Task.Delay(duration, cancellation);
         }
 
-        public void DropCooldown()
-        {
-            endImmediately.SetResult(true);
-        }
+        public void DropCooldown() => endImmediately.Set();
     }
 }
