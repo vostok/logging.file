@@ -127,7 +127,7 @@ namespace Vostok.Logging.File.Muxers
         public Task RefreshSettingsAsync()
         {
             writerProvider.DropCooldown();
-            
+
             return FlushAsync();
         }
 
