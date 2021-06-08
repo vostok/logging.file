@@ -8,7 +8,7 @@ namespace Vostok.Logging.File.EventsWriting
     internal class CooldownController : ICooldownController
     {
         private readonly Signal endImmediately = new Signal(false);
-        private Task cooldownTask = Task.FromResult(Task.CompletedTask);
+        private Task cooldownTask = Task.CompletedTask;
 
         public bool IsCool => cooldownTask.IsCompleted;
 
