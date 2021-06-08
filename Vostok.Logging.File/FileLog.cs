@@ -74,7 +74,7 @@ namespace Vostok.Logging.File
         /// <para>These settings are set on per-file level (rather than per-instance). Only the first <see cref="FileLog"/> to log something to a file will be allowed to modify settings for that file.</para>
         /// </description></item>
         /// <item><description>
-        /// <para>All other settings can be changed any time and come into effect immediately.</para>
+        /// <para>All other settings can be changed any time and come into effect immediately.</para> // TODO
         /// </description></item>
         /// </list>
         /// </summary>
