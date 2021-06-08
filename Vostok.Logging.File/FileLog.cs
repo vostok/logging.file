@@ -28,6 +28,7 @@ namespace Vostok.Logging.File
     public class FileLog : ILog, IDisposable
     {
         private static readonly MultiFileMuxer DefaultMuxer;
+        private static readonly WeakSet<FileLog> Instances;
 
         private readonly IMultiFileMuxer muxer;
         private readonly object muxerRegistrationLock;
@@ -42,8 +43,13 @@ namespace Vostok.Logging.File
 
         static FileLog()
         {
+            var cleanupPeriod = TimeSpan.FromSeconds(5);
+            
             DefaultMuxer = new MultiFileMuxer(new SingleFileMuxerFactory());
-            DefaultMuxer.InitiateOrphanedRegistrationsCleanup(TimeSpan.FromSeconds(5));
+            DefaultMuxer.InitiateOrphanedRegistrationsCleanup(cleanupPeriod);
+
+            Instances = new WeakSet<FileLog>();
+            Instances.InitiatePurge(cleanupPeriod);
         }
 
         /// <summary>

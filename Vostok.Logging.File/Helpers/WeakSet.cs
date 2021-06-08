@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Vostok.Logging.File.Helpers
 {
@@ -23,15 +24,18 @@ namespace Vostok.Logging.File.Helpers
                 references.Remove(new WeakReference<T>(target));
         }
 
-        public void Purge()
+        public void InitiatePurge(TimeSpan period)
         {
-            var newSet = new HashSet<WeakReference<T>>();
+            Task.Run(
+                async () =>
+                {
+                    while (true)
+                    {
+                        await Task.Delay(period).ConfigureAwait(false);
 
-            foreach (var reference in this.Where(reference => reference.TryGetTarget(out _)))
-                newSet.Add(reference);
-
-            lock (guard)
-                references = newSet;
+                        Purge();
+                    }
+                });
         }
 
         public IEnumerator<WeakReference<T>> GetEnumerator()
@@ -42,6 +46,17 @@ namespace Vostok.Logging.File.Helpers
                 snapshot = references.ToList();
 
             return snapshot.GetEnumerator();
+        }
+
+        private void Purge()
+        {
+            var newSet = new HashSet<WeakReference<T>>();
+
+            foreach (var reference in this.Where(reference => reference.TryGetTarget(out _)))
+                newSet.Add(reference);
+
+            lock (guard)
+                references = newSet;
         }
 
         IEnumerator IEnumerable.GetEnumerator() =>
