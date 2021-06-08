@@ -52,11 +52,13 @@ namespace Vostok.Logging.File.Helpers
         {
             var newSet = new HashSet<WeakReference<T>>();
 
-            foreach (var reference in this.Where(reference => reference.TryGetTarget(out _)))
-                newSet.Add(reference);
-
             lock (guard)
+            {
+                foreach (var reference in this.Where(reference => reference.TryGetTarget(out _)))
+                    newSet.Add(reference);
+
                 references = newSet;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() =>
