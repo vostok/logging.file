@@ -124,6 +124,13 @@ namespace Vostok.Logging.File.Muxers
                 throw new FileLogException($"Failed to flush log events to file '{settings.FilePath}'.");
         }
 
+        public Task RefreshSettingsAsync()
+        {
+            writerProvider.DropCooldown();
+            
+            return FlushAsync();
+        }
+
         private static void SignalFlushWaiters(IEnumerable<Waiter> waiters, bool result)
         {
             foreach (var waiter in waiters)
