@@ -19,5 +19,7 @@ namespace Vostok.Logging.File.Muxers
             [NotNull] WeakReference initiator);
 
         Task FlushAsync([NotNull] FilePath file);
+        
+        Task RefreshSettingsAsync();
     }
 }
