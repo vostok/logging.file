@@ -10,7 +10,7 @@ namespace Vostok.Logging.File.Helpers
         where T : class
     {
         private readonly object guard = new object();
-        private HashSet<WeakReference<T>> references = new HashSet<WeakReference<T>>();
+        private readonly HashSet<WeakReference<T>> references = new HashSet<WeakReference<T>>();
 
         public void Add(T target)
         {
@@ -50,15 +50,8 @@ namespace Vostok.Logging.File.Helpers
 
         private void Purge()
         {
-            var newSet = new HashSet<WeakReference<T>>();
-
             lock (guard)
-            {
-                foreach (var reference in this.Where(reference => reference.TryGetTarget(out _)))
-                    newSet.Add(reference);
-
-                references = newSet;
-            }
+                references.RemoveWhere(reference => !reference.TryGetTarget(out _));
         }
 
         IEnumerator IEnumerable.GetEnumerator() =>
