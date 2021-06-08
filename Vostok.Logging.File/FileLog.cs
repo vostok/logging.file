@@ -80,7 +80,8 @@ namespace Vostok.Logging.File
         /// <para>These settings are set on per-file level (rather than per-instance). Only the first <see cref="FileLog"/> to log something to a file will be allowed to modify settings for that file.</para>
         /// </description></item>
         /// <item><description>
-        /// <para>All other settings can be changed any time and come into effect immediately.</para> // TODO
+        /// <para>All other settings can be changed any time and come into effect after some time.</para>
+        /// <para>In case of need of urgent settings refresh there is a <see cref="FileLog.RefreshAllSettings"/> static method.</para>
         /// </description></item>
         /// </list>
         /// </summary>
@@ -129,7 +130,10 @@ namespace Vostok.Logging.File
         /// <exception cref="FileLogException">Unable to flush events to at least one of the files.</exception>
         public static void FlushAll() => FlushAllAsync().GetAwaiter().GetResult();
 
-        // TODO: Add doc
+        /// <summary>
+        /// Refreshes all caches from all FileLog instances asynchronously. Throws in case of error in any of them.
+        /// </summary>
+        /// <exception cref="FileLogException"></exception> // TODO: make sure what exceptions are possible and list them here.
         public static Task RefreshAllSettingsAsync() => Task.WhenAll(
             Instances
                .Select(
@@ -138,7 +142,10 @@ namespace Vostok.Logging.File
                         : Task.CompletedTask)
         );
 
-        // TODO: Add doc
+        /// <summary>
+        /// Refreshes all caches from all FileLog instances. Throws in case of error in any of them.
+        /// </summary>
+        /// <exception cref="FileLogException"></exception> // TODO: make sure what exceptions are possible and list them here.
         public static void RefreshAllSettings() => RefreshAllSettingsAsync().GetAwaiter().GetResult();
 
         /// <inheritdoc />
@@ -192,7 +199,10 @@ namespace Vostok.Logging.File
         /// <exception cref="FileLogException">Unable to flush events to the file.</exception>
         public void Flush() => FlushAsync().GetAwaiter().GetResult();
 
-        // TODO: Add doc
+        /// <summary>
+        /// Refreshes all caches asynchronously. Throws in case of error.
+        /// </summary>
+        /// <exception cref="FileLogException"></exception> // TODO: make sure what exceptions are possible and list them here.
         public Task RefreshSettingsAsync()
         {
             // This is the method from other PR. 
@@ -201,7 +211,10 @@ namespace Vostok.Logging.File
             return muxer.RefreshSettingsAsync();
         }
 
-        // TODO: Add doc
+        /// <summary>
+        /// Refreshes all caches. Throws in case of error.
+        /// </summary>
+        /// <exception cref="FileLogException"></exception> // TODO: make sure what exceptions are possible and list them here.
         public void RefreshSettings() => RefreshSettingsAsync().GetAwaiter().GetResult();
 
         /// <inheritdoc />
