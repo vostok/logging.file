@@ -235,6 +235,8 @@ namespace Vostok.Logging.File
                 muxerRegistration?.Dispose();
                 muxerRegistration = null;
             }
+
+            Instances.Remove(this);
         }
 
         private IMuxerRegistration ObtainMuxerRegistration(FilePath file, FileLogSettings settings)
