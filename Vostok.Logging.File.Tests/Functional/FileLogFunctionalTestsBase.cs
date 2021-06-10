@@ -49,6 +49,11 @@ namespace Vostok.Logging.File.Tests.Functional
             System.IO.File.ReadAllText(fileName.NormalizedPath).Should().ContainAll(messages);
         }
         
+        protected static void ShouldNotContainMessages(FilePath fileName, IEnumerable<string> messages)
+        {
+            System.IO.File.ReadAllText(fileName.NormalizedPath).Should().NotContainAny(messages);
+        }
+        
         protected static void ShouldContainMessage(FilePath fileName, string message)
         {
             ShouldContainMessages(fileName, new []{message});
