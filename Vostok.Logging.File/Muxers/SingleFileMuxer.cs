@@ -128,7 +128,7 @@ namespace Vostok.Logging.File.Muxers
         {
             writerProvider.DropCooldown();
 
-            // NOTE: We have to flush all events so that event writer refreshes it's settings
+            // NOTE: We have to flush all events so that event writer refreshes its settings
             // because if event writer is currently processing some events with old settings, then new events that are
             // put to the bounded queue will be processed with old settings as well.
             return FlushAsync();
