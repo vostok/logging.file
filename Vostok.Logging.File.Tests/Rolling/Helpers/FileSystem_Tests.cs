@@ -19,6 +19,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
+        [Platform("Win", Reason = "Doesn't work as expected on Unix due to file locking mechanism.")]
         public void TryOpenFile_should_use_shared_handles_if_specified()
         {
             var settings = new FileLogSettings
@@ -41,6 +42,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
+        [Platform("Win", Reason = "Doesn't work as expected on Unix due to file locking mechanism.")]
         public void TryOpenFile_should_return_null_if_locked()
         {
             var settings = new FileLogSettings
@@ -61,6 +63,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
+        [Platform("Win", Reason = "Doesn't work as expected on Unix due to file locking mechanism.")]
         public void TryOpenFile_should_append_suffix_if_locked()
         {
             var settings = new FileLogSettings
@@ -104,13 +107,14 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         }
 
         [Test]
+        [Platform("Win", Reason = "Doesn't work as expected on Unix due to file locking mechanism.")]
         public void TryRemoveFile_should_never_throw_exceptions()
         {
             using (var folder = new TemporaryFolder())
             {
                 var file = folder.GetFileName("log");
                 using (System.IO.File.Create(file))
-                    fileSystem.TryRemoveFile(file).Should().Be(!RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                    fileSystem.TryRemoveFile(file).Should().BeFalse();
             }
         }
     }

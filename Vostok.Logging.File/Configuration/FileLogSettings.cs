@@ -56,6 +56,7 @@ namespace Vostok.Logging.File.Configuration
         /// <summary>
         /// <para>Specifies the way to share log file.</para>
         /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
+        /// <para>Note that this parameter does not work as expected on Unix systems. See https://github.com/dotnet/runtime/issues/34126.</para>
         /// </summary>
         public FileShare FileShare { get; set; } = FileShare.Read;
 
