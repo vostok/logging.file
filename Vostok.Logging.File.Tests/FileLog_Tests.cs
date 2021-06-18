@@ -34,7 +34,7 @@ namespace Vostok.Logging.File.Tests
             muxer.TryAdd(Arg.Any<FilePath>(), Arg.Do<LogEventInfo>(e => capturedEvents.Add(e.Event)), Arg.Any<WeakReference>()).Returns(true);
             muxer.Register(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>()).Returns(registration);
 
-            settings = new FileLogSettings {FilePath = "logs/log", OutputTemplate = OutputTemplate.Parse("{Message}")};
+            settings = new FileLogSettings {FilePath = "logs/log", OutputTemplate = OutputTemplate.Parse("{Message}"), EnableFileLogSettingsCache = false};
 
             log = new FileLog(muxer, () => settings);
         }
