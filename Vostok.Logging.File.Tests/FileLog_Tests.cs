@@ -34,7 +34,7 @@ namespace Vostok.Logging.File.Tests
             muxer.TryAdd(Arg.Any<FilePath>(), Arg.Do<LogEventInfo>(e => capturedEvents.Add(e.Event)), Arg.Any<WeakReference>()).Returns(true);
             muxer.Register(Arg.Any<FilePath>(), Arg.Any<FileLogSettings>(), Arg.Any<WeakReference>()).Returns(registration);
 
-            settings = new FileLogSettings {FilePath = "logs/log", OutputTemplate = OutputTemplate.Parse("{Message}")};
+            settings = new FileLogSettings {FilePath = "logs/log", OutputTemplate = OutputTemplate.Parse("{Message}"), EnableFileLogSettingsCache = false};
 
             log = new FileLog(muxer, () => settings);
         }
@@ -167,6 +167,17 @@ namespace Vostok.Logging.File.Tests
 
             capturedEvents.Should()
                 .ContainSingle(e => e.Properties[WellKnownProperties.SourceContext].Equals(new SourceContextValue(new [] {"ctx", "ctx2", "ctx3"})));
+        }
+
+        [Test]
+        public void Should_not_log_after_dispose()
+        {
+            log.Info("Before dispose");
+            log.Dispose();
+            log.Info("After dispose");
+
+            capturedEvents.Should().Contain(e => e.MessageTemplate.Contains("Before dispose"));
+            capturedEvents.Should().NotContain(e => e.MessageTemplate.Contains("After dispose"));
         }
     }
 }

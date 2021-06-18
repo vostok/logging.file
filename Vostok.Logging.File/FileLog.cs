@@ -35,11 +35,12 @@ namespace Vostok.Logging.File
         private readonly object muxerHandle;
         private readonly WeakReference muxerHandleRef;
 
-        private readonly SafeSettingsProvider settingsProvider;
+        private readonly SafeSettingsCache settingsProvider;
         private readonly AtomicLong eventsLost;
         private readonly CachingTransform<FileLogSettings, FilePath> filePathProvider;
 
         private volatile IMuxerRegistration muxerRegistration;
+        private volatile bool disposed;
 
         static FileLog()
         {
@@ -92,7 +93,7 @@ namespace Vostok.Logging.File
 
         internal FileLog(IMultiFileMuxer muxer, Func<FileLogSettings> settingsProvider)
         {
-            this.settingsProvider = new SafeSettingsProvider(settingsProvider);
+            this.settingsProvider = new SafeSettingsCache(settingsProvider);
             this.settingsProvider.Get();
             this.muxer = muxer;
 
@@ -163,6 +164,9 @@ namespace Vostok.Logging.File
                 var file = filePathProvider.Get(settings);
                 var registration = ObtainMuxerRegistration(file, settings);
 
+                if (disposed)
+                    break;
+
                 if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandleRef))
                 {
                     eventsLost.Increment();
@@ -232,6 +236,7 @@ namespace Vostok.Logging.File
 
             lock (muxerRegistrationLock)
             {
+                disposed = true;
                 muxerRegistration?.Dispose();
                 muxerRegistration = null;
             }
@@ -247,7 +252,7 @@ namespace Vostok.Logging.File
 
             lock (muxerRegistrationLock)
             {
-                if (muxerRegistration != null && muxerRegistration.IsValid(file))
+                if (muxerRegistration != null && muxerRegistration.IsValid(file) || disposed)
                     return muxerRegistration;
 
                 muxerRegistration?.Dispose();

@@ -14,16 +14,21 @@ namespace Vostok.Logging.File.Configuration
             this.settingsProvider = settingsProvider;
         }
 
+        public FileLogSettings UnsafeGet()
+        {
+            var actualSettings = settingsProvider();
+
+            if (ReferenceEquals(actualSettings, cachedSettings))
+                return actualSettings;
+
+            return cachedSettings = SettingsValidator.ValidateSettings(actualSettings);
+        }
+
         public FileLogSettings Get()
         {
             try
             {
-                var actualSettings = settingsProvider();
-
-                if (ReferenceEquals(actualSettings, cachedSettings))
-                    return actualSettings;
-
-                return cachedSettings = SettingsValidator.ValidateSettings(actualSettings);
+                return UnsafeGet();
             }
             catch (Exception exception)
             {
