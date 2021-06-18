@@ -107,7 +107,7 @@ namespace Vostok.Logging.File.Configuration
         /// </summary>
         public int EventsBufferCapacity { get; set; } = 10 * 1000;
 
-        // TODO: Propagate file settings update cooldown?
+
         /// <summary>
         /// <para>Enables internal <see cref="FileLogSettings"/> cache in order to reduce overhead of frequent provider calls.</para>
         /// <para>Dynamic reconfiguration is not supported for this parameter: a snapshot will be taken on first usage attempt.</para>
