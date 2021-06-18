@@ -55,7 +55,7 @@ namespace Vostok.Logging.File.Configuration
                 updateCacheTask
                    .ContinueWith(_ => Task.Delay(ttl))
                    .Unwrap()
-                   .ContinueWith(_ => updateCooldown = null);
+                   .ContinueWith(_ => Interlocked.Exchange(ref updateCooldown, null));
             }
         }
     }
