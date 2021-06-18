@@ -9,7 +9,7 @@ namespace Vostok.Logging.File.Configuration
         private static readonly object CooldownGuard = new object();
 
         private readonly SafeSettingsProvider provider;
-        private readonly TimeSpan ttl = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan ttl;
         private readonly bool enabled;
 
         private volatile object updateCooldown;
@@ -23,6 +23,7 @@ namespace Vostok.Logging.File.Configuration
             var settings = Get();
 
             enabled = settings.EnableFileLogSettingsCache;
+            ttl = settings.FileSettingsUpdateCooldown;
 
             if (enabled)
                 currentSettings = settings;

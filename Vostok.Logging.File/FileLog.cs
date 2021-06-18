@@ -132,9 +132,9 @@ namespace Vostok.Logging.File
         public static void FlushAll() => FlushAllAsync().GetAwaiter().GetResult();
 
         /// <summary>
-        /// Refreshes all caches from all FileLog instances asynchronously. Throws in case of error in any of them.
+        /// Refreshes all caches from all FileLog instances asynchronously. Throws in case of error in any of them (propagates all errors that may occur during settings update).
         /// </summary>
-        /// <exception cref="FileLogException"></exception> // TODO: make sure what exceptions are possible and list them here.
+        /// <exception cref="FileLogException"></exception>
         public static Task RefreshAllSettingsAsync() => Task.WhenAll(
             Instances
                .Select(
@@ -144,9 +144,9 @@ namespace Vostok.Logging.File
         );
 
         /// <summary>
-        /// Refreshes all caches from all FileLog instances. Throws in case of error in any of them.
+        /// Refreshes all caches from all FileLog instances. Throws in case of error in any of them (propagates all errors that may occur during settings update). 
         /// </summary>
-        /// <exception cref="FileLogException"></exception> // TODO: make sure what exceptions are possible and list them here.
+        /// <exception cref="FileLogException"></exception>
         public static void RefreshAllSettings() => RefreshAllSettingsAsync().GetAwaiter().GetResult();
 
         /// <inheritdoc />
@@ -204,21 +204,20 @@ namespace Vostok.Logging.File
         public void Flush() => FlushAsync().GetAwaiter().GetResult();
 
         /// <summary>
-        /// Refreshes all caches asynchronously. Throws in case of error.
+        /// Refreshes all caches asynchronously. Throws in case of error (propagates all errors that may occur during settings update).
         /// </summary>
-        /// <exception cref="FileLogException"></exception> // TODO: make sure what exceptions are possible and list them here.
+        /// <exception cref="FileLogException"></exception>
         public Task RefreshSettingsAsync()
         {
-            // This is the method from other PR. 
-            // settingsProvider.ForceRefresh();
+            settingsProvider.ForceRefresh();
 
             return muxer.RefreshSettingsAsync();
         }
 
         /// <summary>
-        /// Refreshes all caches. Throws in case of error.
+        /// Refreshes all caches. Throws in case of error (propagates all errors that may occur during settings update).
         /// </summary>
-        /// <exception cref="FileLogException"></exception> // TODO: make sure what exceptions are possible and list them here.
+        /// <exception cref="FileLogException"></exception>
         public void RefreshSettings() => RefreshSettingsAsync().GetAwaiter().GetResult();
 
         /// <inheritdoc />
