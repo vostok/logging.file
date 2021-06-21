@@ -1,3 +1,8 @@
+## 1.0.13 (21.06.2021):
+
+- Added `FileLogSettings` cache to protect from frequent `logSettingsProvider` calls.
+- Now it's possible to refresh all settings in all caches through `RefreshSettings` method.
+
 ## 1.0.12 (14.12.2020):
 
 - Default `FileShare` mode changed to `Read`
