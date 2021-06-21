@@ -109,7 +109,7 @@ namespace Vostok.Logging.File.Configuration
 
         /// <summary>
         /// <para>Enables internal <see cref="FileLogSettings"/> cache in order to reduce overhead of frequent provider calls.</para>
-        /// <para>One have an option to refresh settings immediately through <see cref="FileLog.RefreshAllSettingsAsync"/> static method.</para>
+        /// <para>One have an option to refresh settings immediately through <see cref="FileLog.RefreshAllSettings"/> static method.</para>
         /// <para>Dynamic reconfiguration is not supported for this parameter: a snapshot will be taken on first usage attempt.</para>
         /// </summary>
         public bool EnableFileLogSettingsCache { get; set; } = true;
@@ -117,7 +117,7 @@ namespace Vostok.Logging.File.Configuration
         /// <summary>
         /// <para>Cooldown for enforcing file-related settings (name, rolling strategy, buffer size, etc.). This means that when conditions are met to switch to the next part of log file or reopen the file with another name/options due to change in settings, the switching may be delayed for up to <see cref="FileSettingsUpdateCooldown"/>.</para>
         /// <para>If <see cref="EnableFileLogSettingsCache"/> is true file-related settings update may be delayed for a longer time.</para>
-        /// <para>One have an option to refresh settings immediately through <see cref="FileLog.RefreshAllSettingsAsync"/> static method.</para>
+        /// <para>One have an option to refresh settings immediately through <see cref="FileLog.RefreshAllSettings"/> static method.</para>
         /// <para>Dynamic reconfiguration is supported for this parameter: <see cref="FileLog"/> will react to its changes.</para>
         /// </summary>
         public TimeSpan FileSettingsUpdateCooldown { get; set; } = TimeSpan.FromSeconds(1);
