@@ -11,5 +11,7 @@ namespace Vostok.Logging.File.EventsWriting
         Task WaitForCooldownAsync();
 
         void IncurCooldown(TimeSpan duration, CancellationToken cancellation);
+
+        void DropCooldown();
     }
 }

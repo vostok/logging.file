@@ -28,6 +28,7 @@ namespace Vostok.Logging.File
     public class FileLog : ILog, IDisposable
     {
         private static readonly MultiFileMuxer DefaultMuxer;
+        private static readonly WeakSet<FileLog> Instances;
 
         private readonly IMultiFileMuxer muxer;
         private readonly object muxerRegistrationLock;
@@ -43,8 +44,13 @@ namespace Vostok.Logging.File
 
         static FileLog()
         {
+            var cleanupPeriod = TimeSpan.FromSeconds(5);
+
             DefaultMuxer = new MultiFileMuxer(new SingleFileMuxerFactory());
-            DefaultMuxer.InitiateOrphanedRegistrationsCleanup(TimeSpan.FromSeconds(5));
+            DefaultMuxer.InitiateOrphanedRegistrationsCleanup(cleanupPeriod);
+
+            Instances = new WeakSet<FileLog>();
+            Instances.InitiatePurge(cleanupPeriod);
         }
 
         /// <summary>
@@ -75,7 +81,8 @@ namespace Vostok.Logging.File
         /// <para>These settings are set on per-file level (rather than per-instance). Only the first <see cref="FileLog"/> to log something to a file will be allowed to modify settings for that file.</para>
         /// </description></item>
         /// <item><description>
-        /// <para>All other settings can be changed any time and come into effect immediately.</para>
+        /// <para>All other settings can be changed any time and come into effect after some time.</para>
+        /// <para>In case of need of urgent settings refresh there is a <see cref="FileLog.RefreshAllSettings"/> static method.</para>
         /// </description></item>
         /// </list>
         /// </summary>
@@ -96,13 +103,21 @@ namespace Vostok.Logging.File
             eventsLost = new AtomicLong(0);
 
             filePathProvider = new CachingTransform<FileLogSettings, FilePath>(
-                settings => new FilePath(settings.FilePath), preventParallelProcessing: false);
+                settings => new FilePath(settings.FilePath),
+                preventParallelProcessing: false);
+
+            Instances.Add(this);
         }
 
         /// <summary>
         /// The total number of events dropped by all <see cref="FileLog"/> instances in process due to event queue overflows.
         /// </summary>
         public static long TotalEventsLost => DefaultMuxer.EventsLost;
+
+        /// <summary>
+        /// The number of events dropped by this <see cref="FileLog"/> instance due to events queue overflow.
+        /// </summary>
+        public long EventsLost => eventsLost;
 
         /// <summary>
         /// Waits asynchronously until all currently buffered log events are actually written to their log files.
@@ -117,9 +132,22 @@ namespace Vostok.Logging.File
         public static void FlushAll() => FlushAllAsync().GetAwaiter().GetResult();
 
         /// <summary>
-        /// The number of events dropped by this <see cref="FileLog"/> instance due to events queue overflow.
+        /// Refreshes all caches from all FileLog instances asynchronously. Throws in case of error in any of them (propagates all errors that may occur during settings update).
         /// </summary>
-        public long EventsLost => eventsLost;
+        /// <exception cref="FileLogException"></exception>
+        public static Task RefreshAllSettingsAsync() => Task.WhenAll(
+            Instances
+               .Select(
+                    x => x.TryGetTarget(out var target)
+                        ? target.RefreshSettingsAsync()
+                        : Task.CompletedTask)
+        );
+
+        /// <summary>
+        /// Refreshes all caches from all FileLog instances. Throws in case of error in any of them (propagates all errors that may occur during settings update). 
+        /// </summary>
+        /// <exception cref="FileLogException"></exception>
+        public static void RefreshAllSettings() => RefreshAllSettingsAsync().GetAwaiter().GetResult();
 
         /// <inheritdoc />
         public void Log(LogEvent @event)
@@ -175,6 +203,23 @@ namespace Vostok.Logging.File
         /// <exception cref="FileLogException">Unable to flush events to the file.</exception>
         public void Flush() => FlushAsync().GetAwaiter().GetResult();
 
+        /// <summary>
+        /// Refreshes all caches asynchronously. Throws in case of error (propagates all errors that may occur during settings update).
+        /// </summary>
+        /// <exception cref="FileLogException"></exception>
+        public Task RefreshSettingsAsync()
+        {
+            settingsProvider.ForceRefresh();
+
+            return muxer.RefreshSettingsAsync();
+        }
+
+        /// <summary>
+        /// Refreshes all caches. Throws in case of error (propagates all errors that may occur during settings update).
+        /// </summary>
+        /// <exception cref="FileLogException"></exception>
+        public void RefreshSettings() => RefreshSettingsAsync().GetAwaiter().GetResult();
+
         /// <inheritdoc />
         public void Dispose()
         {
@@ -194,6 +239,8 @@ namespace Vostok.Logging.File
                 muxerRegistration?.Dispose();
                 muxerRegistration = null;
             }
+
+            Instances.Remove(this);
         }
 
         private IMuxerRegistration ObtainMuxerRegistration(FilePath file, FileLogSettings settings)
