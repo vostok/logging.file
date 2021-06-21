@@ -11,5 +11,7 @@ namespace Vostok.Logging.File.Muxers
         bool TryAdd([NotNull] LogEventInfo info, bool fromOwner);
 
         Task FlushAsync();
+
+        Task RefreshSettingsAsync();
     }
 }

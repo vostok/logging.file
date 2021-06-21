@@ -124,6 +124,16 @@ namespace Vostok.Logging.File.Muxers
                 throw new FileLogException($"Failed to flush log events to file '{settings.FilePath}'.");
         }
 
+        public Task RefreshSettingsAsync()
+        {
+            writerProvider.DropCooldown();
+
+            // NOTE: We have to flush all events so that event writer refreshes its settings
+            // because if event writer is currently processing some events with old settings, then new events that are
+            // put to the bounded queue will be processed with old settings as well.
+            return FlushAsync();
+        }
+
         private static void SignalFlushWaiters(IEnumerable<Waiter> waiters, bool result)
         {
             foreach (var waiter in waiters)

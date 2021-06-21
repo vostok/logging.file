@@ -70,6 +70,8 @@ namespace Vostok.Logging.File.EventsWriting
             return cache.writer;
         }
 
+        public void DropCooldown() => cooldownController.DropCooldown();
+
         public void Dispose()
         {
             cache.writer?.Dispose();

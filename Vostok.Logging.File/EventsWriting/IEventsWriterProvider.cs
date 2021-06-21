@@ -14,5 +14,7 @@ namespace Vostok.Logging.File.EventsWriting
         /// </summary>
         [ItemCanBeNull]
         Task<IEventsWriter> ObtainWriterAsync(CancellationToken cancellation);
+
+        void DropCooldown();
     }
 }

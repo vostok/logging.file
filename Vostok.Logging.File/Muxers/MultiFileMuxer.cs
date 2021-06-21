@@ -32,6 +32,8 @@ namespace Vostok.Logging.File.Muxers
         public Task FlushAsync(FilePath file) =>
             states.TryGetValue(file, out var state) ? state.Muxer.FlushAsync() : Task.CompletedTask;
 
+        public Task RefreshSettingsAsync() => Task.WhenAll(states.Select(pair => pair.Value.Muxer.RefreshSettingsAsync()));
+
         public Task FlushAsync() =>
             Task.WhenAll(states.Select(pair => pair.Value.Muxer.FlushAsync()));
 
