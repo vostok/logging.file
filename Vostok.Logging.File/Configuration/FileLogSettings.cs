@@ -116,6 +116,7 @@ namespace Vostok.Logging.File.Configuration
 
         /// <summary>
         /// <para>Cooldown for enforcing file-related settings (name, rolling strategy, buffer size, etc.). This means that when conditions are met to switch to the next part of log file or reopen the file with another name/options due to change in settings, the switching may be delayed for up to <see cref="FileSettingsUpdateCooldown"/>.</para>
+        /// <para>If <see cref="EnableFileLogSettingsCache"/> is true file-related settings update may be delayed for a longer time.</para>
         /// <para>One have an option to refresh settings immediately through <see cref="FileLog.RefreshAllSettingsAsync"/> static method.</para>
         /// <para>Dynamic reconfiguration is supported for this parameter: <see cref="FileLog"/> will react to its changes.</para>
         /// </summary>
