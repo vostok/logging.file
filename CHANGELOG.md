@@ -1,3 +1,7 @@
+## 1.0.14 (26.06.2021):
+
+- Fixed memory leak
+
 ## 1.0.13 (21.06.2021):
 
 - Added `FileLogSettings` cache to protect from frequent `logSettingsProvider` calls.
