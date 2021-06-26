@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
@@ -14,6 +15,16 @@ namespace Vostok.Logging.File.Tests.Functional
     [TestFixture]
     internal class FileLog_CacheAndFlush_Tests : FileLogFunctionalTestsBase
     {
+        [OneTimeSetUp]
+        public async Task Cleanup()
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                GC.Collect();
+                await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            }
+        }
+
         [TestCase(false)]
         [TestCase(true)]
         public void Should_write_to_new_file_after_settings_update(bool cache)
@@ -31,7 +42,7 @@ namespace Vostok.Logging.File.Tests.Functional
                 WriteMessagesWithTimeout(log, firstLogMessages, 0);
 
                 currentSettings = new FileLogSettings {FilePath = secondLog};
-                log.RefreshSettings();
+                FileLog.RefreshAllSettings();
 
                 WriteMessagesWithTimeout(log, secondLogMessages, 0);
             }
@@ -58,7 +69,7 @@ namespace Vostok.Logging.File.Tests.Functional
                 log.Flush();
 
                 currentSettings = new FileLogSettings {FilePath = logFile, FileOpenMode = FileOpenMode.Rewrite, EnableFileLogSettingsCache = cache};
-                log.RefreshSettings();
+                FileLog.RefreshAllSettings();
 
                 WriteMessagesWithTimeout(log, secondMessages, 0);
             }
@@ -85,7 +96,7 @@ namespace Vostok.Logging.File.Tests.Functional
                 log.Flush();
 
                 currentSettings = new FileLogSettings {FilePath = logFile, OutputTemplate = OutputTemplate.Empty, EnableFileLogSettingsCache = cache};
-                log.RefreshSettings();
+                FileLog.RefreshAllSettings();
 
                 WriteMessagesWithTimeout(log, secondMessages, 0);
             }
@@ -102,6 +113,7 @@ namespace Vostok.Logging.File.Tests.Functional
 
             var messages = GenerateMessages(0, 3);
             var log = new FileLog(new FileLogSettings {FilePath = logFile, FileShare = FileShare.None, EnableFileLogSettingsCache = cache});
+
             // Let's open file exclusively to ensure that no one else uses it.
             using (log)
             {
@@ -112,7 +124,7 @@ namespace Vostok.Logging.File.Tests.Functional
 
             assertion.Should().NotThrow();
 
-            log.RefreshSettings();
+            FileLog.RefreshAllSettings();
 
             assertion.ShouldPassIn(5.Seconds());
         }

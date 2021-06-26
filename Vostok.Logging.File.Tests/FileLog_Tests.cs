@@ -39,6 +39,16 @@ namespace Vostok.Logging.File.Tests
             log = new FileLog(muxer, () => settings);
         }
 
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            log.Dispose();
+            registration.Dispose();
+            log = null;
+            registration = null;
+            muxer = null;
+        }
+
         [Test]
         public void Should_validate_settings()
         {
