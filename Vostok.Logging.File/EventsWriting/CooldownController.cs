@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Signal = Vostok.Commons.Threading.AsyncManualResetEvent;
+// ReSharper disable MethodSupportsCancellation
 
 namespace Vostok.Logging.File.EventsWriting
 {
@@ -17,7 +18,7 @@ namespace Vostok.Logging.File.EventsWriting
         public void IncurCooldown(TimeSpan duration, CancellationToken cancellation)
         {
             endImmediately.Reset();
-            cooldownTask = Task.WhenAny(Task.Delay(duration, cancellation), endImmediately.WaitAsync(cancellation)).Unwrap();
+            cooldownTask = Task.WhenAny(Task.Delay(duration, cancellation), endImmediately.WaitAsync()).Unwrap();
         }
 
         public void DropCooldown() => endImmediately.Set();
