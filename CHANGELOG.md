@@ -1,3 +1,7 @@
+## 1.0.15 (22.09.2021):
+
+Enabled `UseSeparateFileOnConflict` by default.
+
 ## 1.0.14 (26.06.2021):
 
 - Fixed memory leak

@@ -64,7 +64,7 @@ namespace Vostok.Logging.File.Configuration
         /// <para>Specifies whether or not to try append number suffix if current log file is locked.</para>
         /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
         /// </summary>
-        public bool UseSeparateFileOnConflict { get; set; } = false;
+        public bool UseSeparateFileOnConflict { get; set; } = true;
 
         /// <summary>
         /// <para>An optional rolling strategy (disabled by default).</para>
