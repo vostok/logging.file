@@ -90,7 +90,7 @@ namespace Vostok.Logging.File.Tests.Rolling.Helpers
         public void TryOpenFile_should_return_null_if_file_cannot_be_opened()
         {
             using (var folder = new TemporaryFolder())
-                fileSystem.TryOpenFile(folder.Name, new FileLogSettings()).Should().BeNull();
+                fileSystem.TryOpenFile(folder.Name, new FileLogSettings {UseSeparateFileOnConflict = false}).Should().BeNull();
         }
 
         [Test]
