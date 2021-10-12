@@ -146,7 +146,7 @@ namespace Vostok.Logging.File.Tests
         public void Should_flush_if_synchronous()
         {
             registration.IsValid("xxx").Returns(false, false, true);
-            settings = new FileLogSettings {FilePath = "xxx", UseSynchronousWriting = true};
+            settings = new FileLogSettings {FilePath = "xxx", WriteSynchronous = true};
             log.Info("Test.");
             
             muxer.Received().FlushAsync("xxx");
@@ -167,7 +167,7 @@ namespace Vostok.Logging.File.Tests
         public void Should_not_lost_events_if_synchronous()
         {
             muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<WeakReference>()).Returns(false);
-            settings = new FileLogSettings {UseSynchronousWriting = true};
+            settings = new FileLogSettings {WriteSynchronous = true};
             
             var task = Task.Run(() => log.Info("Test."));
             
