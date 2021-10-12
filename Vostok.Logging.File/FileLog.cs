@@ -170,23 +170,12 @@ namespace Vostok.Logging.File
 
                 if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandleRef))
                 {
-                    if (settings.WriteSynchronous)
-                    {
-                        Thread.Sleep(100);
-                        continue;
-                    }
-
                     eventsLost.Increment();
                     break;
                 }
 
                 if (registration.IsValid(file))
-                {
-                    if (settings.WriteSynchronous)
-                        muxer.FlushAsync(file).GetAwaiter().GetResult();
-
                     break;
-                }
             }
         }
 
