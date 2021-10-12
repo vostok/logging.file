@@ -183,7 +183,7 @@ namespace Vostok.Logging.File
                 if (registration.IsValid(file))
                 {
                     if (settings.UseSynchronousWriting)
-                        muxer.FlushAsync(file);
+                        muxer.FlushAsync(file).GetAwaiter().GetResult();
 
                     break;
                 }
