@@ -108,6 +108,11 @@ namespace Vostok.Logging.File.Configuration
         public int EventsBufferCapacity { get; set; } = 10 * 1000;
 
         /// <summary>
+        /// <para>Specifies whether or not to write synchronous.</para>
+        /// </summary>
+        public bool UseSynchronousWriting { get; set; }
+        
+        /// <summary>
         /// <para>Enables internal <see cref="FileLogSettings"/> cache in order to reduce overhead of frequent provider calls.</para>
         /// <para>One have an option to refresh settings immediately through <see cref="FileLog.RefreshAllSettings"/> static method.</para>
         /// <para>Dynamic reconfiguration is not supported for this parameter: a snapshot will be taken on first usage attempt.</para>

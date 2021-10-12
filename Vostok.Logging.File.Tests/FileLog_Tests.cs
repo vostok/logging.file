@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NSubstitute;
 using NUnit.Framework;
+using Vostok.Commons.Testing;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Values;
 using Vostok.Logging.File.Configuration;
@@ -138,6 +141,16 @@ namespace Vostok.Logging.File.Tests
 
             muxer.Received().FlushAsync("xxx");
         }
+        
+        [Test]
+        public void Should_flush_if_synchronous()
+        {
+            registration.IsValid("xxx").Returns(false, false, true);
+            settings = new FileLogSettings {FilePath = "xxx", UseSynchronousWriting = true};
+            log.Info("Test.");
+            
+            muxer.Received().FlushAsync("xxx");
+        }
 
         [Test]
         public void Should_increment_events_lost_on_losing_event()
@@ -148,6 +161,23 @@ namespace Vostok.Logging.File.Tests
             log.Info("Test.");
 
             log.EventsLost.Should().Be(2);
+        }
+        
+        [Test]
+        public void Should_not_lost_events_if_synchronous()
+        {
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<WeakReference>()).Returns(false);
+            settings = new FileLogSettings {UseSynchronousWriting = true};
+            
+            var task = Task.Run(() => log.Info("Test."));
+            
+            task.ShouldNotCompleteIn(1.Seconds());
+            
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<WeakReference>()).Returns(true);
+
+            task.ShouldCompleteIn(1.Seconds());
+            
+            log.EventsLost.Should().Be(0);
         }
 
         [Test]

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Commons.Collections;
@@ -137,7 +138,7 @@ namespace Vostok.Logging.File
         /// <exception cref="FileLogException"></exception>
         public static Task RefreshAllSettingsAsync() => Task.WhenAll(
             Instances
-               .Select(
+                .Select(
                     x => x.TryGetTarget(out var target)
                         ? target.RefreshSettingsAsync()
                         : Task.CompletedTask)
@@ -169,12 +170,23 @@ namespace Vostok.Logging.File
 
                 if (!muxer.TryAdd(file, new LogEventInfo(@event, settings), muxerHandleRef))
                 {
+                    if (settings.UseSynchronousWriting)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
                     eventsLost.Increment();
                     break;
                 }
 
                 if (registration.IsValid(file))
+                {
+                    if (settings.UseSynchronousWriting)
+                        muxer.FlushAsync(file);
+
                     break;
+                }
             }
         }
 
