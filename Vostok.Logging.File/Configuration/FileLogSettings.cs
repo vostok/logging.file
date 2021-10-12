@@ -109,6 +109,7 @@ namespace Vostok.Logging.File.Configuration
 
         /// <summary>
         /// <para>Specifies whether or not to write synchronous.</para>
+        /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
         /// </summary>
         public bool WriteSynchronous { get; set; }
         
