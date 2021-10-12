@@ -219,5 +219,18 @@ namespace Vostok.Logging.File.Tests
             capturedEvents.Should().Contain(e => e.MessageTemplate.Contains("Before dispose"));
             capturedEvents.Should().NotContain(e => e.MessageTemplate.Contains("After dispose"));
         }
+        
+        [Test]
+        public void Should_not_log_after_dispose_if_synchronous()
+        {
+            settings = new FileLogSettings {WriteSynchronous = true};
+            
+            log.Info("Before dispose");
+            log.Dispose();
+            log.Info("After dispose");
+
+            capturedEvents.Should().Contain(e => e.MessageTemplate.Contains("Before dispose"));
+            capturedEvents.Should().NotContain(e => e.MessageTemplate.Contains("After dispose"));
+        }
     }
 }
