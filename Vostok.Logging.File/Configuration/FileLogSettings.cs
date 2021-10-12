@@ -110,7 +110,7 @@ namespace Vostok.Logging.File.Configuration
         /// <summary>
         /// <para>Specifies whether or not to write synchronous.</para>
         /// </summary>
-        public bool UseSynchronousWriting { get; set; }
+        public bool WriteSynchronous { get; set; }
         
         /// <summary>
         /// <para>Enables internal <see cref="FileLogSettings"/> cache in order to reduce overhead of frequent provider calls.</para>
