@@ -109,6 +109,7 @@ namespace Vostok.Logging.File.Configuration
 
         /// <summary>
         /// <para>Specifies whether or not to write synchronous.</para>
+        /// <para>If enabled <see cref="TextWriter.Flush"/> will be called after each <see cref="ILog.Log"/>.</para>
         /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
         /// </summary>
         public bool WriteSynchronous { get; set; }
