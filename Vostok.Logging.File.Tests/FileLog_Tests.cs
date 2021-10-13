@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using NSubstitute;
 using NUnit.Framework;
-using Vostok.Commons.Testing;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Values;
 using Vostok.Logging.File.Configuration;
@@ -55,7 +52,7 @@ namespace Vostok.Logging.File.Tests
         [Test]
         public void Should_validate_settings()
         {
-            settings = new FileLogSettings()
+            settings = new FileLogSettings
             {
                 OutputTemplate = null
             };
@@ -141,7 +138,7 @@ namespace Vostok.Logging.File.Tests
 
             muxer.Received().FlushAsync("xxx");
         }
-        
+
         [Test]
         public void Should_increment_events_lost_on_losing_event()
         {
@@ -152,7 +149,7 @@ namespace Vostok.Logging.File.Tests
 
             log.EventsLost.Should().Be(2);
         }
-        
+
         [Test]
         public void Should_log_messages()
         {
@@ -179,25 +176,12 @@ namespace Vostok.Logging.File.Tests
                 .Info("Test.");
 
             capturedEvents.Should()
-                .ContainSingle(e => e.Properties[WellKnownProperties.SourceContext].Equals(new SourceContextValue(new [] {"ctx", "ctx2", "ctx3"})));
+                .ContainSingle(e => e.Properties[WellKnownProperties.SourceContext].Equals(new SourceContextValue(new[] {"ctx", "ctx2", "ctx3"})));
         }
 
         [Test]
         public void Should_not_log_after_dispose()
         {
-            log.Info("Before dispose");
-            log.Dispose();
-            log.Info("After dispose");
-
-            capturedEvents.Should().Contain(e => e.MessageTemplate.Contains("Before dispose"));
-            capturedEvents.Should().NotContain(e => e.MessageTemplate.Contains("After dispose"));
-        }
-        
-        [Test]
-        public void Should_not_log_after_dispose_if_synchronous()
-        {
-            settings = new FileLogSettings {WriteSynchronous = true};
-            
             log.Info("Before dispose");
             log.Dispose();
             log.Info("After dispose");
