@@ -70,6 +70,9 @@ namespace Vostok.Logging.File.Muxers
 
         public void Dispose()
         {
+            if (writerProvider == null)
+                return;
+            
             workerCancellation.Cancel();
 
             lock (sync)
