@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NSubstitute;
 using NUnit.Framework;
+using Vostok.Commons.Testing;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Values;
 using Vostok.Logging.File.Configuration;
@@ -159,6 +162,24 @@ namespace Vostok.Logging.File.Tests
         }
 
         [Test]
+        public void Should_log_messages_without_lost_if_AsynchronousUntilEventsBufferIsFull()
+        {
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<WeakReference>()).Returns(false);
+            settings = new FileLogSettings {WriteMode = WriteMode.AsynchronousUntilEventsBufferIsFull};
+            
+            var task = Task.Run(() => log.Info("Test"));
+            
+            task.ShouldNotCompleteIn(1.Seconds());
+            
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<WeakReference>()).Returns(true);
+
+            task.ShouldCompleteIn(1.Seconds());
+            
+            log.EventsLost.Should().Be(0);
+            capturedEvents.Should().Contain(e => e.MessageTemplate.Contains("Test"));
+        }
+        
+        [Test]
         public void ForContext_should_add_SourceContext_property()
         {
             log.ForContext("ctx").Info("Test.");
@@ -188,6 +209,21 @@ namespace Vostok.Logging.File.Tests
 
             capturedEvents.Should().Contain(e => e.MessageTemplate.Contains("Before dispose"));
             capturedEvents.Should().NotContain(e => e.MessageTemplate.Contains("After dispose"));
+        }
+        
+        [Test]
+        public void Should_not_log_after_dispose_if_AsynchronousUntilEventsBufferIsFull()
+        {
+            muxer.TryAdd(Arg.Any<FilePath>(), Arg.Any<LogEventInfo>(), Arg.Any<WeakReference>()).Returns(false);
+            settings = new FileLogSettings {WriteMode = WriteMode.AsynchronousUntilEventsBufferIsFull};
+            
+            var task = Task.Run(() => log.Info("Test"));
+            
+            task.ShouldNotCompleteIn(1.Seconds());
+            
+            log.Dispose();
+
+            task.ShouldCompleteIn(1.Seconds());
         }
     }
 }
