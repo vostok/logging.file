@@ -6,7 +6,7 @@ namespace Vostok.Logging.File.Muxers
     internal class SingleFileMuxerFactory : ISingleFileMuxerFactory
     {
         public ISingleFileMuxer Create(FileLogSettings settings) =>
-            settings.WriteMode == WriteMode.Synchronous
+            settings.WriteSynchronous
                 ? (ISingleFileMuxer)new SynchronousSingleFileMuxer(new EventsWriterProviderFactory(), settings)
                 : new SingleFileMuxer(new EventsWriterProviderFactory(), new SingleFileWorker(), settings);
     }

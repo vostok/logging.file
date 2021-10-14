@@ -191,23 +191,6 @@ namespace Vostok.Logging.File.Tests.Functional
             assertion.ShouldPassIn(20.Seconds());
         }
         
-        [Test]
-        public void Should_drop_events_on_error()
-        {
-            var logName = Path.Combine(Folder.Name, Guid.NewGuid().ToString());
-            using var fileLock = new FileStream(logName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-            
-            var log = new FileLog(new FileLogSettings { FilePath = logName, UseSeparateFileOnConflict = false });
-                
-            log.Info("Bla");
-            log.Info("Bla");
-            log.Info("Bla");
-
-            Action assertion = () => log.EventsLost.Should().Be(3);
-
-            assertion.ShouldPassIn(200.Seconds());
-        }
-
         private LogEvent LogEvent(LogLevel level, string message)
             => new LogEvent(level, DateTimeOffset.Now, message);
     }
