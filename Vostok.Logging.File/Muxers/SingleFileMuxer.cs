@@ -92,27 +92,19 @@ namespace Vostok.Logging.File.Muxers
 
             InitializeIfNeeded();
 
-            while (true)
+            if (settings.RetryIfQueueIsFull)
             {
-                var addResult = eventsQueue?.Value.TryAdd(info);
-
-                switch (addResult)
-                {
-                    case true:
-                        return true;
-                    case false:
-                        if (!settings.RetryIfQueueIsFull)
-                        {
-                            Thread.Sleep(100);
-                            continue;
-                        }
-                        eventsLostCurrently.Increment();
-                        return false;
-
-                    case null:
-                        return false;
-                }
+                while (eventsQueue?.Value.TryAdd(info) == false)
+                    Thread.Sleep(100);
+                return true;
             }
+
+            if (eventsQueue.Value.TryAdd(info))
+                return true;
+
+            eventsLostCurrently.Increment();
+            
+            return false;
         }
 
         /// <summary>
