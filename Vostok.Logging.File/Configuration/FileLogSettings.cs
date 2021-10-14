@@ -104,7 +104,7 @@ namespace Vostok.Logging.File.Configuration
         /// <para>Specifies whether or not to retry if queue is full.</para>
         /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
         /// </summary>
-        public bool RetryIfQueueIsFull { get; set; } = true;
+        public bool RetryIfQueueIsFull { get; set; }
 
         /// <summary>
         /// <para>Specifies how many log events are processed in one iteration for each file.</para>
