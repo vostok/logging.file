@@ -101,7 +101,7 @@ namespace Vostok.Logging.File.Muxers
                     case true:
                         return true;
                     case false:
-                        if (!settings.AllowQueueOverflow)
+                        if (!settings.RetryIfQueueIsFull)
                         {
                             Thread.Sleep(100);
                             continue;

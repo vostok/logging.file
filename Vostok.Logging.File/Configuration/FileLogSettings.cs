@@ -101,9 +101,10 @@ namespace Vostok.Logging.File.Configuration
         public int EventsQueueCapacity { get; set; } = 50 * 1000;
 
         /// <summary>
-        /// <para>If disabled and queue is full, <see cref="ILog.Log"/> will wait until event added.</para>
+        /// <para>Specifies whether or not to retry if queue is full.</para>
+        /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
         /// </summary>
-        public bool AllowQueueOverflow { get; set; } = true;
+        public bool RetryIfQueueIsFull { get; set; } = true;
 
         /// <summary>
         /// <para>Specifies how many log events are processed in one iteration for each file.</para>
