@@ -43,6 +43,14 @@ namespace Vostok.Logging.File.Tests.Muxers
         }
         
         [Test]
+        public void TryAdd_should_return_true_if_event_was_not_added_successfully()
+        {
+            eventsWriter.When(w => w.WriteEvents(Arg.Any<LogEventInfo[]>(), Arg.Any<int>())).Throw<Exception>();
+
+            muxer.TryAdd(CreateEventInfo(), true).Should().BeFalse();
+        }
+        
+        [Test]
         public void TryAdd_should_return_false_if_disposed()
         {
             muxer.TryAdd(CreateEventInfo(), true).Should().BeTrue();
@@ -50,44 +58,6 @@ namespace Vostok.Logging.File.Tests.Muxers
             muxer.Dispose();
             
             muxer.TryAdd(CreateEventInfo(), true).Should().BeFalse();
-        }
-        
-        [Test]
-        public void TryAdd_should_wait_until_success()
-        {
-            var @throw = true;
-            var received = 0;
-            eventsWriter.When(w => w.WriteEvents(Arg.Any<LogEventInfo[]>(), Arg.Any<int>())).Do(_ =>
-            {
-                // ReSharper disable once AccessToModifiedClosure
-                if (@throw)
-                    throw new Exception();
-                received++;
-            });
-            
-            var task = Task.Run(() => muxer.TryAdd(CreateEventInfo(), true));
-            
-            task.ShouldNotCompleteIn(1.Seconds());
-
-            @throw = false;
-
-            task.ShouldCompleteIn(1.Seconds()).Should().BeTrue();
-
-            received.Should().Be(1);
-        }
-        
-        [Test]
-        public void TryAdd_should_wait_until_dispose()
-        {
-            eventsWriter.When(w => w.WriteEvents(Arg.Any<LogEventInfo[]>(), Arg.Any<int>())).Throw<Exception>();
-            
-            var task = Task.Run(() => muxer.TryAdd(CreateEventInfo(), true));
-            
-            task.ShouldNotCompleteIn(1.Seconds());
-
-            muxer.Dispose();
-            
-            task.ShouldCompleteIn(1.Seconds()).Should().BeFalse();
         }
 
         private static LogEventInfo CreateEventInfo(FileLogSettings settings = null)

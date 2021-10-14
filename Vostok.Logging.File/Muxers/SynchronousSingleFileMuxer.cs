@@ -34,35 +34,31 @@ namespace Vostok.Logging.File.Muxers
             if (fromOwner)
                 settings = info.Settings;
 
-            while (writerProvider != null)
+            try
             {
-                try
-                {
-                    lock (sync)
-                    {
-                        if (writerProvider == null)
-                            return false;
-
-                        buffer[0] = info;
-                        writerProvider
-                            .ObtainWriterAsync(workerCancellation.Token)
-                            .GetAwaiter()
-                            .GetResult()
-                            .WriteEvents(buffer, 1);
-                    }
-
-                    return true;
-                }
-                catch (OperationCanceledException)
-                {
+                if (writerProvider == null)
                     return false;
-                }
-                catch (Exception error)
+                
+                lock (sync)
                 {
-                    SafeConsole.ReportError($"Failure in writing log event to file '{settings.FilePath}':", error);
+                    var writer = writerProvider?.ObtainWriterAsync(workerCancellation.Token).GetAwaiter().GetResult();
 
-                    Thread.Sleep(100);
+                    if (writer == null)
+                        return false;
+                    
+                    buffer[0] = info;
+                    
+                    writer.WriteEvents(buffer, 1);
                 }
+
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception error)
+            {
+                SafeConsole.ReportError($"Failure in writing log event to file '{settings.FilePath}':", error);
             }
 
             return false;
