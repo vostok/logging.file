@@ -92,7 +92,7 @@ namespace Vostok.Logging.File.Muxers
 
             InitializeIfNeeded();
 
-            if (settings.RetryIfQueueIsFull)
+            if (settings.WaitIfQueueIsFull)
             {
                 while (eventsQueue?.Value.TryAdd(info) == false)
                     Thread.Sleep(100);

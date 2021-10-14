@@ -74,7 +74,7 @@ namespace Vostok.Logging.File.Tests.Muxers
             singleFileWorker = new SingleFileWorker();
             muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings
             {
-                RetryIfQueueIsFull = true,
+                WaitIfQueueIsFull = true,
                 EventsQueueCapacity = 1
             });
 
