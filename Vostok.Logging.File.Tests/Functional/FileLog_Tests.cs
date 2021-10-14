@@ -190,7 +190,7 @@ namespace Vostok.Logging.File.Tests.Functional
 
             assertion.ShouldPassIn(20.Seconds());
         }
-        
+
         private LogEvent LogEvent(LogLevel level, string message)
             => new LogEvent(level, DateTimeOffset.Now, message);
     }
