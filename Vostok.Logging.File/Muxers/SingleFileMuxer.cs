@@ -38,7 +38,6 @@ namespace Vostok.Logging.File.Muxers
         private readonly IEventsWriterProvider writerProvider;
         private readonly ISingleFileWorker worker;
 
-        private readonly Lazy<ConcurrentBoundedQueue<LogEventInfo>> eventsQueue;
         private readonly Lazy<LogEventInfo[]> eventsBuffer;
 
         private readonly CancellationTokenSource workerCancellation;
@@ -52,6 +51,7 @@ namespace Vostok.Logging.File.Muxers
         private readonly AtomicLong eventsLostSinceLastIteration;
         private volatile FileLogSettings settings;
         private volatile Task workerTask;
+        private volatile Lazy<ConcurrentBoundedQueue<LogEventInfo>> eventsQueue;
 
         public SingleFileMuxer(
             [NotNull] IEventsWriterProviderFactory writerProviderFactory,
@@ -92,12 +92,27 @@ namespace Vostok.Logging.File.Muxers
 
             InitializeIfNeeded();
 
-            if (eventsQueue.Value.TryAdd(info))
-                return true;
+            while (true)
+            {
+                var addResult = eventsQueue?.Value.TryAdd(info);
 
-            eventsLostCurrently.Increment();
+                switch (addResult)
+                {
+                    case true:
+                        return true;
+                    case false:
+                        if (!settings.AllowQueueOverflow)
+                        {
+                            Thread.Sleep(100);
+                            continue;
+                        }
+                        eventsLostCurrently.Increment();
+                        return false;
 
-            return false;
+                    case null:
+                        return false;
+                }
+            }
         }
 
         /// <summary>
@@ -110,6 +125,8 @@ namespace Vostok.Logging.File.Muxers
             workerCancellation.Cancel();
 
             WaitForWorkerCompletion();
+
+            eventsQueue = null;
 
             SignalFlushWaiters(DrainFlushWaiters(), false);
 
