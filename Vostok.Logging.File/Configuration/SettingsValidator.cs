@@ -37,7 +37,7 @@ namespace Vostok.Logging.File.Configuration
             if (settings.EventsBufferCapacity <= 0)
                 throw new ArgumentOutOfRangeException(nameof(settings.EventsBufferCapacity));
             
-            if (settings.WaitIfQueueIsFull && settings.WriteSynchronous)
+            if (settings.WaitIfQueueIsFull && settings.WriteSynchronously)
                 throw new ArgumentOutOfRangeException(nameof(settings.WaitIfQueueIsFull));
 
             if (settings.FileSettingsUpdateCooldown <= TimeSpan.Zero)

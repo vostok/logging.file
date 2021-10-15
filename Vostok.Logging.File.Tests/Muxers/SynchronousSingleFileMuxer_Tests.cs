@@ -43,7 +43,7 @@ namespace Vostok.Logging.File.Tests.Muxers
         }
         
         [Test]
-        public void TryAdd_should_return_true_if_event_was_not_added_successfully()
+        public void TryAdd_should_return_false_if_event_was_not_added_successfully()
         {
             eventsWriter.When(w => w.WriteEvents(Arg.Any<LogEventInfo[]>(), Arg.Any<int>())).Throw<Exception>();
 
