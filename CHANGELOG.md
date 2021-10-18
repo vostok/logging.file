@@ -1,3 +1,7 @@
+## 1.0.16 (18.10.2021):
+
+Added `WriteSynchronously` and `WaitIfQueueIsFull` settings to avoid log-events losing.
+
 ## 1.0.15 (22.09.2021):
 
 Enabled `UseSeparateFileOnConflict` by default.
