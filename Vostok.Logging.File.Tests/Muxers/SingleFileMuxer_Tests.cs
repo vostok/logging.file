@@ -69,6 +69,27 @@ namespace Vostok.Logging.File.Tests.Muxers
         }
 
         [Test]
+        public void TryAdd_should_wait_for_buffer_space_if_specified()
+        {
+            singleFileWorker = new SingleFileWorker();
+            muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings
+            {
+                WaitIfQueueIsFull = true,
+                EventsQueueCapacity = 1
+            });
+
+            for (var i = 0; i < 10; i++)
+                muxer.TryAdd(CreateEventInfo(), false).Should().BeTrue();
+
+            muxer.Dispose();
+            
+            eventsWriter.Received(10)
+                .WriteEvents(
+                    Arg.Any<LogEventInfo[]>(),
+                    Arg.Is(1));
+        }
+
+        [Test]
         public void TryAdd_should_return_false_if_event_was_not_added([Values] bool fromOwner)
         {
             muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings {EventsQueueCapacity = 0});

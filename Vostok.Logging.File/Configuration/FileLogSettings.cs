@@ -101,12 +101,25 @@ namespace Vostok.Logging.File.Configuration
         public int EventsQueueCapacity { get; set; } = 50 * 1000;
 
         /// <summary>
+        /// <para>Specifies whether or not to wait if queue is full.</para>
+        /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
+        /// </summary>
+        public bool WaitIfQueueIsFull { get; set; }
+
+        /// <summary>
         /// <para>Specifies how many log events are processed in one iteration for each file.</para>
         /// <para>This parameter has a per-file scope.</para>
         /// <para>Dynamic reconfiguration is not supported for this parameter: a snapshot will be taken on first usage attempt.</para>
         /// </summary>
         public int EventsBufferCapacity { get; set; } = 10 * 1000;
 
+        /// <summary>
+        /// <para>Specifies whether or not to write synchronously.</para>
+        /// <para>If enabled <see cref="TextWriter.Flush"/> will be called after each <see cref="ILog.Log"/> and events queue won't be used.</para>
+        /// <para>Dynamic reconfiguration is not supported for this parameter.</para>
+        /// </summary>
+        public bool WriteSynchronously { get; set; }
+        
         /// <summary>
         /// <para>Enables internal <see cref="FileLogSettings"/> cache in order to reduce overhead of frequent provider calls.</para>
         /// <para>One have an option to refresh settings immediately through <see cref="FileLog.RefreshAllSettings"/> static method.</para>

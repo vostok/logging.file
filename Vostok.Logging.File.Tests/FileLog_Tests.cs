@@ -52,7 +52,7 @@ namespace Vostok.Logging.File.Tests
         [Test]
         public void Should_validate_settings()
         {
-            settings = new FileLogSettings()
+            settings = new FileLogSettings
             {
                 OutputTemplate = null
             };
@@ -176,7 +176,7 @@ namespace Vostok.Logging.File.Tests
                 .Info("Test.");
 
             capturedEvents.Should()
-                .ContainSingle(e => e.Properties[WellKnownProperties.SourceContext].Equals(new SourceContextValue(new [] {"ctx", "ctx2", "ctx3"})));
+                .ContainSingle(e => e.Properties[WellKnownProperties.SourceContext].Equals(new SourceContextValue(new[] {"ctx", "ctx2", "ctx3"})));
         }
 
         [Test]
