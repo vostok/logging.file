@@ -7,11 +7,17 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net471</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFrameworks>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\vostok.commons.testing\Vostok.Commons.Testing\AssertionAssertions.cs" Link="Commons\AssertionAssertions.cs" />
+    <Compile Include="..\..\vostok.commons.testing\Vostok.Commons.Testing\ExceptionAssertions.cs">
+      <Link>Commons\ExceptionAssertions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\vostok.commons.testing\Vostok.Commons.Testing\TaskAssertions.cs">
+      <Link>Commons\TaskAssertions.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
