@@ -165,13 +165,10 @@ namespace Vostok.Logging.File.Tests.Functional
         public void Should_eventually_close_file_after_initiator_log_has_been_garbage_collected_without_disposing()
         {
             var logName = Path.Combine(Folder.Name, Guid.NewGuid().ToString());
+            
+            WriteLog(logName);
 
-            var log = new FileLog(new FileLogSettings { FilePath = logName });
-                
-            log.Info("I'll be leaked.");
-            log = null;
-
-            GC.Collect();
+            GC.Collect(2, GCCollectionMode.Forced, true, true);
 
             bool TryOpenHandle()
             {
@@ -190,8 +187,15 @@ namespace Vostok.Logging.File.Tests.Functional
 
             assertion.ShouldPassIn(20.Seconds());
         }
-        
-        private LogEvent LogEvent(LogLevel level, string message)
+
+        private static void WriteLog(string logName)
+        {
+            var log = new FileLog(new FileLogSettings {FilePath = logName});
+
+            log.Info("I'll be leaked.");
+        }
+
+        private static LogEvent LogEvent(LogLevel level, string message)
             => new LogEvent(level, DateTimeOffset.Now, message);
     }
 }
