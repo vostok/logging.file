@@ -1,3 +1,7 @@
+## 1.0.17 (06-12-2021):
+
+Added `net6.0` target.
+
 ## 1.0.16 (18.10.2021):
 
 Added `WriteSynchronously` and `WaitIfQueueIsFull` settings to avoid log-events losing.
