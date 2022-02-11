@@ -9,7 +9,7 @@ namespace Vostok.Logging.File.Configuration
     public class RollingStrategyOptions
     {
         /// <summary>
-        /// How many log files to keep. Older files are automatically deleted when switching to a new file. Specify a value &lt;= 0 to avoid deleting old files.
+        /// How many log files to keep. Older files are automatically deleted when switching to a new file. Specify a value = 0 to avoid deleting old files.
         /// </summary>
         public int MaxFiles { get; set; } = 5;
 

@@ -1,3 +1,7 @@
+## 1.0.19 (11-02-2022):
+
+Fixed MaxFiles = 0 documentation.
+
 ## 1.0.18 (06-12-2021):
 
 Added `net6.0` target.
