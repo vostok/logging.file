@@ -17,19 +17,19 @@ namespace Vostok.Logging.File.Configuration
 
         /// <summary>
         /// <para>Switch to next file once in a specified time period.</para>
-        /// <para>The number of log files is limited with <see cref="RollingStrategyOptions.MaxFiles"/>.</para>
+        /// <para>The number of log files is limited by <see cref="RollingStrategyOptions.MaxFiles"/>.</para>
         /// </summary>
         ByTime = 0b01,
 
         /// <summary>
         /// <para>Switch to next file when current file reaches specified size.</para>
-        /// <para>The size of log files is limited with <see cref="RollingStrategyOptions.MaxSize"/>.</para>
+        /// <para>The size of log files is limited by <see cref="RollingStrategyOptions.MaxSize"/>.</para>
         /// </summary>
         BySize = 0b10,
 
         /// <summary>
         /// <para>A combination of <see cref="ByTime"/> and <see cref="BySize"/> approaches. Will switch to next file as soon as any of the conditions is met.</para>
-        /// <para>The number of log files is limited with <see cref="RollingStrategyOptions.MaxFiles"/> and the size of log files is limited with <see cref="RollingStrategyOptions.MaxSize"/>.</para>
+        /// <para>The number of log files is limited by <see cref="RollingStrategyOptions.MaxFiles"/> and the size of log files is limited by <see cref="RollingStrategyOptions.MaxSize"/>.</para>
         /// </summary>
         Hybrid = 0b11
     }
