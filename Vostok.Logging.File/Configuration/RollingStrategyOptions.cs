@@ -14,7 +14,8 @@ namespace Vostok.Logging.File.Configuration
         public int MaxFiles { get; set; } = 5;
 
         /// <summary>
-        /// Type of rolling strategy.
+        /// <para>Type of rolling strategy.</para>
+        /// <para>If specified, only the most recent <see cref="MaxFiles"/> files are stored.</para>
         /// </summary>
         public RollingStrategyType Type { get; set; } = RollingStrategyType.None;
 
