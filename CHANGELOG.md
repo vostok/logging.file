@@ -1,3 +1,7 @@
+## 1.0.20 (14-02-2022):
+
+Described MaxFiles & MaxSize settings better.
+
 ## 1.0.19 (11-02-2022):
 
 Fixed MaxFiles = 0 documentation.
