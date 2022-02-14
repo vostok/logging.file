@@ -29,7 +29,7 @@ namespace Vostok.Logging.File.Configuration
 
         /// <summary>
         /// <para>A combination of <see cref="ByTime"/> and <see cref="BySize"/> approaches. Will switch to next file as soon as any of the conditions is met.</para>
-        /// <para>The number of log files is limited with <see cref="RollingStrategyOptions.MaxFiles"/> and the size of log files are limited with <see cref="RollingStrategyOptions.MaxSize"/>.</para>
+        /// <para>The number of log files is limited with <see cref="RollingStrategyOptions.MaxFiles"/> and the size of log files is limited with <see cref="RollingStrategyOptions.MaxSize"/>.</para>
         /// </summary>
         Hybrid = 0b11
     }
