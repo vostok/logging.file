@@ -160,7 +160,7 @@ namespace Vostok.Logging.File.Tests.Functional
                 log.Info(FormatMessage(0));
                 await FileLog.FlushAllAsync();
                 System.IO.File.Delete(logName);
-                await Task.Delay(10);
+                await Task.Delay(20);
                 log.Info(FormatMessage(1));
             }
 
