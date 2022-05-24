@@ -153,7 +153,7 @@ namespace Vostok.Logging.File.Tests.Functional
                        new FileLogSettings
                        {
                            FilePath = logName,
-                           FileShare = FileShare.Delete,
+                           FileShare = FileShare.Delete | FileShare.ReadWrite,
                            FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(1)
                        }))
             {

@@ -57,7 +57,7 @@ namespace Vostok.Logging.File.EventsWriting
                     if (currentFile != cache.file || 
                         ShouldReopenWriter(cache.settings, settings) || 
                         cache.writer == null || 
-                        (settings.FileShare == FileShare.Delete && System.IO.File.Exists(currentFile.NormalizedPath) == false))
+                        (settings.FileShare.HasFlag(FileShare.Delete) && System.IO.File.Exists(currentFile.NormalizedPath) == false))
                     {
                         cache.writer?.Dispose();
                         cache.writer = null;
