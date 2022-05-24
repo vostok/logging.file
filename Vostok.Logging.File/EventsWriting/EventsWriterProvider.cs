@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +54,10 @@ namespace Vostok.Logging.File.EventsWriting
                     var rollingStrategy = rollingStrategyProvider.ObtainStrategy();
 
                     var currentFile = rollingStrategy.GetCurrentFile(basePath);
-                    if (currentFile != cache.file || ShouldReopenWriter(cache.settings, settings) || cache.writer == null)
+                    if (currentFile != cache.file || 
+                        ShouldReopenWriter(cache.settings, settings) || 
+                        cache.writer == null || 
+                        (settings.FileShare == FileShare.Delete && System.IO.File.Exists(currentFile.NormalizedPath) == false))
                     {
                         cache.writer?.Dispose();
                         cache.writer = null;

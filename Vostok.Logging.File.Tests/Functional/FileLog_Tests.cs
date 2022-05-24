@@ -143,7 +143,31 @@ namespace Vostok.Logging.File.Tests.Functional
             logText.Should().NotContain(FormatMessage(0));
             logText.Should().Contain(FormatMessage(1));
         }
-        
+
+        [Test]
+        public async Task Should_reopen_file_if_it_was_deleted()
+        {
+            var logName = Folder.GetFileName("log");
+
+            using (var log = new FileLog(
+                       new FileLogSettings
+                       {
+                           FilePath = logName,
+                           FileShare = FileShare.Delete,
+                           FileSettingsUpdateCooldown = TimeSpan.FromMilliseconds(1)
+                       }))
+            {
+                log.Info(FormatMessage(0));
+                await FileLog.FlushAllAsync();
+                System.IO.File.Delete(logName);
+                await Task.Delay(10);
+                log.Info(FormatMessage(1));
+            }
+
+            System.IO.File.Exists(logName).Should().BeTrue();
+            ShouldContainMessage(logName, FormatMessage(1));
+        }
+
         [Test]
         public void Should_create_directories_leading_to_log_file_path_if_needed()
         {
