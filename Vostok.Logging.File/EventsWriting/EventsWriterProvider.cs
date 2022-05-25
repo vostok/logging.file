@@ -54,10 +54,7 @@ namespace Vostok.Logging.File.EventsWriting
                     var rollingStrategy = rollingStrategyProvider.ObtainStrategy();
 
                     var currentFile = rollingStrategy.GetCurrentFile(basePath);
-                    if (currentFile != cache.file || 
-                        ShouldReopenWriter(cache.settings, settings) || 
-                        cache.writer == null || 
-                        (settings.FileShare.HasFlag(FileShare.Delete) && System.IO.File.Exists(currentFile.NormalizedPath) == false))
+                    if (currentFile != cache.file || ShouldReopenWriter(cache.settings, settings, currentFile) || cache.writer == null)
                     {
                         cache.writer?.Dispose();
                         cache.writer = null;
@@ -82,12 +79,18 @@ namespace Vostok.Logging.File.EventsWriting
             cache.writer = null;
         }
 
-        private static bool ShouldReopenWriter(FileLogSettings oldSettings, FileLogSettings newSettings)
+        private static bool ShouldReopenWriter(FileLogSettings oldSettings, FileLogSettings newSettings, FilePath currentFile)
         {
             return oldSettings == null ||
                    oldSettings.FileOpenMode != newSettings.FileOpenMode ||
                    !Equals(oldSettings.Encoding, newSettings.Encoding) ||
-                   oldSettings.OutputBufferSize != newSettings.OutputBufferSize;
+                   oldSettings.OutputBufferSize != newSettings.OutputBufferSize||
+                   ShouldReopenDeletedFile(newSettings, currentFile);
+        }
+
+        private static bool ShouldReopenDeletedFile(FileLogSettings settings, FilePath currentFile)
+        {
+            return (settings.FileShare.HasFlag(FileShare.Delete) && System.IO.File.Exists(currentFile.NormalizedPath) == false);
         }
     }
 }
