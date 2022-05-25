@@ -84,7 +84,7 @@ namespace Vostok.Logging.File.EventsWriting
             return oldSettings == null ||
                    oldSettings.FileOpenMode != newSettings.FileOpenMode ||
                    !Equals(oldSettings.Encoding, newSettings.Encoding) ||
-                   oldSettings.OutputBufferSize != newSettings.OutputBufferSize||
+                   oldSettings.OutputBufferSize != newSettings.OutputBufferSize ||
                    ShouldReopenDeletedFile(newSettings, currentFile);
         }
 
