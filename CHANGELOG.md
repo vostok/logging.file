@@ -1,3 +1,7 @@
+## 1.0.21 (26-05-2022):
+
+Fixed bug with FileShare.Delete option and removal of file when using FileLog.
+
 ## 1.0.20 (14-02-2022):
 
 Described MaxFiles & MaxSize settings better.
