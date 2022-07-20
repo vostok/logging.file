@@ -32,8 +32,7 @@ namespace Vostok.Logging.File.Muxers
     /// </summary>
     internal class SingleFileMuxer : ISingleFileMuxer
     {
-        private static readonly TimeSpan NewEventsDelay = TimeSpan.FromMilliseconds(100);
-        private static readonly TimeSpan NewEventsTimeout = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan NewEventsTimeout = TimeSpan.FromMilliseconds(100);
         private static readonly List<Waiter> EmptyWaitersList = new List<Waiter>();
 
         private readonly IEventsWriterProvider writerProvider;
@@ -212,7 +211,7 @@ namespace Vostok.Logging.File.Muxers
                 }
 
                 await Task.WhenAny(
-                        eventsQueue.Value.TryWaitForNewItemsBatchAsync(NewEventsDelay, NewEventsTimeout),
+                        eventsQueue.Value.TryWaitForNewItemsBatchAsync(NewEventsTimeout),
                         flushSignal.WaitAsync(),
                         workerCancellationWaiter.Task)
                     .ConfigureAwait(false);
