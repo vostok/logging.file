@@ -1,3 +1,7 @@
+## 1.0.22 (25-07-2022):
+
+Used new `ConcurrentBoundedQueue.TryWaitForNewItemsBatchAsync` method with delay to avoid thread pool issues.
+
 ## 1.0.21 (26-05-2022):
 
 Fixed bug with FileShare.Delete option and removal of file when using FileLog.
