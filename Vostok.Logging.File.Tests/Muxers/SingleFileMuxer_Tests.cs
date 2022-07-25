@@ -54,8 +54,9 @@ namespace Vostok.Logging.File.Tests.Muxers
         [Test]
         public void EventsLost_should_be_incremented_after_losing_an_event()
         {
-            muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings {EventsQueueCapacity = 0});
+            muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings {EventsQueueCapacity = 1});
 
+            muxer.TryAdd(CreateEventInfo(), true);
             muxer.TryAdd(CreateEventInfo(), true);
             muxer.TryAdd(CreateEventInfo(), true);
 
@@ -92,8 +93,10 @@ namespace Vostok.Logging.File.Tests.Muxers
         [Test]
         public void TryAdd_should_return_false_if_event_was_not_added([Values] bool fromOwner)
         {
-            muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings {EventsQueueCapacity = 0});
+            muxer = new SingleFileMuxer(writerProviderFactory, singleFileWorker, new FileLogSettings {EventsQueueCapacity = 2});
 
+            muxer.TryAdd(CreateEventInfo(), fromOwner).Should().BeTrue();
+            muxer.TryAdd(CreateEventInfo(), fromOwner).Should().BeTrue();
             muxer.TryAdd(CreateEventInfo(), fromOwner).Should().BeFalse();
         }
 

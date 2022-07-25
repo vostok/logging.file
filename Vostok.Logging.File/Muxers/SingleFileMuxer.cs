@@ -32,7 +32,7 @@ namespace Vostok.Logging.File.Muxers
     /// </summary>
     internal class SingleFileMuxer : ISingleFileMuxer
     {
-        private static readonly TimeSpan NewEventsTimeout = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan NewEventsTimeout = TimeSpan.FromMilliseconds(100);
         private static readonly List<Waiter> EmptyWaitersList = new List<Waiter>();
 
         private readonly IEventsWriterProvider writerProvider;
@@ -64,7 +64,7 @@ namespace Vostok.Logging.File.Muxers
             writerProvider = writerProviderFactory.CreateProvider(settings.FilePath, () => this.settings);
 
             eventsQueue = new Lazy<ConcurrentBoundedQueue<LogEventInfo>>(
-                () => new ConcurrentBoundedQueue<LogEventInfo>(settings.EventsQueueCapacity),
+                () => new ConcurrentBoundedQueue<LogEventInfo>(settings.EventsQueueCapacity, Math.Max(1, settings.EventsQueueCapacity / 20)),
                 LazyThreadSafetyMode.ExecutionAndPublication);
 
             eventsBuffer = new Lazy<LogEventInfo[]>(
@@ -211,7 +211,7 @@ namespace Vostok.Logging.File.Muxers
                 }
 
                 await Task.WhenAny(
-                        eventsQueue.Value.TryWaitForNewItemsAsync(NewEventsTimeout),
+                        eventsQueue.Value.TryWaitForNewItemsBatchAsync(NewEventsTimeout),
                         flushSignal.WaitAsync(),
                         workerCancellationWaiter.Task)
                     .ConfigureAwait(false);
