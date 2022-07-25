@@ -12,7 +12,7 @@ notests *default:
   deps:
     - vostok.logging.formatting
     - vostok.logging.abstractions
-    - vostok.commons.collections/src@drain-delay
+    - vostok.commons.collections/src
     - vostok.commons.threading/src
     - vostok.devtools
 
