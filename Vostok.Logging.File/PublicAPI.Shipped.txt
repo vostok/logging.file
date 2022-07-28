@@ -1,0 +1,79 @@
+static Vostok.Logging.File.FileLog.FlushAll() -> void
+static Vostok.Logging.File.FileLog.FlushAllAsync() -> System.Threading.Tasks.Task
+static Vostok.Logging.File.FileLog.RefreshAllSettings() -> void
+static Vostok.Logging.File.FileLog.RefreshAllSettingsAsync() -> System.Threading.Tasks.Task
+static Vostok.Logging.File.FileLog.TotalEventsLost.get -> long
+Vostok.Logging.File.Configuration.FileLogSettings
+Vostok.Logging.File.Configuration.FileLogSettings.EnabledLogLevels.get -> Vostok.Logging.Abstractions.LogLevel[]
+Vostok.Logging.File.Configuration.FileLogSettings.EnabledLogLevels.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.EnableFileLogSettingsCache.get -> bool
+Vostok.Logging.File.Configuration.FileLogSettings.EnableFileLogSettingsCache.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.Encoding.get -> System.Text.Encoding
+Vostok.Logging.File.Configuration.FileLogSettings.Encoding.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.EventsBufferCapacity.get -> int
+Vostok.Logging.File.Configuration.FileLogSettings.EventsBufferCapacity.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.EventsQueueCapacity.get -> int
+Vostok.Logging.File.Configuration.FileLogSettings.EventsQueueCapacity.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.FileLogSettings() -> void
+Vostok.Logging.File.Configuration.FileLogSettings.FileOpenMode.get -> Vostok.Logging.File.Configuration.FileOpenMode
+Vostok.Logging.File.Configuration.FileLogSettings.FileOpenMode.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.FilePath.get -> string
+Vostok.Logging.File.Configuration.FileLogSettings.FilePath.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.FileSettingsUpdateCooldown.get -> System.TimeSpan
+Vostok.Logging.File.Configuration.FileLogSettings.FileSettingsUpdateCooldown.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.FileShare.get -> System.IO.FileShare
+Vostok.Logging.File.Configuration.FileLogSettings.FileShare.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.FormatProvider.get -> System.IFormatProvider
+Vostok.Logging.File.Configuration.FileLogSettings.FormatProvider.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.OutputBufferSize.get -> int
+Vostok.Logging.File.Configuration.FileLogSettings.OutputBufferSize.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.OutputTemplate.get -> Vostok.Logging.Formatting.OutputTemplate
+Vostok.Logging.File.Configuration.FileLogSettings.OutputTemplate.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.RollingStrategy.get -> Vostok.Logging.File.Configuration.RollingStrategyOptions
+Vostok.Logging.File.Configuration.FileLogSettings.RollingStrategy.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.UseSeparateFileOnConflict.get -> bool
+Vostok.Logging.File.Configuration.FileLogSettings.UseSeparateFileOnConflict.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.WaitIfQueueIsFull.get -> bool
+Vostok.Logging.File.Configuration.FileLogSettings.WaitIfQueueIsFull.set -> void
+Vostok.Logging.File.Configuration.FileLogSettings.WriteSynchronously.get -> bool
+Vostok.Logging.File.Configuration.FileLogSettings.WriteSynchronously.set -> void
+Vostok.Logging.File.Configuration.FileOpenMode
+Vostok.Logging.File.Configuration.FileOpenMode.Append = 0 -> Vostok.Logging.File.Configuration.FileOpenMode
+Vostok.Logging.File.Configuration.FileOpenMode.Rewrite = 1 -> Vostok.Logging.File.Configuration.FileOpenMode
+Vostok.Logging.File.Configuration.RollingPeriod
+Vostok.Logging.File.Configuration.RollingPeriod.Day = 0 -> Vostok.Logging.File.Configuration.RollingPeriod
+Vostok.Logging.File.Configuration.RollingPeriod.Hour = 1 -> Vostok.Logging.File.Configuration.RollingPeriod
+Vostok.Logging.File.Configuration.RollingPeriod.Minute = 2 -> Vostok.Logging.File.Configuration.RollingPeriod
+Vostok.Logging.File.Configuration.RollingPeriod.Second = 3 -> Vostok.Logging.File.Configuration.RollingPeriod
+Vostok.Logging.File.Configuration.RollingStrategyOptions
+Vostok.Logging.File.Configuration.RollingStrategyOptions.MaxFiles.get -> int
+Vostok.Logging.File.Configuration.RollingStrategyOptions.MaxFiles.set -> void
+Vostok.Logging.File.Configuration.RollingStrategyOptions.MaxSize.get -> long
+Vostok.Logging.File.Configuration.RollingStrategyOptions.MaxSize.set -> void
+Vostok.Logging.File.Configuration.RollingStrategyOptions.Period.get -> Vostok.Logging.File.Configuration.RollingPeriod
+Vostok.Logging.File.Configuration.RollingStrategyOptions.Period.set -> void
+Vostok.Logging.File.Configuration.RollingStrategyOptions.RollingStrategyOptions() -> void
+Vostok.Logging.File.Configuration.RollingStrategyOptions.SuffixSeparator.get -> char
+Vostok.Logging.File.Configuration.RollingStrategyOptions.SuffixSeparator.set -> void
+Vostok.Logging.File.Configuration.RollingStrategyOptions.Type.get -> Vostok.Logging.File.Configuration.RollingStrategyType
+Vostok.Logging.File.Configuration.RollingStrategyOptions.Type.set -> void
+Vostok.Logging.File.Configuration.RollingStrategyType
+Vostok.Logging.File.Configuration.RollingStrategyType.BySize = 2 -> Vostok.Logging.File.Configuration.RollingStrategyType
+Vostok.Logging.File.Configuration.RollingStrategyType.ByTime = 1 -> Vostok.Logging.File.Configuration.RollingStrategyType
+Vostok.Logging.File.Configuration.RollingStrategyType.Hybrid = Vostok.Logging.File.Configuration.RollingStrategyType.ByTime | Vostok.Logging.File.Configuration.RollingStrategyType.BySize -> Vostok.Logging.File.Configuration.RollingStrategyType
+Vostok.Logging.File.Configuration.RollingStrategyType.None = 0 -> Vostok.Logging.File.Configuration.RollingStrategyType
+Vostok.Logging.File.FileLog
+Vostok.Logging.File.FileLog.Dispose() -> void
+Vostok.Logging.File.FileLog.EventsLost.get -> long
+Vostok.Logging.File.FileLog.FileLog(System.Func<Vostok.Logging.File.Configuration.FileLogSettings> settingsProvider) -> void
+Vostok.Logging.File.FileLog.FileLog(Vostok.Logging.File.Configuration.FileLogSettings settings) -> void
+Vostok.Logging.File.FileLog.Flush() -> void
+Vostok.Logging.File.FileLog.FlushAsync() -> System.Threading.Tasks.Task
+Vostok.Logging.File.FileLog.ForContext(string context) -> Vostok.Logging.Abstractions.ILog
+Vostok.Logging.File.FileLog.IsEnabledFor(Vostok.Logging.Abstractions.LogLevel level) -> bool
+Vostok.Logging.File.FileLog.Log(Vostok.Logging.Abstractions.LogEvent event) -> void
+Vostok.Logging.File.FileLog.RefreshSettings() -> void
+Vostok.Logging.File.FileLog.RefreshSettingsAsync() -> System.Threading.Tasks.Task
+Vostok.Logging.File.FileLogException
+Vostok.Logging.File.FileLogException.FileLogException(string message) -> void
+Vostok.Logging.File.FileLogException.FileLogException(string message, System.Exception innerException) -> void
