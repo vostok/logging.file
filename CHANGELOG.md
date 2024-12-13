@@ -1,3 +1,7 @@
+## 1.0.24 (13-12-2024): 
+
+Bump NuGet deps versions
+
 ## 1.0.23 (31-01-2024):
 
 Use new version of `Vostok.Logging.Formatting` with `ToString` exceptions rendering.
