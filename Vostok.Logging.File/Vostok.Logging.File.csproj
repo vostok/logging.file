@@ -31,11 +31,7 @@
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AtomicLong.cs" Link="Commons\AtomicLong.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Vostok.Logging.Abstractions">
-      <HintPath>..\..\vostok.logging.abstractions\Vostok.Logging.Abstractions\bin\Release\$(ReferencesFramework)\Vostok.Logging.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Vostok.Logging.Formatting">
-      <HintPath>..\..\vostok.logging.formatting\Vostok.Logging.Formatting\bin\Release\$(ReferencesFramework)\Vostok.Logging.Formatting.dll</HintPath>
-    </Reference>
+    <ModuleReference Include="vostok.logging.abstractions" />
+    <ModuleReference Include="vostok.logging.formatting" />
   </ItemGroup>
 </Project>
